@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask TaskName="ILRepack" AssemblyFile="ILRepack.MSBuild.Task.dll"/>
+
+	<Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+		<Message Text="ILRepacking..." Importance="high"/>
+
+		<PropertyGroup>
+			<RepackPDB>false</RepackPDB>
+			<WorkingDirectory>$(ProjectDir)$(OutputPath)</WorkingDirectory>
+		</PropertyGroup>
+
+		<PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+			<RepackPDB>true</RepackPDB>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<InputAssemblies Include="$(TargetPath)"/>
+
+			<InputAssemblies Include="Serilog.dll"/>
+			<InputAssemblies Include="Serilog.Sinks.Console.dll"/>
+			<InputAssemblies Include="System.Text.Json.dll"/>
+			<InputAssemblies Include="Polly.dll"/>
+			<InputAssemblies Include="Websocket.Client.dll"/>
+		</ItemGroup>
+
+		<ILRepack
+			Parallel="true"
+			Internalize="true"
+			InternalizeExcludeAssemblies="@(DoNotInternalizeAssemblies)"
+			MainAssembly="$(AssemblyName).dll"
+			OutputAssembly="$(WorkingDirectory)Merged\$(AssemblyName).dll"
+			InputAssemblies="@(InputAssemblies)"
+			OutputType="Dll"
+			Verbose="true"
+			DebugInfo="$(RepackPDB)"
+			WorkingDirectory="$(WorkingDirectory)"/>
+
+		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).dll" DestinationFiles="$(OutputPath)$(AssemblyName).dll"/>
+		<Message Text="OS is $(OS), repacked PDB available: $(RepackPDB)" Importance="high"/>
+	</Target>
+</Project>
