@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using CatCore.Logging;
+using CatCore.Services;
+using CatCore.Services.Interfaces;
 using DryIoc;
 using Serilog;
 
@@ -98,6 +100,11 @@ namespace CatCore
 			{
 				client.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{Version.ToString(3)}");
 			});
+
+			// Register internal standalone services
+			_container.Register<IKittenBrowserLauncherService, KittenKittenBrowserLauncherService>(Reuse.Singleton);
+			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
+			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
 		}
 
 #if DEBUG
