@@ -1,0 +1,88 @@
+﻿using System;
+using Serilog;
+using Serilog.Configuration;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Formatting;
+using Serilog.Formatting.Display;
+
+namespace CatCore.Logging
+{
+	internal static class SinkExtensions
+	{
+		private const string DEFAULT_DEBUG_OUTPUT_TEMPLATE = "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}";
+
+		/// <summary>
+		/// Writes log events to the EventHandler defined in <see cref="CatCore.ChatCoreInstance"/>.
+		/// </summary>
+		/// <param name="sinkConfiguration">Logger sink configuration.</param>
+		/// <param name="chatCoreInstance">The instance on which the EventHandler is defined</param>
+		/// <param name="restrictedToMinimumLevel">The minimum level for
+		/// events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.</param>
+		/// <param name="levelSwitch">A switch allowing the pass-through minimum level
+		/// to be changed at runtime.</param>
+		/// <param name="outputTemplate">A message template describing the format used to write to the sink.
+		/// the default is <code>"[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}"</code>.</param>
+		/// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
+		/// <returns>Configuration object allowing method chaining.</returns>
+		/// <remarks>
+		/// Roughly based onto <a href="https://github.com/serilog/serilog-sinks-debug/blob/dev/src/Serilog.Sinks.Debug/LoggerSinkConfigurationDebugExtensions.cs">Serilog.Sinks.Debug</a>
+		/// </remarks>
+		internal static LoggerConfiguration CustomLogSink(
+			this LoggerSinkConfiguration sinkConfiguration,
+			ChatCoreInstance chatCoreInstance,
+			LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+			string outputTemplate = DEFAULT_DEBUG_OUTPUT_TEMPLATE,
+			IFormatProvider? formatProvider = null,
+			LoggingLevelSwitch? levelSwitch = null)
+		{
+			if (sinkConfiguration == null)
+			{
+				throw new ArgumentNullException(nameof(sinkConfiguration));
+			}
+
+			if (outputTemplate == null)
+			{
+				throw new ArgumentNullException(nameof(outputTemplate));
+			}
+
+			var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
+			return sinkConfiguration.CustomLogSink(chatCoreInstance, formatter, restrictedToMinimumLevel, levelSwitch);
+		}
+
+		/// <summary>
+		/// Writes log events to the EventHandler defined in <see cref="CatCore.ChatCoreInstance"/>.
+		/// </summary>
+		/// <param name="sinkConfiguration">Logger sink configuration.</param>
+		/// <param name="chatCoreInstance">The instance on which the EventHandler is defined</param>
+		/// <param name="formatter">Controls the rendering of log events into text, for example to log JSON. To
+		/// control plain text formatting, use the overload that accepts an output template.</param>
+		/// <param name="restrictedToMinimumLevel">The minimum level for
+		/// events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.</param>
+		/// <param name="levelSwitch">A switch allowing the pass-through minimum level
+		/// to be changed at runtime.</param>
+		/// <returns>Configuration object allowing method chaining.</returns>
+		/// <remarks>
+		/// Roughly based onto <a href="https://github.com/serilog/serilog-sinks-debug/blob/dev/src/Serilog.Sinks.Debug/LoggerSinkConfigurationDebugExtensions.cs">Serilog.Sinks.Debug</a>
+		/// </remarks>
+		internal static LoggerConfiguration CustomLogSink(
+			this LoggerSinkConfiguration sinkConfiguration,
+			ChatCoreInstance chatCoreInstance,
+			ITextFormatter formatter,
+			LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+			LoggingLevelSwitch? levelSwitch = null)
+		{
+			if (sinkConfiguration == null)
+			{
+				throw new ArgumentNullException(nameof(sinkConfiguration));
+			}
+
+			if (formatter == null)
+			{
+				throw new ArgumentNullException(nameof(formatter));
+			}
+
+			return sinkConfiguration.Sink(new CustomLogSink(chatCoreInstance, formatter), restrictedToMinimumLevel, levelSwitch);
+		}
+	}
+}
