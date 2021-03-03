@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
+using CatCore.Services.Twitch.Interfaces;
 using Serilog;
 
 namespace CatCore.Services
@@ -14,15 +15,17 @@ namespace CatCore.Services
 	{
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;
+		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly Version _libraryVersion;
 
 		private HttpListener? _listener;
 		private string? _webSitepage;
 
-		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, Version libraryVersion)
+		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
+			_twitchAuthService = twitchAuthService;
 			_libraryVersion = libraryVersion;
 
 			logger.Information("Nyaa~~");
@@ -99,8 +102,39 @@ namespace CatCore.Services
 		{
 			switch (request.Url.Segments.ElementAtOrDefault(2))
 			{
+				case "twitch/":
+					return HandleTwitchApiRequests(request, response);
 				default:
 					return Task.FromResult(false);
+			}
+		}
+
+		private async Task<bool> HandleTwitchApiRequests(HttpListenerRequest request, HttpListenerResponse response)
+		{
+			switch (request.Url.Segments.ElementAtOrDefault(3))
+			{
+				case "login" when request.HttpMethod == "GET":
+					response.Redirect(_twitchAuthService.AuthorizationUrl("http://localhost:8338/api/twitch/authcode_callback"));
+					return true;
+				case "authcode_callback" when request.HttpMethod == "GET":
+					string? code = null;
+					foreach (var parameterPair in request.Url.Query.Substring(1).Split(new []{'&'}, StringSplitOptions.RemoveEmptyEntries))
+					{
+						var kvp = parameterPair.Split('=');
+						if (kvp[0] == "code")
+						{
+							code = kvp[1];
+						}
+					}
+
+					if (code!= null)
+					{
+						await _twitchAuthService.GetTokensByAuthorizationCode(code, request.Url.AbsolutePath).ConfigureAwait(false);
+					}
+
+					return true;
+				default:
+					return false;
 			}
 		}
 	}
