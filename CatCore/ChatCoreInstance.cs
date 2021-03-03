@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using CatCore.Logging;
 using CatCore.Services;
 using CatCore.Services.Interfaces;
+using CatCore.Services.Twitch;
+using CatCore.Services.Twitch.Interfaces;
 using DryIoc;
 using Serilog;
 
@@ -110,6 +112,9 @@ namespace CatCore
 
 			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
 			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
+
+			// Register Twitch-specific services
+			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 
 			// Spin up internal web api service
 			_container.Resolve<IKittenApiService>();
