@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCore", "CatCore\CatCore.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCoreTester", "CatCoreTester\CatCoreTester.csproj", "{DF91DBF1-FA5A-4F6E-B3B7-29A4E7055F07}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCoreStandaloneSandbox", "CatCoreStandaloneSandbox\CatCoreStandaloneSandbox.csproj", "{B07F1349-F895-4FEF-8FDF-A1531D612325}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{DF91DBF1-FA5A-4F6E-B3B7-29A4E7055F07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF91DBF1-FA5A-4F6E-B3B7-29A4E7055F07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF91DBF1-FA5A-4F6E-B3B7-29A4E7055F07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
