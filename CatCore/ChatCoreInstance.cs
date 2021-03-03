@@ -107,6 +107,12 @@ namespace CatCore
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
 
 			_container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
+
+			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
+			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
+
+			// Spin up internal web api service
+			_container.Resolve<IKittenApiService>();
 		}
 
 #if DEBUG

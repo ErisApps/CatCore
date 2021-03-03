@@ -22,7 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Resources\index.html" />
       <EmbeddedResource Include="Resources\index.html" />
     </ItemGroup>
 

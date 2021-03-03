@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>ChatCore Settings</title>
+	<!--Import Google Icon Font-->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<!--Let browser know website is optimized for mobile-->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<meta charset="UTF-8">
+	<style type="text/css">
+		.nav-wrapper {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
+
+		.nav-wrapper > li {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
+
+		.twitch-header {
+			background-color: #6441A4;
+		}
+
+		.twitch-button {
+			background-color: #6441A4;
+		}
+
+		a.btn-floating.pulse.cyan.tooltipped {
+			margin-left: 10px;
+		}
+	</style>
+</head>
+<body class="grey lighten-3">
+<nav>
+	<div class="nav-wrapper">
+		<div class="brand-logo">CatCore 😺</div>
+		<ul id="nav-mobile" class="right hide-on-med-and-down">
+			<li>Version {libVersion}</li>
+		</ul>
+	</div>
+</nav>
+
+<div class="container">
+	<form id="settings-form" name="settings-form">
+		<div class="row">
+			<div class="col s4 m6">
+				<div class="card">
+					<div class="card-content twitch-header white-text">
+						<span class="card-title">Twitch Settings</span>
+					</div>
+					<div class="card-content">
+						<div class="row">
+							<p class="caption">Login</p>
+						</div>
+						<div class="row">
+							<a class="waves-effect waves-light btn twitch-button"
+							   href="https://id.twitch.tv/oauth2/authorize?client_id=b5eughx9nidvpkakmjh112780ytdqi&redirect_uri=http://localhost:8338/&response_type=token&force_verify=true&scope=channel:moderate chat:edit chat:read whispers:read whispers:edit bits:read channel:read:redemptions&state=Heya">
+								Login on Twitch
+							</a>
+							<div class="input-field">
+								<input id="twitch_oauth_token" name="twitch_oauth_token" type="password" class="validate"
+									   placeholder="oauth:12abc3defg4p678arw9aq2xasd0gwa43" form="settings-form">
+								<label for="twitch_oauth_token">OAuth token</label>
+							</div>
+							<p>
+								<label>
+									<input id="twitch_oauth_token_visible" type="checkbox" class="filled-in"
+										   onclick="toggleTwitchOAuthVisibility()"/>
+									<span>OAuth token visible</span>
+								</label>
+							</p>
+						</div>
+
+						<div class="row">
+							<p class="caption">Channels <a class="btn-floating pulse cyan tooltipped" data-position="right"><i class="material-icons">info_outline</i></a></p>
+						</div>
+						<div class="row">
+							<div class="chips">
+							</div>
+						</div>
+
+						<div class="row">
+							<p class="caption">Emote settings</p>
+						</div>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseBTTVEmotes" name="ParseBTTVEmotes" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Parse BTTV Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseFFZEmotes" name="ParseFFZEmotes" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Parse FFZ Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseTwitchEmotes" name="ParseTwitchEmotes" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Parse Twitch Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseCheermotes" name="ParseCheermotes" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Parse Cheermotes
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col s4 m6">
+				<div class="card">
+					<div class="card-content grey darken-1  white-text">
+						<span class="card-title">Global settings</span>
+					</div>
+					<div class="card-content">
+						<div class="row">
+							<p class="caption">Web app</p>
+						</div>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="LaunchWebAppOnStartup" name="LaunchWebAppOnStartup" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Launch Web App On Startup
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<p class="caption">Global settings</p>
+						</div>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseEmojis" name="ParseEmojis" type="checkbox" form="settings-form">
+									<span class="lever"></span>
+									Parse Emojis
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row center-align">
+			<button id="saveButton" class="btn waves-effect waves-light" onclick="saveSettings(event)">Save settings
+				<i class="material-icons right">send</i>
+			</button>
+		</div>
+	</form>
+</div>
+
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script>
+	var channelChipsInstance;
+	var channelTooltipInstance;
+	var saveButtonElement;
+
+	// Helper functions
+	// https://regex101.com/r/5Nrx9S/4
+	var twitchChannelNameRegex = /^(?:https?:\/\/)?(?:(?:www\.|go\.)?twitch\.tv\/)?([a-z0-9_]{1,25})[\/?]?(?:.)*$/i;
+
+	function extractTwitchChannelName(input) {
+		return twitchChannelNameRegex.exec(input);
+	}
+
+	function toggleTwitchOAuthVisibility() {
+		var tokenField = document.getElementById("twitch_oauth_token");
+		if (tokenField.type === "password") {
+			tokenField.type = "text";
+		} else {
+			tokenField.type = "password";
+		}
+	}
+
+	function saveSettings(event) {
+		event.preventDefault();
+
+		saveButtonElement.enabled = false;
+		saveButtonElement.classList.add("disabled")
+
+		for (var key in data) {
+			var element = document.getElementById(key);
+
+			if (element === null) {
+				continue;
+			}
+
+			if (element.tagName.toLowerCase() === "input") {
+				switch (element.type) {
+					case "checkbox":
+						data[key] = element.checked;
+						break;
+					case "password":
+					case "text":
+						data[key] = element.value;
+						break;
+				}
+			}
+		}
+
+		data.twitch_channels = channelChipsInstance.getData().map(function (channelTag) {
+			return channelTag.tag;
+		});
+
+		// new HttpRequest instance
+		var request = new XMLHttpRequest();
+		request.open("POST", "/submit");
+		request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		request.onabort = function () {
+			M.toast({html: "Something went wrong, try again later."})
+		};
+		request.onerror = function () {
+			M.toast({html: "Something went wrong while trying to save the settings. Make sure Beat Saber is still running."})
+		};
+		request.onload = function () {
+			M.toast({html: "Settings have been saved successfully."})
+		};
+		request.onloadend = function () {
+			saveButtonElement.classList.remove("disabled")
+			saveButtonElement.enabled = true;
+		};
+		request.send(JSON.stringify(data));
+	}
+
+	// Data will be injected here by the backend
+	var data = {};
+
+	// your page initialization code here
+	// the DOM will be available here
+	function onLoad() {
+		for (var key in data) {
+			var value = data[key];
+			var element = document.getElementById(key);
+
+			if (element == null) {
+				continue;
+			}
+
+			if (typeof value === "string") {
+				element.value = value;
+			} else if (typeof value === "boolean") {
+				element.checked = value;
+			}
+		}
+
+		document.getElementById("twitch_oauth_token_visible").checked = document.getElementById("twitch_oauth_token").type !== "password";
+
+		var oauthHash = location.hash.substr(1);
+		var accessToken = oauthHash.substr(oauthHash.indexOf('access_token=')).split('&')[0].split('=')[1];
+
+		// Clean up url
+		history.pushState({}, "ChatCore Settings", location.origin)
+
+		if (accessToken) {
+			var tokenField = document.getElementById("twitch_oauth_token");
+			tokenField.value = 'oauth:' + decodeURIComponent(accessToken);
+		}
+
+		saveButtonElement = document.getElementById("saveButton");
+
+		var tooltipButton = document.querySelector('.tooltipped');
+		channelTooltipInstance = M.Tooltip.init(tooltipButton, {
+			html: "Make sure to add your channelname here! When you have filled it in, make sure to hit enter and the save button afterwards."
+		});
+
+		var chipContainer = document.querySelector('.chips');
+		channelChipsInstance = M.Chips.init(chipContainer, {
+			data: data.twitch_channels
+				.filter(function (channelName) {
+					return channelName.length > 0
+				})
+				.map(function (channelName) {
+					return {tag: channelName}
+				}),
+			secondaryPlaceholder: "Add channel",
+			limit: 10,
+			onChipAdd: function (container, newlyAddedChannelChip) {
+				var rawChannelNameTagEntry = decodeURIComponent(newlyAddedChannelChip.firstChild.data);
+				var channelName = extractTwitchChannelName(rawChannelNameTagEntry);
+
+				var channelTagIndex = Array.prototype.slice.call(container[0].children).indexOf(newlyAddedChannelChip);
+
+				if (!channelName) {
+					channelChipsInstance.deleteChip(channelTagIndex);
+					M.toast({html: 'Tried to add an invalid channelname'})
+					return;
+				} else if (rawChannelNameTagEntry !== channelName[1]) {
+					channelChipsInstance.deleteChip(channelTagIndex);
+					channelChipsInstance.addChip({tag: channelName[1]});
+					return;
+				}
+
+				M.toast({html: "Added channel " + channelName[1] + ", don't forget to save."});
+			}
+		});
+	}
+
+	onLoad();
+</script>
+</body>
+</html>
