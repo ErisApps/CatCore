@@ -105,6 +105,8 @@ namespace CatCore
 			_container.Register<IKittenBrowserLauncherService, KittenKittenBrowserLauncherService>(Reuse.Singleton);
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
+
+			_container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
 		}
 
 #if DEBUG
