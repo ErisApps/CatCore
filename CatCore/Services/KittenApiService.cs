@@ -88,6 +88,8 @@ namespace CatCore.Services
 
 				if (!requestHandled)
 				{
+					_logger.Warning("{Method} {RequestUrl} went unhandled", request.HttpMethod, request.Url.AbsoluteUri);
+
 					response.StatusCode = 404;
 				}
 			}
