@@ -112,14 +112,18 @@ namespace CatCore.Services.Twitch
 			return true;
 		}
 
-		public async Task<bool> RevokeToken()
+		public async Task<bool> RevokeTokens()
 		{
 			if (string.IsNullOrWhiteSpace(_accessToken))
 			{
 				return false;
 			}
 
-			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={TWITCH_CLIENT_ID}&token={_accessToken}", null);
+			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={TWITCH_CLIENT_ID}&token={_refreshToken}", null);
+
+			_accessToken = null;
+			_refreshToken = null;
+
 			return responseMessage.IsSuccessStatusCode;
 		}
 	}
