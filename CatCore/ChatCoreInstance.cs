@@ -104,7 +104,7 @@ namespace CatCore
 			});
 
 			// Register internal standalone services
-			_container.Register<IKittenBrowserLauncherService, KittenKittenBrowserLauncherService>(Reuse.Singleton);
+			_container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
 

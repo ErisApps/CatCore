@@ -3,7 +3,7 @@ using CatCore.Services.Interfaces;
 
 namespace CatCore.Services
 {
-	internal class KittenKittenBrowserLauncherService : IKittenBrowserLauncherService
+	internal class KittenBrowserLauncherService : IKittenBrowserLauncherService
 	{
 		public void Launch(string uri)
 		{
