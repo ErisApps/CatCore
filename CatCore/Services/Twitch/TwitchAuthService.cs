@@ -53,12 +53,21 @@ namespace CatCore.Services.Twitch
 				           $"&redirect_uri={redirectUrl}", null)
 				.ConfigureAwait(false);
 
-			if (responseMessage.IsSuccessStatusCode)
+			if (!responseMessage.IsSuccessStatusCode)
 			{
-				return await JsonSerializer.DeserializeAsync<AuthorizationResponse?>(await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+				return null;
 			}
 
-			return null;
+			var authorizationResponse = await JsonSerializer.DeserializeAsync<AuthorizationResponse?>(await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			if (authorizationResponse == null)
+			{
+				return null;
+			}
+
+			_accessToken = authorizationResponse.Value.AccessToken;
+			_refreshToken = authorizationResponse.Value.RefreshToken;
+
+			return authorizationResponse;
 		}
 
 		public async Task<ValidationResponse?> ValidateAccessToken()
