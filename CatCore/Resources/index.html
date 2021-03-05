@@ -57,7 +57,7 @@
 						</div>
 						<div class="row">
 							<a class="waves-effect waves-light btn twitch-button"
-							   href="https://id.twitch.tv/oauth2/authorize?client_id=b5eughx9nidvpkakmjh112780ytdqi&redirect_uri=http://localhost:8338/&response_type=token&force_verify=true&scope=channel:moderate chat:edit chat:read whispers:read whispers:edit bits:read channel:read:redemptions&state=Heya">
+							   href="/api/twitch/login">
 								Login on Twitch
 							</a>
 							<div class="input-field">
@@ -268,17 +268,6 @@
 		}
 
 		document.getElementById("twitch_oauth_token_visible").checked = document.getElementById("twitch_oauth_token").type !== "password";
-
-		var oauthHash = location.hash.substr(1);
-		var accessToken = oauthHash.substr(oauthHash.indexOf('access_token=')).split('&')[0].split('=')[1];
-
-		// Clean up url
-		history.pushState({}, "ChatCore Settings", location.origin)
-
-		if (accessToken) {
-			var tokenField = document.getElementById("twitch_oauth_token");
-			tokenField.value = 'oauth:' + decodeURIComponent(accessToken);
-		}
 
 		saveButtonElement = document.getElementById("saveButton");
 
