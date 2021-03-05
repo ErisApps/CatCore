@@ -18,10 +18,13 @@
 			<InputAssemblies Include="$(TargetPath)"/>
 
 			<InputAssemblies Include="Serilog.dll"/>
-			<InputAssemblies Include="Serilog.Sinks.Console.dll"/>
 			<InputAssemblies Include="System.Text.Json.dll"/>
 			<InputAssemblies Include="Polly.dll"/>
 			<InputAssemblies Include="Websocket.Client.dll"/>
+		</ItemGroup>
+
+		<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+			<InputAssemblies Include="Serilog.Sinks.Console.dll"/>
 		</ItemGroup>
 
 		<ILRepack
