@@ -13,7 +13,10 @@ namespace CatCore.Services.Twitch
 	{
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
 
-		private readonly string[] _twitchAuthorizationScope = {"channel:moderate", "chat:edit", "chat:read", "whispers:read", "whispers:edit", "bits:read", "channel:read:redemptions"};
+		private readonly string[] _twitchAuthorizationScope =
+		{
+			"channel:moderate", "chat:edit", "chat:read", "whispers:read", "whispers:edit", "bits:read", "channel:manage:broadcast", "channel:read:redemptions", "channel:read:subscriptions"
+		};
 
 		private readonly ILogger _logger;
 		private readonly ConstantsBase _constants;
