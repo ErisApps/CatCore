@@ -352,3 +352,6 @@ MigrationBackup/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# ChatCore specific stuffs
+*.user.cs

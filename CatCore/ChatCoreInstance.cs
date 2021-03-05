@@ -83,6 +83,7 @@ namespace CatCore
 				.WithoutThrowOnRegisteringDisposableTransient());
 
 			_container.Use(Version);
+			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 
 			// Default logger
 			_container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));

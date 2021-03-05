@@ -13,29 +13,28 @@ namespace CatCore.Services.Twitch
 	{
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
 
-		private const string TWITCH_CLIENT_ID = "qe9e3dxhs2i17n8d747wwiet8x671w";
-		private const string TWITCH_CLIENT_SECRET = "mflv88r48wrfheyjpmq8osir4obpou";
-
 		private readonly string[] _twitchAuthorizationScope = {"channel:moderate", "chat:edit", "chat:read", "whispers:read", "whispers:edit", "bits:read", "channel:read:redemptions"};
 
 		private readonly ILogger _logger;
+		private readonly ConstantsBase _constants;
 		private readonly HttpClient _authClient;
 
 		private string? _accessToken;
 		private string? _refreshToken;
 
-		public TwitchAuthService(ILogger logger, HttpClient authClient)
+		public TwitchAuthService(ILogger logger, ConstantsBase constants, Version libraryVersion)
 		{
 			_logger = logger;
-			_authClient = authClient;
+			_constants = constants;
 
-			_authClient.BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute);
+			_authClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
+			_authClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
 		}
 
 		public string AuthorizationUrl(string redirectUrl)
 		{
 			return $"{TWITCH_AUTH_BASEURL}authorize" +
-			       $"?client_id={TWITCH_CLIENT_ID}" +
+			       $"?client_id={_constants.TwitchClientId}" +
 			       $"&redirect_uri={redirectUrl}" +
 			       "&response_type=code" +
 			       "&force_verify=true" +
@@ -46,8 +45,8 @@ namespace CatCore.Services.Twitch
 		{
 			var responseMessage = await _authClient
 				.PostAsync("https://id.twitch.tv/oauth2/token" +
-				           $"?client_id={TWITCH_CLIENT_ID}" +
-				           $"&client_secret={TWITCH_CLIENT_SECRET}" +
+				           $"?client_id={_constants.TwitchClientId}" +
+				           $"&client_secret={_constants.TwitchClientSecret}" +
 				           $"&code={authorizationCode}" +
 				           "&grant_type=authorization_code" +
 				           $"&redirect_uri={redirectUrl}", null)
@@ -98,8 +97,8 @@ namespace CatCore.Services.Twitch
 
 			var responseMessage = await _authClient
 				.PostAsync("https://id.twitch.tv/oauth2/token" +
-				           $"?client_id={TWITCH_CLIENT_ID}" +
-				           $"&client_secret={TWITCH_CLIENT_SECRET}" +
+				           $"?client_id={_constants.TwitchClientId}" +
+				           $"&client_secret={_constants.TwitchClientSecret}" +
 				           "&grant_type=refresh_token" +
 				           $"&refresh_token={_refreshToken}", null)
 				.ConfigureAwait(false);
@@ -128,7 +127,7 @@ namespace CatCore.Services.Twitch
 				return false;
 			}
 
-			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={TWITCH_CLIENT_ID}&token={_refreshToken}", null);
+			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={_refreshToken}", null);
 
 			_accessToken = null;
 			_refreshToken = null;
