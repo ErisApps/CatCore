@@ -92,18 +92,6 @@ namespace CatCore
 				Made.Of(() => Log.ForContext(Arg.Index<Type>(0)), r => r.Parent.ImplementationType),
 				setup: Setup.With(condition: r => r.Parent.ImplementationType != null));
 
-			// Register HttpClient
-#if DEBUG
-			_container.RegisterInstance(new HttpClientHandler {Proxy = new System.Net.WebProxy("192.168.0.150", 8888)});
-			_container.Register(Made.Of(() => new HttpClient(Arg.Of<HttpClientHandler>())));
-#else
-			_container.Register(Made.Of(() => new HttpClient()));
-#endif
-			_container.RegisterInitializer<HttpClient>((client, _) =>
-			{
-				client.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{Version.ToString(3)}");
-			});
-
 			// Register internal standalone services
 			_container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
