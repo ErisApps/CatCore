@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Twitch.Interfaces;
@@ -19,15 +19,32 @@ namespace CatCore.Services.Twitch
 		};
 
 		private readonly ILogger _logger;
+		private readonly ITwitchCredentialsProvider _credentialsProvider;
 		private readonly ConstantsBase _constants;
 		private readonly HttpClient _authClient;
 
-		private string? _accessToken;
-		private string? _refreshToken;
+		private string? AccessToken
+		{
+			get => _credentialsProvider.Credentials.AccessToken;
+			set => _credentialsProvider.Credentials.AccessToken = value;
+		}
 
-		public TwitchAuthService(ILogger logger, ConstantsBase constants, Version libraryVersion)
+		private string? RefreshToken
+		{
+			get => _credentialsProvider.Credentials.RefreshToken;
+			set => _credentialsProvider.Credentials.RefreshToken = value;
+		}
+
+		private DateTimeOffset? ValidUntil
+		{
+			get => _credentialsProvider.Credentials.ValidUntil;
+			set => _credentialsProvider.Credentials.ValidUntil = value;
+		}
+
+		public TwitchAuthService(ILogger logger, ITwitchCredentialsProvider credentialsProvider, ConstantsBase constants, Version libraryVersion)
 		{
 			_logger = logger;
+			_credentialsProvider = credentialsProvider;
 			_constants = constants;
 
 			_authClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
@@ -60,40 +77,47 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			var authorizationResponse = await JsonSerializer.DeserializeAsync<AuthorizationResponse?>(await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
 			if (authorizationResponse == null)
 			{
 				return null;
 			}
 
-			_accessToken = authorizationResponse.Value.AccessToken;
-			_refreshToken = authorizationResponse.Value.RefreshToken;
+			AccessToken = authorizationResponse.Value.AccessToken;
+			RefreshToken = authorizationResponse.Value.RefreshToken;
+			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
 
 			return authorizationResponse;
 		}
 
 		public async Task<ValidationResponse?> ValidateAccessToken()
 		{
-			if (string.IsNullOrWhiteSpace(_accessToken))
+			if (string.IsNullOrWhiteSpace(AccessToken))
 			{
 				return null;
 			}
 
 			using var requestMessage = new HttpRequestMessage(HttpMethod.Get, TWITCH_AUTH_BASEURL + "validate");
-			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 			var responseMessage = await _authClient.SendAsync(requestMessage).ConfigureAwait(false);
 
-			if (responseMessage.IsSuccessStatusCode)
+			if (!responseMessage.IsSuccessStatusCode)
 			{
-				return await JsonSerializer.DeserializeAsync<ValidationResponse?>(await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+				AccessToken = null;
+				RefreshToken = null;
+				ValidUntil = null;
+
+				_credentialsProvider.Store();
+
+				return null;
 			}
 
-			return null;
+			return await responseMessage.Content.ReadFromJsonAsync<ValidationResponse?>().ConfigureAwait(false);
 		}
 
 		public async Task<bool> RefreshTokens()
 		{
-			if (string.IsNullOrWhiteSpace(_refreshToken))
+			if (string.IsNullOrWhiteSpace(RefreshToken))
 			{
 				return false;
 			}
@@ -103,7 +127,7 @@ namespace CatCore.Services.Twitch
 				           $"?client_id={_constants.TwitchClientId}" +
 				           $"&client_secret={_constants.TwitchClientSecret}" +
 				           "&grant_type=refresh_token" +
-				           $"&refresh_token={_refreshToken}", null)
+				           $"&refresh_token={RefreshToken}", null)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
@@ -111,29 +135,39 @@ namespace CatCore.Services.Twitch
 				return false;
 			}
 
-			var authorizationResponse = await JsonSerializer.DeserializeAsync<AuthorizationResponse?>(await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
+
+			using var transaction = _credentialsProvider.ChangeTransaction();
 			if (authorizationResponse == null)
 			{
+				AccessToken = null;
+				RefreshToken = null;
+				ValidUntil = null;
+
 				return false;
 			}
 
-			_accessToken = authorizationResponse.Value.AccessToken;
-			_refreshToken = authorizationResponse.Value.RefreshToken;
+			AccessToken = authorizationResponse.Value.AccessToken;
+			RefreshToken = authorizationResponse.Value.RefreshToken;
+			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
 
 			return true;
 		}
 
 		public async Task<bool> RevokeTokens()
 		{
-			if (string.IsNullOrWhiteSpace(_accessToken))
+			if (string.IsNullOrWhiteSpace(AccessToken))
 			{
 				return false;
 			}
 
-			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={_refreshToken}", null);
+			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={RefreshToken}", null);
 
-			_accessToken = null;
-			_refreshToken = null;
+			AccessToken = null;
+			RefreshToken = null;
+			ValidUntil = null;
+
+			_credentialsProvider.Store();
 
 			return responseMessage.IsSuccessStatusCode;
 		}
