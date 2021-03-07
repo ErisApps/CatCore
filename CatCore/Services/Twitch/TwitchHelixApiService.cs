@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers;
 using CatCore.Models.Twitch.Helix.Requests;
-using CatCore.Models.Twitch.Helix.Response;
+using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Services.Twitch.Interfaces;
 using Polly;
 using Polly.Wrap;

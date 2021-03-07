@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using CatCore.Models.Twitch.Helix.Response;
+using CatCore.Models.Twitch.Helix.Responses;
 
 namespace CatCore.Services.Twitch.Interfaces
 {

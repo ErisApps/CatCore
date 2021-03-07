@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace CatCore.Models.Twitch.Helix.Response
+namespace CatCore.Models.Twitch.Helix.Responses
 {
 	public readonly struct ResponseBase<T>
 	{
