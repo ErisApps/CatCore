@@ -100,6 +100,8 @@ namespace CatCore.Services.Twitch
 			RefreshToken = authorizationResponse.Value.RefreshToken;
 			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
 
+			_credentialsProvider.Store();
+
 			return authorizationResponse;
 		}
 
