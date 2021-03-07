@@ -1,6 +1,6 @@
 ﻿namespace CatCore.Services.Interfaces
 {
-	internal interface IKittenApiService : IInitializable
+	internal interface IKittenApiService : INeedAsyncInitialization
 	{
 	}
 }

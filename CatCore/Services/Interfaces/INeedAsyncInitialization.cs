@@ -2,7 +2,7 @@
 
 namespace CatCore.Services.Interfaces
 {
-	internal interface IInitializable
+	internal interface INeedAsyncInitialization
 	{
 		Task Initialize();
 	}
