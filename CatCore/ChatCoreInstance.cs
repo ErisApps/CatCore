@@ -103,6 +103,9 @@ namespace CatCore
 			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
 
 			// Register Twitch-specific services
+			_container.Register<ITwitchCredentialsProvider, TwitchCredentialsProvider>();
+			_container.RegisterInitializer<ITwitchCredentialsProvider>((service, context) => service.Initialize());
+
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 
 			// Spin up internal web api service
