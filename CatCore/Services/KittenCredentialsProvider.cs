@@ -49,6 +49,8 @@ namespace CatCore.Services
 			{
 				_locker.Wait();
 
+				_logger.Information("Loading credentials for service {ServiceType}", ServiceType);
+
 				if (!Directory.Exists(_pathProvider.DataPath))
 				{
 					Directory.CreateDirectory(_pathProvider.DataPath);
@@ -79,6 +81,8 @@ namespace CatCore.Services
 			try
 			{
 				_locker.Wait();
+
+				_logger.Information("Storing credentials for service {ServiceType}", ServiceType);
 
 				if (!Directory.Exists(_pathProvider.DataPath))
 				{
