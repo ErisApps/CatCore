@@ -60,18 +60,6 @@
 							   href="/api/twitch/login">
 								Login on Twitch
 							</a>
-							<div class="input-field">
-								<input id="twitch_oauth_token" name="twitch_oauth_token" type="password" class="validate"
-									   placeholder="oauth:12abc3defg4p678arw9aq2xasd0gwa43" form="settings-form">
-								<label for="twitch_oauth_token">OAuth token</label>
-							</div>
-							<p>
-								<label>
-									<input id="twitch_oauth_token_visible" type="checkbox" class="filled-in"
-										   onclick="toggleTwitchOAuthVisibility()"/>
-									<span>OAuth token visible</span>
-								</label>
-							</p>
 						</div>
 
 						<div class="row">
@@ -187,15 +175,6 @@
 		return twitchChannelNameRegex.exec(input);
 	}
 
-	function toggleTwitchOAuthVisibility() {
-		var tokenField = document.getElementById("twitch_oauth_token");
-		if (tokenField.type === "password") {
-			tokenField.type = "text";
-		} else {
-			tokenField.type = "password";
-		}
-	}
-
 	function saveSettings(event) {
 		event.preventDefault();
 
@@ -266,8 +245,6 @@
 				element.checked = value;
 			}
 		}
-
-		document.getElementById("twitch_oauth_token_visible").checked = document.getElementById("twitch_oauth_token").type !== "password";
 
 		saveButtonElement = document.getElementById("saveButton");
 
