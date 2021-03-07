@@ -51,6 +51,19 @@ namespace CatCore.Services.Twitch
 			_authClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
 		}
 
+		public async Task Initialize()
+		{
+			if (!string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken))
+			{
+				var validateAccessToken = await ValidateAccessToken().ConfigureAwait(false);
+				_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", AccessToken != null, RefreshToken != null);
+				if (validateAccessToken != null && ValidUntil > DateTimeOffset.Now.AddMinutes(5))
+				{
+					await RefreshTokens().ConfigureAwait(false);
+				}
+			}
+		}
+
 		public string AuthorizationUrl(string redirectUrl)
 		{
 			return $"{TWITCH_AUTH_BASEURL}authorize" +
