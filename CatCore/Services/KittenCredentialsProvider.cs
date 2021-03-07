@@ -32,7 +32,7 @@ namespace CatCore.Services
 			_logger = logger;
 			_pathProvider = pathProvider;
 
-			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true, };
+			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true};
 
 			_credentialsFilePath = Path.Combine(pathProvider.DataPath, CredentialsFilename);
 		}
