@@ -19,7 +19,7 @@ namespace CatCore.Services
 		private readonly Version _libraryVersion;
 
 		private HttpListener? _listener;
-		private string? _webSitepage;
+		private string? _webSitePage;
 
 		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, Version libraryVersion)
 		{
@@ -33,12 +33,12 @@ namespace CatCore.Services
 
 		public async Task Initialize()
 		{
-			if (_webSitepage == null)
+			if (_webSitePage == null)
 			{
 				using var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream($"{nameof(CatCore)}.Resources.index.html")!);
 				var pageBuilder = new StringBuilder(await reader.ReadToEndAsync().ConfigureAwait(false));
 				pageBuilder.Replace("{libVersion}", _libraryVersion.ToString(3));
-				_webSitepage = pageBuilder.ToString();
+				_webSitePage = pageBuilder.ToString();
 			}
 
 			_listener = new HttpListener {Prefixes = {$"http://localhost:{8338}/"}};
@@ -77,7 +77,7 @@ namespace CatCore.Services
 				}
 				else if (request.Url.AbsolutePath.StartsWith("/") && request.HttpMethod == "GET")
 				{
-					var data = Encoding.UTF8.GetBytes(_webSitepage!);
+					var data = Encoding.UTF8.GetBytes(_webSitePage!);
 					response.ContentEncoding = Encoding.UTF8;
 					response.ContentLength64 = data.Length;
 					response.ContentType = "text/html";
@@ -120,7 +120,7 @@ namespace CatCore.Services
 					return true;
 				case "authcode_callback" when request.HttpMethod == "GET":
 					string? code = null;
-					foreach (var parameterPair in request.Url.Query.Substring(1).Split(new []{'&'}, StringSplitOptions.RemoveEmptyEntries))
+					foreach (var parameterPair in request.Url.Query.Substring(1).Split(new[] {'&'}, StringSplitOptions.RemoveEmptyEntries))
 					{
 						var kvp = parameterPair.Split('=');
 						if (kvp[0] == "code")
@@ -129,7 +129,7 @@ namespace CatCore.Services
 						}
 					}
 
-					if (code!= null)
+					if (code != null)
 					{
 						await _twitchAuthService.GetTokensByAuthorizationCode(code, request.Url.GetLeftPart(UriPartial.Path)).ConfigureAwait(false);
 					}
