@@ -109,6 +109,7 @@ namespace CatCore
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize());
 
+			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			// Spin up internal web api service
 			_container.Resolve<IKittenApiService>();
 		}
