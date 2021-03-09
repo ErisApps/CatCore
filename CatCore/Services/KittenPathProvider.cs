@@ -6,6 +6,8 @@ namespace CatCore.Services
 {
 	internal class KittenPathProvider : IKittenPathProvider
 	{
-		public string DataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".chatcore");
+		private string? _dataPath;
+
+		public string DataPath => _dataPath ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $".{nameof(CatCore).ToLower()}");
 	}
 }
