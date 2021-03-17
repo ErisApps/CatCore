@@ -1,0 +1,15 @@
+{
+	"$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
+	"id": "CatCore",
+	"name": "CatCore",
+	"author": "Eris",
+	"version": "0.0.1-alpha",
+	"description": "A shared chat client library written in .NET Standard 2.0",
+	"gameVersion": "1.13.5",
+	"files": [
+		"Libs/CatCore.dll"
+	],
+	"links": {
+		"project-home": "https://github.com/ErisApps/ChatCore"
+	}
+}

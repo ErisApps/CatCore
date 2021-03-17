@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<UsingTask TaskName="ILRepack" AssemblyFile="ILRepack.MSBuild.Task.dll"/>
 
-	<Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+	<Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)' != 'Debug'">
 		<Message Text="ILRepacking..." Importance="high"/>
 
 		<PropertyGroup>
@@ -18,14 +18,9 @@
 			<InputAssemblies Include="$(TargetPath)"/>
 
 			<InputAssemblies Include="Serilog.dll"/>
-			<InputAssemblies Include="System.Net.Http.Json.dll"/>
-			<InputAssemblies Include="System.Text.Json.dll"/>
+			<InputAssemblies Include="System.Net.Http.Json.dll"/> <!-- System.Text.Json.dll is imported implicitly due to System.Net.Http.Json.dll depending on it... probably... -->
 			<InputAssemblies Include="Polly.dll"/>
 			<InputAssemblies Include="Websocket.Client.dll"/>
-		</ItemGroup>
-
-		<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-			<InputAssemblies Include="Serilog.Sinks.Console.dll"/>
 		</ItemGroup>
 
 		<ILRepack
@@ -40,7 +35,8 @@
 			DebugInfo="$(RepackPDB)"
 			WorkingDirectory="$(WorkingDirectory)"/>
 
-		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).dll" DestinationFiles="$(OutputPath)$(AssemblyName).dll"/>
+		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).dll" DestinationFiles="$(WorkingDirectory)$(AssemblyName).dll"/>
+		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).pdb" DestinationFiles="$(WorkingDirectory)$(AssemblyName).pdb" Condition="Exists('$(WorkingDirectory)Merged\$(AssemblyName).pdb')"/>
 		<Message Text="OS is $(OS), repacked PDB available: $(RepackPDB)" Importance="high"/>
 	</Target>
 </Project>
