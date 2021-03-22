@@ -20,7 +20,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.201
+        dotnet-version: 3.1.101
     - name: Removed .example suffix from Constants implemenation
       run: find ~ -type f -name Constants.user.cs.example -execdir mv Constants.user.cs.example Constants.user.cs \;
     - name: Find and Replace - Insert Twitch Client Id
