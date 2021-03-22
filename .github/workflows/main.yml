@@ -29,7 +29,7 @@ jobs:
       run: find ~ -type f -name Constants.user.cs -exec sed -i ''s/ {{ TWITCH_CLIENT_SECRET }} /${{ secrets.TWITCH_CLIENT_SECRET }}/g'' {} \;
     - name: Build
       id: Build
-      run: dotnet build --configuration Release
+      run: dotnet build CatCore.csproj --configuration Release
     - name: Echo Filename
       run: echo $BUILDTEXT \($ASSEMBLYNAME\)
       env:
