@@ -1,0 +1,36 @@
+name: Build CatCore
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'CatCore/**'
+      - '.github/workflows/main.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'CatCore/**'
+      - '.github/workflows/main.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.201
+    - name: Build
+      id: Build
+      run: dotnet build --configuration Release
+    - name: Echo Filename
+      run: echo $BUILDTEXT \($ASSEMBLYNAME\)
+      env:
+        BUILDTEXT: Filename=${{ steps.Build.outputs.filename }}
+        ASSEMBLYNAME: AssemblyName=${{ steps.Build.outputs.assemblyname }}
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ steps.Build.outputs.filename }}
+        path: ${{ steps.Build.outputs.artifactpath }}
