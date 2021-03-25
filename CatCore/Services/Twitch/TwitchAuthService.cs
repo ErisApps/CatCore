@@ -53,6 +53,8 @@ namespace CatCore.Services.Twitch
 
 		public async Task Initialize()
 		{
+			_logger.Information("Validating Twitch Credentials");
+
 			if (!string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken))
 			{
 				var validateAccessToken = await ValidateAccessToken().ConfigureAwait(false);
@@ -61,6 +63,10 @@ namespace CatCore.Services.Twitch
 				{
 					await RefreshTokens().ConfigureAwait(false);
 				}
+			}
+			else
+			{
+				_logger.Warning("No Twitch Credentials present");
 			}
 		}
 
