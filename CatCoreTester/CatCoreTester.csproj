@@ -4,6 +4,8 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net472</TargetFramework>
         <LangVersion>8</LangVersion>
+        <Configurations>Debug;Release;Develop</Configurations>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>

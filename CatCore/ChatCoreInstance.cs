@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using CatCore.Logging;
 using CatCore.Services;
@@ -7,6 +8,8 @@ using CatCore.Services.Twitch;
 using CatCore.Services.Twitch.Interfaces;
 using DryIoc;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Display;
 
 [assembly: InternalsVisibleTo("CatCoreTester")]
 namespace CatCore
@@ -17,18 +20,22 @@ namespace CatCore
 
 		private static ChatCoreInstance? _instance;
 
+		private readonly MessageTemplateTextFormatter _logReceivedTextFormatter;
+
 		private Container? _container;
 
 		private ChatCoreInstance()
 		{
+			_logReceivedTextFormatter = new MessageTemplateTextFormatter("{Message:lj}{NewLine}{Exception}");
+
 			Version = typeof(ChatCoreInstance).Assembly.GetName().Version;
 		}
 
 		internal Version Version { get; }
 
-		public event Action<CustomLogLevel, string>? OnLogReceived;
+		public event Action<CustomLogLevel, string, string>? OnLogReceived;
 
-		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string>? logHandler = null)
+		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
 			lock (CreationLock)
 			{
@@ -55,11 +62,6 @@ namespace CatCore
 			}
 		}
 
-		internal void OnLogReceivedInternal(CustomLogLevel logLevel, string message)
-		{
-			OnLogReceived?.Invoke(logLevel, message);
-		}
-
 		private void CreateLogger()
 		{
 			Log.Logger = new LoggerConfiguration()
@@ -69,7 +71,13 @@ namespace CatCore
 				.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}",
 					theme: Serilog.Sinks.SystemConsole.Themes.SystemConsoleTheme.Colored)
 #endif
-				.WriteTo.Conditional(_ => OnLogReceived != null, writeTo => writeTo.CustomLogSink(this))
+				.WriteTo.Conditional(_ => OnLogReceived != null, writeTo => writeTo.Actionable(evt =>
+				{
+					using var messageWriter = new StringWriter();
+					_logReceivedTextFormatter.Format(evt, messageWriter);
+					OnLogReceived?.Invoke((CustomLogLevel) evt.Level, evt.Properties.TryGetValue("SourceContext", out var context) ? ((ScalarValue) context).Value.ToString() : "_",
+						messageWriter.ToString());
+				}))
 				.CreateLogger();
 		}
 
