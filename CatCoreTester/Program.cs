@@ -14,7 +14,7 @@ namespace CatCoreTester
 			Console.WriteLine("Tester init");
 
 			stoppyWatch.Start();
-			var chatCoreInstance = ChatCoreInstance.CreateInstance((level, message) => Console.WriteLine($"External logger: {message}"));
+			var chatCoreInstance = ChatCoreInstance.CreateInstance((level, context, message) => Console.WriteLine($"External logger: {level}|{context}|{message}"));
 			stoppyWatch.Stop();
 
 			Console.WriteLine($"Tester finished. Instance creation time: {stoppyWatch.Elapsed:g}");
@@ -27,6 +27,7 @@ namespace CatCoreTester
 
 			while (Console.ReadKey().KeyChar != 'c')
 			{
+				await Task.Delay(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
 			}
 
 			Console.WriteLine();
