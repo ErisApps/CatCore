@@ -13,6 +13,8 @@ namespace CatCore.Services
 {
 	internal class KittenApiService : IKittenApiService
 	{
+		private const int WEB_APP_PORT = 8338;
+
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
@@ -41,7 +43,9 @@ namespace CatCore.Services
 				_webSitePage = pageBuilder.ToString();
 			}
 
-			_listener = new HttpListener {Prefixes = {$"http://localhost:{8338}/"}};
+			_logger.Information("Purring up internal webserver");
+
+			_listener = new HttpListener {Prefixes = {$"http://localhost:{WEB_APP_PORT}/"}};
 			_listener.Start();
 
 			await Task.Run(async () =>
