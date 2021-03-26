@@ -108,7 +108,7 @@
 		<Message Text="Copying '$(OutputAssemblyName).dll' to '$(LibsDir)'." Importance="high" Condition="$(CanCopyToPlugins)"/>
 		<Copy SourceFiles="$(OutputAssemblyName).dll" DestinationFiles="$(LibsDir)\$(AssemblyName).dll" Condition="$(CanCopyToPlugins)"/>
 		<Copy SourceFiles="$(OutputAssemblyName).pdb" DestinationFiles="$(LibsDir)\$(AssemblyName).pdb" Condition="'$(CanCopyToPlugins)' == 'True' AND Exists('$(OutputAssemblyName).pdb')"/>
-		<Message Text="Copying '$(OutputAssemblyName).manifest' to '$(LibsDir)'." Importance="high" Condition="$(CanCopyToPlugins)"/>
+		<Message Text="Copying '$(OutputAssemblyName).manifest' to '$(PluginDir)'." Importance="high" Condition="$(CanCopyToPlugins)"/>
 		<Copy SourceFiles="manifest.json" DestinationFiles="$(PluginDir)\$(AssemblyName).manifest" Condition="'$(CanCopyToPlugins)' == 'True' AND Exists('$(OutputAssemblyName).pdb')"/>
 		<Warning Text="Beat Saber is running, restart the game to use the latest build." Condition="'$(IsRunning)' == 'True'"/>
 	</Target>
