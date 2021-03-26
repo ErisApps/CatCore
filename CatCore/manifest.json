@@ -11,5 +11,8 @@
 	],
 	"links": {
 		"project-home": "https://github.com/ErisApps/ChatCore"
+	},
+	"conflictsWith": {
+		"ChatCore": "*"
 	}
 }

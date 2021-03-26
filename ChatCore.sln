@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCoreTester", "CatCoreTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCoreStandaloneSandbox", "CatCoreStandaloneSandbox\CatCoreStandaloneSandbox.csproj", "{B07F1349-F895-4FEF-8FDF-A1531D612325}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatCoreTesterMod", "CatCoreTesterMod\CatCoreTesterMod.csproj", "{202048B6-EDE6-479B-AE7F-135FEBD81C96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,5 +33,11 @@ Global
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Develop|Any CPU.ActiveCfg = Develop|Any CPU
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Develop|Any CPU.Build.0 = Develop|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Develop|Any CPU.ActiveCfg = Develop|Any CPU
+		{202048B6-EDE6-479B-AE7F-135FEBD81C96}.Develop|Any CPU.Build.0 = Develop|Any CPU
 	EndGlobalSection
 EndGlobal
