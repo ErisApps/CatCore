@@ -16,28 +16,26 @@ namespace CatCore
 {
 	public class ChatCoreInstance
 	{
-		private static readonly object CreationLock = new object();
+		private static readonly object _creationLock = new object();
 
 		private static ChatCoreInstance? _instance;
 
 		private readonly MessageTemplateTextFormatter _logReceivedTextFormatter;
+		private readonly Version _version;
 
 		private Container? _container;
 
 		private ChatCoreInstance()
 		{
 			_logReceivedTextFormatter = new MessageTemplateTextFormatter("{Message:lj}{NewLine}{Exception}");
-
-			Version = typeof(ChatCoreInstance).Assembly.GetName().Version;
+			_version = typeof(ChatCoreInstance).Assembly.GetName().Version;
 		}
-
-		internal Version Version { get; }
 
 		public event Action<CustomLogLevel, string, string>? OnLogReceived;
 
 		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
-			lock (CreationLock)
+			lock (_creationLock)
 			{
 				if (_instance != null)
 				{
@@ -89,11 +87,12 @@ namespace CatCore
 				.WithoutThrowIfScopedOrSingletonHasTransientDependency()
 				.WithoutThrowOnRegisteringDisposableTransient());
 
-			_container.Use(Version);
+			_container.Use(_version);
 			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 
 			// Default logger
 			_container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));
+
 			// Type dependent logger
 			_container.Register(
 				Made.Of(() => Log.ForContext(Arg.Index<Type>(0)), r => r.Parent.ImplementationType),
@@ -104,19 +103,15 @@ namespace CatCore
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
 			_container.RegisterInitializer<IKittenSettingsService>((service, context) => service.Initialize());
-
 			_container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
-
 			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
 			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
 
 			// Register Twitch-specific services
 			_container.Register<ITwitchCredentialsProvider, TwitchCredentialsProvider>();
 			_container.RegisterInitializer<ITwitchCredentialsProvider>((service, context) => service.Initialize());
-
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize());
-
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 
 			// TODO: Interface registration
