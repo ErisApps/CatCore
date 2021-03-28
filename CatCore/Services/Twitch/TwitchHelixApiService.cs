@@ -93,6 +93,43 @@ namespace CatCore.Services.Twitch
 			return PostAsyncS<ResponseBase<CreateStreamMarkerData>, CreateStreamMarkerRequestDto>($"{TWITCH_HELIX_BASEURL}streams/markers", body, cancellationToken);
 		}
 
+		public Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
+			CancellationToken? cancellationToken = null)
+		{
+			if (string.IsNullOrWhiteSpace(query))
+			{
+				throw new ArgumentException("The query parameter should not be null, empty or whitespace.", nameof(query));
+			}
+
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}search/channels?query={query}");
+			if (limit != null)
+			{
+				if (limit.Value > 100)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 100.", nameof(limit));
+				}
+
+				urlBuilder.Append($"&first={limit}");
+			}
+
+			if (liveOnly != null)
+			{
+				urlBuilder.Append($"live_only={liveOnly}");
+			}
+
+			if (continuationCursor != null)
+			{
+				if (string.IsNullOrWhiteSpace(query))
+				{
+					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
+				}
+
+				urlBuilder.Append($"after={continuationCursor}");
+			}
+
+			return GetAsyncS<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
+		}
+
 		private async Task<TResponse?> GetAsyncS<TResponse>(string url, CancellationToken? cancellationToken = null) where TResponse : struct
 		{
 #if DEBUG
