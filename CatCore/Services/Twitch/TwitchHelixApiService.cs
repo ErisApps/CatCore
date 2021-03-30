@@ -74,7 +74,7 @@ namespace CatCore.Services.Twitch
 				for (var i = 1; i < loginNames.Length; i++)
 				{
 					var loginName = loginNames[i];
-					uriBuilder.Append($"?login={loginName}");
+					uriBuilder.Append($"&login={loginName}");
 				}
 			}
 
