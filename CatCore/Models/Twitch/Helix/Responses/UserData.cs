@@ -14,6 +14,15 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		[JsonPropertyName("display_name")]
 		public string DisplayName { get; }
 
+		[JsonPropertyName("description")]
+		public string Description { get; }
+
+		[JsonPropertyName("profile_image_url")]
+		public string ProfileImageUrl { get; }
+
+		[JsonPropertyName("offline_image_url")]
+		public string OfflineImageUrl { get; }
+
 		// User’s type: "staff", "admin", "global_mod", or ""
 		[JsonPropertyName("type")]
 		public string Type { get; }
@@ -25,15 +34,30 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		[JsonPropertyName("created_at")]
 		public DateTimeOffset CreatedAt { get; }
 
+		[JsonPropertyName("view_count")]
+		public int ViewCount { get; }
+
+		/// <remark>
+		/// Returned if the request includes the user:read:email scope.
+		/// </remark>
+		[JsonPropertyName("email")]
+		public string Email { get; }
+
 		[JsonConstructor]
-		public UserData(string userId, string loginName, string displayName, string type, string broadcasterType, DateTimeOffset createdAt)
+		public UserData(string userId, string loginName, string displayName, string description, string profileImageUrl, string offlineImageUrl, string type, string broadcasterType,
+			DateTimeOffset createdAt, int viewCount, string email)
 		{
 			UserId = userId;
 			LoginName = loginName;
 			DisplayName = displayName;
+			Description = description;
+			ProfileImageUrl = profileImageUrl;
+			OfflineImageUrl = offlineImageUrl;
 			Type = type;
 			BroadcasterType = broadcasterType;
 			CreatedAt = createdAt;
+			ViewCount = viewCount;
+			Email = email;
 		}
 	}
 }
