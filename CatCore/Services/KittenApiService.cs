@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,6 +23,7 @@ namespace CatCore.Services
 		private readonly IKittenSettingsService _settingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
+		private readonly ITwitchHelixApiService _helixApiService;
 		private readonly Version _libraryVersion;
 
 		private HttpListener? _listener;
@@ -30,12 +32,13 @@ namespace CatCore.Services
 		public string ServerUri => $"http://localhost:{WEB_APP_PORT}/";
 
 		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService,
-			Version libraryVersion)
+			ITwitchHelixApiService helixApiService,	Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
+			_helixApiService = helixApiService;
 			_libraryVersion = libraryVersion;
 
 			logger.Information("Nyaa~~");
@@ -187,6 +190,21 @@ namespace CatCore.Services
 						twitchConfig.ParseTwitchEmotes = twitchStateRequestDto.ParseTwitchEmotes;
 						twitchConfig.ParseCheermotes = twitchStateRequestDto.ParseCheermotes;
 					}
+
+					return true;
+				case "channels" when request.HttpMethod == "GET":
+					var channels = await _helixApiService.SearchChannels(request.QueryString["query"]).ConfigureAwait(false);
+
+					response.ContentEncoding = Encoding.UTF8;
+					response.ContentType = "application/json";
+					await JsonSerializer
+						.SerializeAsync(response.OutputStream, channels != null
+							? channels.Value.Data.Select(channelData => new TwitchChannelQueryData(channelData))
+								.OrderBy(x => x.DisplayName.Length)
+								.ThenBy(x => x.DisplayName)
+								.ToList()
+							: new List<TwitchChannelQueryData>())
+						.ConfigureAwait(false);
 
 					return true;
 				default:
