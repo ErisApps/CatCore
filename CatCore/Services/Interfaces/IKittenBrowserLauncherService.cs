@@ -2,6 +2,6 @@
 {
 	internal interface IKittenBrowserLauncherService
 	{
-		void Launch(string uri);
+		void LaunchWebPortal();
 	}
 }

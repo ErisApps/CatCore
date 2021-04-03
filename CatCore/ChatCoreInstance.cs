@@ -116,10 +116,18 @@ namespace CatCore
 			_container.Register<TwitchService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 
 			// Spin up internal web api service
-			_container.Resolve<IKittenApiService>();
+			if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchWebAppOnStartup)
+			{
+				LaunchWebPortal();
+			}
 		}
 
 		public TwitchService TwitchService => _container.Resolve<TwitchService>();
+
+		public void LaunchWebPortal()
+		{
+			_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
+		}
 
 #if DEBUG
 		internal Container? Container => _container;
