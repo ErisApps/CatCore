@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>ChatCore Settings</title>
+	<title>CatCore Settings</title>
 	<!--Import Google Icon Font-->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!-- Compiled and minified CSS -->
@@ -115,7 +115,7 @@
 					<div class="row">
 						<div class="switch">
 							<label>
-								<input id="ParseBTTVEmotes" type="checkbox">
+								<input id="ParseBttvEmotes" type="checkbox">
 								<span class="lever"></span>
 								Parse BTTV Emotes
 							</label>
@@ -125,7 +125,7 @@
 					<div class="row">
 						<div class="switch">
 							<label>
-								<input id="ParseFFZEmotes" type="checkbox">
+								<input id="ParseFfzEmotes" type="checkbox">
 								<span class="lever"></span>
 								Parse FFZ Emotes
 							</label>
@@ -183,7 +183,7 @@
 					<div class="row">
 						<div class="switch">
 							<label>
-								<input id="LaunchWebAppOnStartup" type="checkbox">
+								<input id="LaunchWebAppOnStart" type="checkbox">
 								<span class="lever"></span>
 								Launch Web App On Startup
 							</label>
@@ -218,7 +218,70 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
+	// Loading state
+	async function OnLoad() {
+		await Promise.all([LoadTwitchState(), LoadGlobalState()]);
+	}
 
+	async function LoadTwitchState() {
+		const twitchLoadingSpinner = document.getElementById("twitch-loading-spinner");
+		twitchLoadingSpinner.style.visibility = "visible"
+
+		try {
+			const response = await fetch("/api/twitch/state");
+			const body = await response.json();
+
+			HandleStateResponse(body);
+		} catch (ex) {
+			M.toast({html: "Something went wrong while trying to load the Twitch settings."});
+			console.error(ex);
+		} finally {
+			twitchLoadingSpinner.style.visibility = "collapse"
+		}
+	}
+
+	async function LoadGlobalState() {
+		const globalLoadingSpinner = document.getElementById("global-loading-spinner");
+		globalLoadingSpinner.style.visibility = "visible"
+
+		try {
+			const response = await fetch("/api/global/state");
+			const body = await response.json();
+
+			console.log(JSON.stringify(body));
+
+			HandleStateResponse(body);
+		} catch (ex) {
+			M.toast({html: "Something went wrong while trying to load the global settings."});
+			console.error(ex);
+		} finally {
+			globalLoadingSpinner.style.visibility = "collapse"
+		}
+	}
+
+	function HandleStateResponse(state) {
+		const keys = Object.keys(state);
+		for (const key of keys) {
+			const element = document.getElementById(key);
+
+			if (element === null) {
+				continue;
+			}
+
+			if (element.tagName.toLowerCase() === "input") {
+				switch (element.type) {
+					case "checkbox":
+						element.checked = state[key];
+						break;
+					case "text":
+						element.value = state[key];
+						break;
+				}
+			}
+		}
+	}
+
+	OnLoad();
 </script>
 </body>
 </html>
