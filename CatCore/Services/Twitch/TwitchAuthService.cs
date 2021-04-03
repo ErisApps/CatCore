@@ -66,7 +66,7 @@ namespace CatCore.Services.Twitch
 			{
 				var validateAccessToken = await ValidateAccessToken().ConfigureAwait(false);
 				_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", AccessToken != null, RefreshToken != null);
-				if (validateAccessToken != null && ValidUntil > DateTimeOffset.Now.AddMinutes(5))
+				if (validateAccessToken != null && ValidUntil < DateTimeOffset.Now.AddMinutes(5))
 				{
 					await RefreshTokens().ConfigureAwait(false);
 				}
