@@ -32,7 +32,7 @@ namespace CatCore.Services
 		public string ServerUri => $"http://localhost:{WEB_APP_PORT}/";
 
 		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService,
-			ITwitchHelixApiService helixApiService,	Version libraryVersion)
+			ITwitchHelixApiService helixApiService, Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
@@ -90,6 +90,10 @@ namespace CatCore.Services
 			{
 				var requestHandled = false;
 
+#if DEBUG
+				_logger.Debug("New incoming request {Method} {RequestUrl}", request.HttpMethod, request.Url.AbsoluteUri);
+#endif
+
 				if (request.Url.AbsolutePath.StartsWith("/api"))
 				{
 					requestHandled = await HandleApiRequest(request, response).ConfigureAwait(false);
@@ -111,6 +115,12 @@ namespace CatCore.Services
 
 					response.StatusCode = 404;
 				}
+#if DEBUG
+				else
+				{
+					_logger.Debug("Successfully handled {Method} {RequestUrl}", request.HttpMethod, request.Url.AbsoluteUri);
+				}
+#endif
 			}
 			catch (Exception e)
 			{
@@ -185,6 +195,7 @@ namespace CatCore.Services
 							twitchConfig.OwnChannelEnabled = twitchStateRequestDto.SelfEnabled;
 							twitchConfig.AdditionalChannelsData = twitchStateRequestDto.AdditionalChannelsData;
 						}
+
 						twitchConfig.ParseBttvEmotes = twitchStateRequestDto.ParseBttvEmotes;
 						twitchConfig.ParseFfzEmotes = twitchStateRequestDto.ParseFfzEmotes;
 						twitchConfig.ParseTwitchEmotes = twitchStateRequestDto.ParseTwitchEmotes;
