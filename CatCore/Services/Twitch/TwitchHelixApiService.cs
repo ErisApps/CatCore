@@ -39,6 +39,7 @@ namespace CatCore.Services.Twitch
 				.HandleResult<HttpResponseMessage>(resp => resp.StatusCode == HttpStatusCode.Unauthorized)
 				.RetryAsync(1, async (response, retryAttempt, context) =>
 				{
+					_logger.Information("Attempting re-auth");
 					await twitchAuthService.RefreshTokens().ConfigureAwait(false);
 				});
 
@@ -139,6 +140,8 @@ namespace CatCore.Services.Twitch
 			{
 				throw new ArgumentNullException(nameof(url));
 			}
+
+			_logger.Verbose("Invoking Helix endpoint GET {Url}", url);
 #endif
 
 			using var httpResponseMessage = await _combinedHelixPolicy
@@ -163,6 +166,8 @@ namespace CatCore.Services.Twitch
 			{
 				throw new ArgumentNullException(nameof(body));
 			}
+
+			_logger.Verbose("Invoking Helix endpoint POST {Url}", url);
 #endif
 
 			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
