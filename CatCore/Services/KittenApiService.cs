@@ -21,6 +21,7 @@ namespace CatCore.Services
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
+		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly Version _libraryVersion;
 
 		private HttpListener? _listener;
@@ -28,11 +29,13 @@ namespace CatCore.Services
 
 		public string ServerUri => $"http://localhost:{WEB_APP_PORT}/";
 
-		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, Version libraryVersion)
+		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService,
+			Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
 			_twitchAuthService = twitchAuthService;
+			_twitchChannelManagementService = twitchChannelManagementService;
 			_libraryVersion = libraryVersion;
 
 			logger.Information("Nyaa~~");
@@ -157,6 +160,16 @@ namespace CatCore.Services
 					await _twitchAuthService.RevokeTokens().ConfigureAwait(false);
 
 					response.Redirect(request.Url.GetLeftPart(UriPartial.Authority));
+
+					return true;
+				case "state" when request.HttpMethod == "GET":
+					var userInfos = await _twitchChannelManagementService.GetAllChannelsEnriched().ConfigureAwait(false);
+
+					response.ContentEncoding = Encoding.UTF8;
+					response.ContentType = "application/json";
+					await JsonSerializer
+						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.IsValid, _twitchAuthService.LoggedInUser, userInfos, _settingsService.Config.TwitchConfig))
+						.ConfigureAwait(false);
 
 					return true;
 				default:
