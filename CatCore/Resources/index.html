@@ -231,8 +231,45 @@
 
 <script>
 	let twitchChannelData;
+	let additionalTwitchChannelsSuggestionsData;
+	let additionalTwitchChannelsAutocompleteInstance;
 
 	// Helper methods
+	function debounce(func, timeout) {
+		let timer;
+		return (...args) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				func.apply(this, args);
+			}, timeout);
+		};
+	}
+
+	const requestTwitchChannelSuggestions = debounce(async () => {
+		const currentInput = additionalTwitchChannelsAutocompleteInstance.el.value;
+		if (currentInput.length < 3) {
+			additionalTwitchChannelsAutocompleteInstance.updateData({});
+			return;
+		}
+
+		if (twitchChannelData.length >= 8) {
+			M.toast({html: "You can add up to 7 channels, other than your own.</br>Please remove an existing one if you want to add a new one.", displayLength: 6000})
+			additionalTwitchChannelsAutocompleteInstance.updateData({});
+			return;
+		}
+
+		try {
+			const existingChannelIds = twitchChannelData.map(ch => ch.ChannelId);
+			const response = await fetch(`/api/twitch/channels?query=${currentInput}`);
+			additionalTwitchChannelsSuggestionsData = (await response.json()).filter(ch => !existingChannelIds.includes(ch.ChannelId));
+
+			additionalTwitchChannelsAutocompleteInstance.updateData(additionalTwitchChannelsSuggestionsData.reduce((a, x) => ({...a, [x.DisplayName]: x.ThumbnailUrl}), {}));
+			additionalTwitchChannelsAutocompleteInstance.open();
+		} catch (ex) {
+			console.error(ex);
+		}
+	}, 650);
+
 	function GenerateAdditionalTwitchChannel(channel) {
 		return `<li id="TwitchChannel-${channel.ChannelId}" class="collection-item avatar additionalchannel">
 						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle">
@@ -247,6 +284,21 @@
 	// Loading state
 	async function OnLoad() {
 		await Promise.all([LoadTwitchState(), LoadGlobalState()]);
+
+		let twitchChannelsAutocomplete = document.getElementById("additionalchannel-input");
+		additionalTwitchChannelsAutocompleteInstance = M.Autocomplete.init(twitchChannelsAutocomplete, {
+			data: {},
+			minLength: 3,
+			onAutocomplete: (displayName) => {
+				const channelToAdd = additionalTwitchChannelsSuggestionsData.find(ch => ch.DisplayName === displayName);
+				twitchChannelData.push(channelToAdd);
+				document.getElementById("twitch-channels").innerHTML += GenerateAdditionalTwitchChannel(channelToAdd);
+
+				additionalTwitchChannelsAutocompleteInstance.el.value = "";
+			}
+		});
+
+		additionalTwitchChannelsAutocompleteInstance.el.addEventListener('keyup', requestTwitchChannelSuggestions);
 	}
 
 	async function LoadTwitchState() {
