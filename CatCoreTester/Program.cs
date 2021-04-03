@@ -40,7 +40,7 @@ namespace CatCoreTester
 			async Task CheckTokenValidity()
 			{
 				var validationResponse = await twitchAuthService.ValidateAccessToken().ConfigureAwait(false);
-				Console.WriteLine(validationResponse != null ? $"Token valid until {DateTimeOffset.Now.AddSeconds(validationResponse.Value.ExpiresIn)}" : "Token has expired sadly...  D:");
+				Console.WriteLine(validationResponse != null ? $"Token valid until {validationResponse.Value.ExpiresIn}" : "Token has expired sadly...  D:");
 				Console.WriteLine();
 			}
 
