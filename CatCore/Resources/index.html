@@ -48,6 +48,10 @@
 			background-color: #6441A4;
 		}
 
+		.collection .collection-item.avatar {
+			min-height: 0 !important;
+		}
+
 		.global-spinner-color {
 			border-color: #757575;
 		}
@@ -172,6 +176,7 @@
 				<div class="card-content grey darken-1 white-text">
 					<span class="card-title">Global settings</span>
 				</div>
+
 				<div class="card-content" style="position: relative;">
 					<div id="global-loading-spinner" class="spinner-wrapper">
 						<div class="preloader-wrapper big active">
@@ -218,6 +223,7 @@
 			</div>
 		</div>
 	</div>
+
 	<div class="row center-align">
 		<button id="saveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
 			<i class="material-icons right">send</i>
