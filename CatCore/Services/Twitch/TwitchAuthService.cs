@@ -135,6 +135,7 @@ namespace CatCore.Services.Twitch
 				AccessToken = null;
 				RefreshToken = null;
 				ValidUntil = null;
+				LoggedInUser = null;
 
 				return null;
 			}
@@ -173,6 +174,7 @@ namespace CatCore.Services.Twitch
 				AccessToken = null;
 				RefreshToken = null;
 				ValidUntil = null;
+				LoggedInUser = null!;
 
 				return false;
 			}
@@ -196,6 +198,7 @@ namespace CatCore.Services.Twitch
 			AccessToken = null;
 			RefreshToken = null;
 			ValidUntil = null;
+			LoggedInUser = null!;
 
 			Store();
 
