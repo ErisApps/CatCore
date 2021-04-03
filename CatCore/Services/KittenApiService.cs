@@ -4,7 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using CatCore.Models.Api.Requests;
+using CatCore.Models.Api.Responses;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -158,6 +161,12 @@ namespace CatCore.Services
 		{
 			switch (request.Url.Segments.ElementAtOrDefault(3))
 			{
+				case "state" when request.HttpMethod == "GET":
+					response.ContentEncoding = Encoding.UTF8;
+					response.ContentType = "application/json";
+					await JsonSerializer.SerializeAsync(response.OutputStream, new GlobalStateResponseDto(_settingsService.Config.GlobalConfig)).ConfigureAwait(false);
+
+					return true;
 				default:
 					return false;
 			}
