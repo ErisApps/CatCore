@@ -109,6 +109,18 @@
 						<span>You have to be logged in on Twitch first before you can manage the channels</span>
 					</div>
 
+					<div id="twitch-channels-container" class="row hide">
+						<ul id="twitch-channels" class="collection">
+							<!-- Will be filled in with /api/twitch/state endpoint data -->
+						</ul>
+
+						<div class="input-field">
+							<i class="material-icons prefix">person_search</i>
+							<input type="text" id="additionalchannel-input" class="autocomplete" onautocomplete="">
+							<label for="additionalchannel-input">Add additional channel</label>
+						</div>
+					</div>
+
 					<div class="row">
 						<p class="caption">Emote settings</p>
 					</div>
@@ -157,7 +169,7 @@
 
 		<div class="col s4 m6">
 			<div class="card">
-				<div class="card-content grey darken-1  white-text">
+				<div class="card-content grey darken-1 white-text">
 					<span class="card-title">Global settings</span>
 				</div>
 				<div class="card-content" style="position: relative;">
@@ -218,6 +230,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
+	let twitchChannelData;
+
+	// Helper methods
+	function GenerateAdditionalTwitchChannel(channel) {
+		return `<li id="TwitchChannel-${channel.ChannelId}" class="collection-item avatar additionalchannel">
+						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle">
+						<span class="title">${channel.DisplayName}</span>
+						<p>${channel.LoginName}</p>
+						<a class="secondary-content valign-wrapper" style="cursor: pointer">
+							<i class="material-icons">delete</i>
+						</a>
+					</li>`;
+	}
+
 	// Loading state
 	async function OnLoad() {
 		await Promise.all([LoadTwitchState(), LoadGlobalState()]);
@@ -227,6 +253,23 @@
 		const twitchLoadingSpinner = document.getElementById("twitch-loading-spinner");
 		twitchLoadingSpinner.style.visibility = "visible"
 
+		function GenerateOwnTwitchChannel(channel, isEnabled) {
+			return `<li class="collection-item avatar">
+						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle">
+						<span class="title">${channel.DisplayName} (you)</span>
+						<p>${channel.LoginName}</p>
+						<a class="secondary-content valign-wrapper">
+							<div class="switch">
+								<label>
+								Active
+								<input id="SelfEnabled" type="checkbox" ${isEnabled ? "checked" : ""}>
+								<span class="lever" style="margin-right: 0"></span>
+								</label>
+							</div>
+						</a>
+					</li>`;
+		}
+
 		try {
 			const response = await fetch("/api/twitch/state");
 			const body = await response.json();
@@ -234,10 +277,28 @@
 			if (body["LoggedIn"] === true) {
 				document.getElementById("twitch-login-button").classList.add("hide");
 				document.getElementById("twitch-logout-button").classList.remove("hide");
+
+				document.getElementById("twitch-channels-container-notloggedin").classList.add("hide")
+				document.getElementById("twitch-channels-container").classList.remove("hide")
 			} else {
 				document.getElementById("twitch-login-button").classList.remove("hide");
 				document.getElementById("twitch-logout-button").classList.add("hide");
+
+				document.getElementById("twitch-channels-container-notloggedin").classList.remove("hide")
+				document.getElementById("twitch-channels-container").classList.add("hide")
 			}
+
+			let twitchChannelsHtml = "";
+			twitchChannelData = body["ChannelData"];
+			for (const channel of twitchChannelData) {
+				if (channel["IsSelf"] === true) {
+					twitchChannelsHtml += GenerateOwnTwitchChannel(channel, body["OwnChannelEnabled"]);
+				} else {
+					twitchChannelsHtml += GenerateAdditionalTwitchChannel(channel);
+				}
+			}
+
+			document.getElementById("twitch-channels").innerHTML = twitchChannelsHtml;
 
 			HandleStateResponse(body);
 		} catch (ex) {
