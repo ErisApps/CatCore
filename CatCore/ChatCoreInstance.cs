@@ -66,7 +66,7 @@ namespace CatCore
 				.MinimumLevel.Verbose()
 				.Enrich.FromLogContext()
 #if DEBUG
-				.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}",
+				.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3} {SourceContext:l}] {Message:lj}{NewLine}{Exception}",
 					theme: Serilog.Sinks.SystemConsole.Themes.SystemConsoleTheme.Colored)
 #endif
 				.WriteTo.Conditional(_ => OnLogReceived != null, writeTo => writeTo.Actionable(evt =>
