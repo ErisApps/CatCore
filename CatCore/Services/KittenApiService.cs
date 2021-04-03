@@ -23,6 +23,8 @@ namespace CatCore.Services
 		private HttpListener? _listener;
 		private string? _webSitePage;
 
+		public string ServerUri => $"http://localhost:{WEB_APP_PORT}/";
+
 		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, Version libraryVersion)
 		{
 			_logger = logger;
@@ -45,7 +47,7 @@ namespace CatCore.Services
 
 			_logger.Information("Purring up internal webserver");
 
-			_listener = new HttpListener {Prefixes = {$"http://localhost:{WEB_APP_PORT}/"}};
+			_listener = new HttpListener {Prefixes = {ServerUri}};
 			_listener.Start();
 
 			await Task.Run(async () =>
@@ -120,7 +122,7 @@ namespace CatCore.Services
 			switch (request.Url.Segments.ElementAtOrDefault(3))
 			{
 				case "login" when request.HttpMethod == "GET":
-					response.Redirect(_twitchAuthService.AuthorizationUrl("http://localhost:8338/api/twitch/authcode_callback"));
+					response.Redirect(_twitchAuthService.AuthorizationUrl($"{request.Url.GetLeftPart(UriPartial.Authority)}/api/twitch/authcode_callback"));
 					return true;
 				case "authcode_callback" when request.HttpMethod == "GET":
 					string? code = null;
