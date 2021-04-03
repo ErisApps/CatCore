@@ -248,8 +248,6 @@
 			const response = await fetch("/api/global/state");
 			const body = await response.json();
 
-			console.log(JSON.stringify(body));
-
 			HandleStateResponse(body);
 		} catch (ex) {
 			M.toast({html: "Something went wrong while trying to load the global settings."});
