@@ -167,6 +167,16 @@ namespace CatCore.Services
 					await JsonSerializer.SerializeAsync(response.OutputStream, new GlobalStateResponseDto(_settingsService.Config.GlobalConfig)).ConfigureAwait(false);
 
 					return true;
+				case "state" when request.HttpMethod == "POST":
+					var globalStateRequestDto = await JsonSerializer.DeserializeAsync<GlobalStateRequestDto>(request.InputStream).ConfigureAwait(false);
+					using (_settingsService.ChangeTransaction())
+					{
+						var globalConfig = _settingsService.Config.GlobalConfig;
+						globalConfig.LaunchWebAppOnStartup = globalStateRequestDto.LaunchWebAppOnStart;
+						globalConfig.HandleEmojis = globalStateRequestDto.ParseEmojis;
+					}
+
+					return true;
 				default:
 					return false;
 			}
