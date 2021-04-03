@@ -116,6 +116,8 @@ namespace CatCore.Services
 			{
 				case "twitch/":
 					return HandleTwitchApiRequests(request, response);
+				case "global/":
+					return HandleGlobalApiRequest(request, response);
 				default:
 					return Task.FromResult(false);
 			}
@@ -147,6 +149,15 @@ namespace CatCore.Services
 					response.Redirect(request.Url.GetLeftPart(UriPartial.Authority));
 
 					return true;
+				default:
+					return false;
+			}
+		}
+
+		private async Task<bool> HandleGlobalApiRequest(HttpListenerRequest request, HttpListenerResponse response)
+		{
+			switch (request.Url.Segments.ElementAtOrDefault(3))
+			{
 				default:
 					return false;
 			}
