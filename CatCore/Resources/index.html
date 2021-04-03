@@ -44,119 +44,117 @@
 </nav>
 
 <div class="container">
-	<form id="settings-form" name="settings-form">
-		<div class="row">
-			<div class="col s4 m6">
-				<div class="card">
-					<div class="card-content twitch-header white-text">
-						<span class="card-title">Twitch Settings</span>
-					</div>
-					<div class="card-content">
-						<div class="row">
-							<p class="caption">Login</p>
-						</div>
-						<div class="row">
-							<a class="waves-effect waves-light btn twitch-button"
-							   href="/api/twitch/login">
-								Login on Twitch
-							</a>
-						</div>
-
-						<div class="row">
-							<p class="caption">Channels <a class="btn-floating pulse cyan tooltipped" data-position="right"><i class="material-icons">info_outline</i></a></p>
-						</div>
-						<div class="row">
-							<div class="chips">
-							</div>
-						</div>
-
-						<div class="row">
-							<p class="caption">Emote settings</p>
-						</div>
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="ParseBTTVEmotes" name="ParseBTTVEmotes" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Parse BTTV Emotes
-								</label>
-							</div>
-						</div>
-
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="ParseFFZEmotes" name="ParseFFZEmotes" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Parse FFZ Emotes
-								</label>
-							</div>
-						</div>
-
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="ParseTwitchEmotes" name="ParseTwitchEmotes" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Parse Twitch Emotes
-								</label>
-							</div>
-						</div>
-
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="ParseCheermotes" name="ParseCheermotes" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Parse Cheermotes
-								</label>
-							</div>
-						</div>
-					</div>
+	<div class="row">
+		<div class="col s4 m6">
+			<div class="card">
+				<div class="card-content twitch-header white-text">
+					<span class="card-title">Twitch Settings</span>
 				</div>
-			</div>
-
-			<div class="col s4 m6">
-				<div class="card">
-					<div class="card-content grey darken-1  white-text">
-						<span class="card-title">Global settings</span>
+				<div class="card-content">
+					<div class="row">
+						<p class="caption">Login</p>
 					</div>
-					<div class="card-content">
-						<div class="row">
-							<p class="caption">Web app</p>
-						</div>
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="LaunchWebAppOnStartup" name="LaunchWebAppOnStartup" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Launch Web App On Startup
-								</label>
-							</div>
-						</div>
+					<div class="row">
+						<a class="waves-effect waves-light btn twitch-button"
+						   href="/api/twitch/login">
+							Login on Twitch
+						</a>
+					</div>
 
-						<div class="row">
-							<p class="caption">Global settings</p>
+					<div class="row">
+						<p class="caption">Channels <a class="btn-floating pulse cyan tooltipped" data-position="right"><i class="material-icons">info_outline</i></a></p>
+					</div>
+					<div class="row">
+						<div class="chips">
 						</div>
-						<div class="row">
-							<div class="switch">
-								<label>
-									<input id="ParseEmojis" name="ParseEmojis" type="checkbox" form="settings-form">
-									<span class="lever"></span>
-									Parse Emojis
-								</label>
-							</div>
+					</div>
+
+					<div class="row">
+						<p class="caption">Emote settings</p>
+					</div>
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="ParseBTTVEmotes" type="checkbox">
+								<span class="lever"></span>
+								Parse BTTV Emotes
+							</label>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="ParseFFZEmotes" type="checkbox">
+								<span class="lever"></span>
+								Parse FFZ Emotes
+							</label>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="ParseTwitchEmotes" type="checkbox">
+								<span class="lever"></span>
+								Parse Twitch Emotes
+							</label>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="ParseCheermotes" type="checkbox">
+								<span class="lever"></span>
+								Parse Cheermotes
+							</label>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="row center-align">
-			<button id="saveButton" class="btn waves-effect waves-light" onclick="saveSettings(event)">Save settings
-				<i class="material-icons right">send</i>
-			</button>
+
+		<div class="col s4 m6">
+			<div class="card">
+				<div class="card-content grey darken-1  white-text">
+					<span class="card-title">Global settings</span>
+				</div>
+				<div class="card-content">
+					<div class="row">
+						<p class="caption">Web app</p>
+					</div>
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="LaunchWebAppOnStartup" type="checkbox">
+								<span class="lever"></span>
+								Launch Web App On Startup
+							</label>
+						</div>
+					</div>
+
+					<div class="row">
+						<p class="caption">Global settings</p>
+					</div>
+					<div class="row">
+						<div class="switch">
+							<label>
+								<input id="ParseEmojis" type="checkbox">
+								<span class="lever"></span>
+								Parse Emojis
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-	</form>
+	</div>
+	<div class="row center-align">
+		<button id="saveButton" class="btn waves-effect waves-light" onclick="saveSettings(event)">Save settings
+			<i class="material-icons right">send</i>
+		</button>
+	</div>
 </div>
 
 <!-- Compiled and minified JavaScript -->
