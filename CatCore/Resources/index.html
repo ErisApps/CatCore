@@ -20,8 +20,28 @@
 			padding-right: 16px;
 		}
 
+		.spinner-wrapper {
+			position: absolute;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 10;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			background-color: rgba(255, 255, 255, 0.8);
+		}
+
 		.twitch-header {
 			background-color: #6441A4;
+		}
+
+		.twitch-spinner-color {
+			border-color: #6441A4;
 		}
 
 		.twitch-button {
@@ -30,6 +50,10 @@
 
 		a.btn-floating.pulse.cyan.tooltipped {
 			margin-left: 10px;
+		}
+
+		.global-spinner-color {
+			border-color: #757575;
 		}
 	</style>
 </head>
@@ -44,13 +68,29 @@
 </nav>
 
 <div class="container">
-	<div class="row">
+	<div class="row" style="margin-top: 1rem">
 		<div class="col s4 m6">
 			<div class="card">
 				<div class="card-content twitch-header white-text">
 					<span class="card-title">Twitch Settings</span>
 				</div>
-				<div class="card-content">
+				<div class="card-content" style="position:relative;">
+					<div id="twitch-loading-spinner" class="spinner-wrapper">
+						<div class="preloader-wrapper big active">
+							<div class="spinner-layer twitch-spinner-color">
+								<div class="circle-clipper left">
+									<div class="circle"></div>
+								</div>
+								<div class="gap-patch">
+									<div class="circle"></div>
+								</div>
+								<div class="circle-clipper right">
+									<div class="circle"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					<div class="row">
 						<p class="caption">Login</p>
 					</div>
@@ -120,7 +160,23 @@
 				<div class="card-content grey darken-1  white-text">
 					<span class="card-title">Global settings</span>
 				</div>
-				<div class="card-content">
+				<div class="card-content" style="position: relative;">
+					<div id="global-loading-spinner" class="spinner-wrapper">
+						<div class="preloader-wrapper big active">
+							<div class="spinner-layer global-spinner-color">
+								<div class="circle-clipper left">
+									<div class="circle"></div>
+								</div>
+								<div class="gap-patch">
+									<div class="circle"></div>
+								</div>
+								<div class="circle-clipper right">
+									<div class="circle"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					<div class="row">
 						<p class="caption">Web app</p>
 					</div>
