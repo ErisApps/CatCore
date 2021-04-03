@@ -98,7 +98,7 @@ namespace CatCore.Services
 				{
 					requestHandled = await HandleApiRequest(request, response).ConfigureAwait(false);
 				}
-				else if (request.Url.AbsolutePath.StartsWith("/") && request.HttpMethod == "GET")
+				else if (request.Url.AbsolutePath == "/" && request.HttpMethod == "GET")
 				{
 					var data = Encoding.UTF8.GetBytes(_webSitePage!);
 					response.ContentEncoding = Encoding.UTF8;
