@@ -34,7 +34,6 @@ namespace CatCoreTester
             Console.WriteLine();
 
 #if DEBUG
-			var twitchCredentialsProvider = chatCoreInstance.Container!.Resolve<ITwitchCredentialsProvider>();
 			var twitchAuthService = chatCoreInstance.Container!.Resolve<ITwitchAuthService>();
 			var twitchHelixApiService = chatCoreInstance.Container!.Resolve<ITwitchHelixApiService>();
 
@@ -48,8 +47,8 @@ namespace CatCoreTester
 			Console.WriteLine("Checking current access token status.");
 			await CheckTokenValidity().ConfigureAwait(false);
 
-			var oldAccessToken = twitchCredentialsProvider.Credentials.AccessToken;
-			var oldRefreshToken = twitchCredentialsProvider.Credentials.RefreshToken;
+			var oldAccessToken = twitchAuthService.AccessToken;
+			//var oldRefreshToken = twitchAuthService.RefreshToken;
 
 			Console.WriteLine("Initiating token refresh... Please stand by.");
 			var tokenRefreshSuccess = await twitchAuthService.RefreshTokens().ConfigureAwait(false);
@@ -63,6 +62,8 @@ namespace CatCoreTester
 			var userInfoResponse = await twitchHelixApiService.FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
 
 			Console.WriteLine("Creating stream marker through Helix without a description. (Will fail when stream on the requested channel is offline.)");
+
+			/*Console.WriteLine("Creating stream marker through Helix without a description. (Will fail when stream on the requested channel is offline.)");
 			var streamMarkerResponse = await twitchHelixApiService.CreateStreamMarker(userInfoResponse!.Value.Data[0].UserId).ConfigureAwait(false);
 			Console.WriteLine();
 
@@ -86,7 +87,7 @@ namespace CatCoreTester
 			Console.WriteLine("Checking old access token validity...");
 			twitchCredentialsProvider.Credentials.AccessToken = oldAccessToken;
 			twitchCredentialsProvider.Credentials.RefreshToken = oldRefreshToken;
-			await CheckTokenValidity().ConfigureAwait(false);
+			await CheckTokenValidity().ConfigureAwait(false);*/
 #endif
 
 			await Task.Delay(-1).ConfigureAwait(false);

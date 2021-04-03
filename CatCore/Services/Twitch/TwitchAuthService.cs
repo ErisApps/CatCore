@@ -3,14 +3,17 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using CatCore.Models.Credentials;
 using CatCore.Models.Twitch.OAuth;
+using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchAuthService : ITwitchAuthService
+	internal class TwitchAuthService : KittenCredentialsProvider<TwitchCredentials>, ITwitchAuthService
 	{
+		private const string SERVICE_TYPE = nameof(Twitch);
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
 
 		private readonly string[] _twitchAuthorizationScope =
@@ -19,32 +22,36 @@ namespace CatCore.Services.Twitch
 		};
 
 		private readonly ILogger _logger;
-		private readonly ITwitchCredentialsProvider _credentialsProvider;
 		private readonly ConstantsBase _constants;
 		private readonly HttpClient _authClient;
 
-		private string? AccessToken
+		protected override string ServiceType => SERVICE_TYPE;
+
+		private DateTimeOffset? ValidUntil
 		{
-			get => _credentialsProvider.Credentials.AccessToken;
-			set => _credentialsProvider.Credentials.AccessToken = value;
+			get => Credentials.ValidUntil;
+			set => Credentials.ValidUntil = value;
 		}
 
 		private string? RefreshToken
 		{
-			get => _credentialsProvider.Credentials.RefreshToken;
-			set => _credentialsProvider.Credentials.RefreshToken = value;
+			get => Credentials.RefreshToken;
+			set => Credentials.RefreshToken = value;
 		}
 
-		private DateTimeOffset? ValidUntil
+		public string? AccessToken
 		{
-			get => _credentialsProvider.Credentials.ValidUntil;
-			set => _credentialsProvider.Credentials.ValidUntil = value;
+			get => Credentials.AccessToken;
+			private set => Credentials.AccessToken = value;
 		}
 
-		public TwitchAuthService(ILogger logger, ITwitchCredentialsProvider credentialsProvider, ConstantsBase constants, Version libraryVersion)
+		public bool IsValid => !string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken) && ValidUntil > DateTimeOffset.Now;
+
+		public ValidationResponse? LoggedInUser { get; private set; }
+
+		public TwitchAuthService(ILogger logger, IKittenPathProvider kittenPathProvider, ConstantsBase constants, Version libraryVersion) : base(logger, kittenPathProvider)
 		{
 			_logger = logger;
-			_credentialsProvider = credentialsProvider;
 			_constants = constants;
 
 			_authClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
@@ -106,7 +113,7 @@ namespace CatCore.Services.Twitch
 			RefreshToken = authorizationResponse.Value.RefreshToken;
 			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
 
-			_credentialsProvider.Store();
+			Store();
 
 			return authorizationResponse;
 		}
@@ -122,13 +129,12 @@ namespace CatCore.Services.Twitch
 			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 			var responseMessage = await _authClient.SendAsync(requestMessage).ConfigureAwait(false);
 
+			using var _ = ChangeTransaction();
 			if (!responseMessage.IsSuccessStatusCode)
 			{
 				AccessToken = null;
 				RefreshToken = null;
 				ValidUntil = null;
-
-				_credentialsProvider.Store();
 
 				return null;
 			}
@@ -158,7 +164,7 @@ namespace CatCore.Services.Twitch
 
 			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
 
-			using var transaction = _credentialsProvider.ChangeTransaction();
+			using var transaction = ChangeTransaction();
 			if (authorizationResponse == null)
 			{
 				AccessToken = null;
@@ -172,7 +178,7 @@ namespace CatCore.Services.Twitch
 			RefreshToken = authorizationResponse.Value.RefreshToken;
 			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
 
-			return true;
+			return await ValidateAccessToken().ConfigureAwait(false) != null;
 		}
 
 		public async Task<bool> RevokeTokens()
@@ -188,7 +194,7 @@ namespace CatCore.Services.Twitch
 			RefreshToken = null;
 			ValidUntil = null;
 
-			_credentialsProvider.Store();
+			Store();
 
 			return responseMessage.IsSuccessStatusCode;
 		}
