@@ -172,6 +172,23 @@ namespace CatCore.Services
 						.ConfigureAwait(false);
 
 					return true;
+				case "state" when request.HttpMethod == "POST":
+					var twitchStateRequestDto = await JsonSerializer.DeserializeAsync<TwitchStateRequestDto>(request.InputStream).ConfigureAwait(false);
+					using (_settingsService.ChangeTransaction())
+					{
+						var twitchConfig = _settingsService.Config.TwitchConfig;
+						if (_twitchAuthService.IsValid)
+						{
+							twitchConfig.OwnChannelEnabled = twitchStateRequestDto.SelfEnabled;
+							twitchConfig.AdditionalChannelsData = twitchStateRequestDto.AdditionalChannelsData;
+						}
+						twitchConfig.ParseBttvEmotes = twitchStateRequestDto.ParseBttvEmotes;
+						twitchConfig.ParseFfzEmotes = twitchStateRequestDto.ParseFfzEmotes;
+						twitchConfig.ParseTwitchEmotes = twitchStateRequestDto.ParseTwitchEmotes;
+						twitchConfig.ParseCheermotes = twitchStateRequestDto.ParseCheermotes;
+					}
+
+					return true;
 				default:
 					return false;
 			}
