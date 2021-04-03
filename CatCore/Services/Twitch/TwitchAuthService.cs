@@ -111,7 +111,7 @@ namespace CatCore.Services.Twitch
 
 			AccessToken = authorizationResponse.Value.AccessToken;
 			RefreshToken = authorizationResponse.Value.RefreshToken;
-			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
+			ValidUntil = authorizationResponse.Value.ExpiresIn;
 
 			Store();
 
@@ -139,7 +139,10 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			return await responseMessage.Content.ReadFromJsonAsync<ValidationResponse?>().ConfigureAwait(false);
+			LoggedInUser = await responseMessage.Content.ReadFromJsonAsync<ValidationResponse?>().ConfigureAwait(false);
+			ValidUntil = LoggedInUser?.ExpiresIn;
+
+			return LoggedInUser;
 		}
 
 		public async Task<bool> RefreshTokens()
@@ -176,7 +179,7 @@ namespace CatCore.Services.Twitch
 
 			AccessToken = authorizationResponse.Value.AccessToken;
 			RefreshToken = authorizationResponse.Value.RefreshToken;
-			ValidUntil = DateTimeOffset.Now.AddSeconds(authorizationResponse.Value.ExpiresIn);
+			ValidUntil = authorizationResponse.Value.ExpiresIn;
 
 			return await ValidateAccessToken().ConfigureAwait(false) != null;
 		}

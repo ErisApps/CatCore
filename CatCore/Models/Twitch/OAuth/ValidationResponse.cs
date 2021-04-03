@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace CatCore.Models.Twitch.OAuth
 {
@@ -17,16 +18,19 @@ namespace CatCore.Models.Twitch.OAuth
 		public string[] Scopes { get; }
 
 		[JsonPropertyName("expires_in")]
-		public int ExpiresIn { get; }
+		public int ExpiresInRaw { get; }
+
+		public DateTimeOffset ExpiresIn { get; }
 
 		[JsonConstructor]
-		public ValidationResponse(string clientId, string loginName, string userId, string[] scopes, int expiresIn)
+		public ValidationResponse(string clientId, string loginName, string userId, string[] scopes, int expiresInRaw)
 		{
 			ClientId = clientId;
 			LoginName = loginName;
 			UserId = userId;
 			Scopes = scopes;
-			ExpiresIn = expiresIn;
+			ExpiresInRaw = expiresInRaw;
+			ExpiresIn = DateTimeOffset.Now.AddSeconds(expiresInRaw);
 		}
 	}
 }
