@@ -21,8 +21,6 @@ namespace CatCore.Services
 
 		private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-		private readonly FileSystemWatcher _fileSystemWatcher;
-
 		public ConfigRoot Config { get; private set; } = null!;
 
 		public KittenSettingsService(ILogger logger, IKittenPathProvider pathProvider)
@@ -32,16 +30,6 @@ namespace CatCore.Services
 			_credentialsFilePath = Path.Combine(_pathProvider.DataPath, CONFIG_FILENAME);
 
 			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true};
-
-			_fileSystemWatcher = new FileSystemWatcher
-			{
-				Path = pathProvider.DataPath,
-				NotifyFilter = NotifyFilters.LastWrite,
-				Filter = CONFIG_FILENAME,
-				EnableRaisingEvents = true,
-				IncludeSubdirectories = false
-			};
-			_fileSystemWatcher.Changed += OnFileSystemChanged;
 		}
 
 		public void Initialize()
@@ -111,15 +99,6 @@ namespace CatCore.Services
 		public IDisposable ChangeTransaction()
 		{
 			return WeakActionToken.Create(this, provider => provider.Store());
-		}
-
-		private void OnFileSystemChanged(object sender, FileSystemEventArgs args)
-		{
-		}
-
-		~KittenSettingsService()
-		{
-			_fileSystemWatcher.Changed -= OnFileSystemChanged;
 		}
 	}
 }
