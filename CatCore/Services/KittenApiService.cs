@@ -50,7 +50,9 @@ namespace CatCore.Services
 			_listener = new HttpListener {Prefixes = {ServerUri}};
 			_listener.Start();
 
-			await Task.Run(async () =>
+#pragma warning disable 4014
+			Task.Run(async () =>
+#pragma warning restore 4014
 			{
 				while (true)
 				{
@@ -66,7 +68,9 @@ namespace CatCore.Services
 				}
 
 				// ReSharper disable once FunctionNeverReturns
-			}).ConfigureAwait(false);
+			});
+
+			_logger.Information("Internal webserver has been purred up");
 		}
 
 		private async Task HandleContext(HttpListenerContext ctx)
