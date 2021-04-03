@@ -17,7 +17,7 @@ namespace CatCore.Services
 
 		private readonly ILogger _logger;
 		private readonly IKittenPathProvider _pathProvider;
-		private readonly string _credentialsFilePath;
+		private readonly string _configFilePath;
 
 		private readonly JsonSerializerOptions _jsonSerializerOptions;
 
@@ -27,7 +27,7 @@ namespace CatCore.Services
 		{
 			_logger = logger;
 			_pathProvider = pathProvider;
-			_credentialsFilePath = Path.Combine(_pathProvider.DataPath, CONFIG_FILENAME);
+			_configFilePath = Path.Combine(_pathProvider.DataPath, CONFIG_FILENAME);
 
 			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true};
 		}
@@ -51,13 +51,13 @@ namespace CatCore.Services
 					Directory.CreateDirectory(_pathProvider.DataPath);
 				}
 
-				if (!File.Exists(_credentialsFilePath))
+				if (!File.Exists(_configFilePath))
 				{
 					Config = new ConfigRoot();
 					return;
 				}
 
-				var readAllText = File.ReadAllText(_credentialsFilePath);
+				var readAllText = File.ReadAllText(_configFilePath);
 				Config = JsonSerializer.Deserialize<ConfigRoot>(readAllText, _jsonSerializerOptions) ?? new ConfigRoot();
 			}
 			catch (Exception e)
@@ -84,7 +84,7 @@ namespace CatCore.Services
 					Directory.CreateDirectory(_pathProvider.DataPath);
 				}
 
-				File.WriteAllText(_credentialsFilePath, JsonSerializer.Serialize(Config, _jsonSerializerOptions));
+				File.WriteAllText(_configFilePath, JsonSerializer.Serialize(Config, _jsonSerializerOptions));
 			}
 			catch (Exception e)
 			{
