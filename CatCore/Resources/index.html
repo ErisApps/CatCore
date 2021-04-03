@@ -231,6 +231,14 @@
 			const response = await fetch("/api/twitch/state");
 			const body = await response.json();
 
+			if (body["LoggedIn"] === true) {
+				document.getElementById("twitch-login-button").classList.add("hide");
+				document.getElementById("twitch-logout-button").classList.remove("hide");
+			} else {
+				document.getElementById("twitch-login-button").classList.remove("hide");
+				document.getElementById("twitch-logout-button").classList.add("hide");
+			}
+
 			HandleStateResponse(body);
 		} catch (ex) {
 			M.toast({html: "Something went wrong while trying to load the Twitch settings."});
