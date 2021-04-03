@@ -153,6 +153,12 @@ namespace CatCore.Services
 					response.Redirect(request.Url.GetLeftPart(UriPartial.Authority));
 
 					return true;
+				case "logout" when request.HttpMethod == "GET":
+					await _twitchAuthService.RevokeTokens().ConfigureAwait(false);
+
+					response.Redirect(request.Url.GetLeftPart(UriPartial.Authority));
+
+					return true;
 				default:
 					return false;
 			}
