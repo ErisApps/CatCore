@@ -9,7 +9,7 @@ using Serilog;
 
 namespace CatCore.Services
 {
-	internal abstract class KittenCredentialsProvider<T> : IKittenCredentialsProvider<T> where T : class, ICredentials, new()
+	internal abstract class KittenCredentialsProvider<T> where T : class, ICredentials, new()
 	{
 		private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
 
@@ -25,7 +25,7 @@ namespace CatCore.Services
 
 		protected abstract string ServiceType { get; }
 
-		public T Credentials { get; private set; } = null!;
+		protected T Credentials { get; private set; } = null!;
 
 		protected KittenCredentialsProvider(ILogger logger, IKittenPathProvider pathProvider)
 		{
@@ -35,15 +35,43 @@ namespace CatCore.Services
 			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true};
 
 			_credentialsFilePath = Path.Combine(pathProvider.DataPath, CredentialsFilename);
-		}
 
-		public void Initialize()
-		{
+			// Initializing internally
 			Load();
 			Store();
 		}
 
-		public void Load()
+		protected void Store()
+		{
+			try
+			{
+				_locker.Wait();
+
+				_logger.Information("Storing credentials for service {ServiceType}", ServiceType);
+
+				if (!Directory.Exists(_pathProvider.DataPath))
+				{
+					Directory.CreateDirectory(_pathProvider.DataPath);
+				}
+
+				File.WriteAllText(_credentialsFilePath, JsonSerializer.Serialize(Credentials, _jsonSerializerOptions));
+			}
+			catch (Exception e)
+			{
+				_logger.Error(e, "An error occurred while trying to store the config for service {ServiceType}", ServiceType);
+			}
+			finally
+			{
+				_locker.Release();
+			}
+		}
+
+		protected IDisposable ChangeTransaction()
+		{
+			return WeakActionToken.Create(this, provider => provider.Store());
+		}
+
+		private void Load()
 		{
 			try
 			{
@@ -74,36 +102,6 @@ namespace CatCore.Services
 			{
 				_locker.Release();
 			}
-		}
-
-		public void Store()
-		{
-			try
-			{
-				_locker.Wait();
-
-				_logger.Information("Storing credentials for service {ServiceType}", ServiceType);
-
-				if (!Directory.Exists(_pathProvider.DataPath))
-				{
-					Directory.CreateDirectory(_pathProvider.DataPath);
-				}
-
-				File.WriteAllText(_credentialsFilePath, JsonSerializer.Serialize(Credentials, _jsonSerializerOptions));
-			}
-			catch (Exception e)
-			{
-				_logger.Error(e, "An error occurred while trying to store the config for service {ServiceType}", ServiceType);
-			}
-			finally
-			{
-				_locker.Release();
-			}
-		}
-
-		public IDisposable ChangeTransaction()
-		{
-			return WeakActionToken.Create(this, provider => provider.Store());
 		}
 	}
 }

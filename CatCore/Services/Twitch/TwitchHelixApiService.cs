@@ -21,15 +21,17 @@ namespace CatCore.Services.Twitch
 		private const string TWITCH_HELIX_BASEURL = "https://api.twitch.tv/helix/";
 
 		private readonly ILogger _logger;
+		private readonly ITwitchAuthService _twitchAuthService;
 
 		private readonly HttpClient _helixClient;
 		private readonly AsyncPolicyWrap<HttpResponseMessage> _combinedHelixPolicy;
 
-		internal TwitchHelixApiService(ILogger logger, ITwitchCredentialsProvider credentialsProvider, ITwitchAuthService twitchAuthService, ConstantsBase constants, Version libraryVersion)
+		internal TwitchHelixApiService(ILogger logger, ITwitchAuthService twitchAuthService, ConstantsBase constants, Version libraryVersion)
 		{
 			_logger = logger;
+			_twitchAuthService = twitchAuthService;
 
-			_helixClient = new HttpClient(new TwitchHelixClientHandler(credentialsProvider)) {BaseAddress = new Uri(TWITCH_HELIX_BASEURL, UriKind.Absolute)};
+			_helixClient = new HttpClient(new TwitchHelixClientHandler(twitchAuthService)) {BaseAddress = new Uri(TWITCH_HELIX_BASEURL, UriKind.Absolute)};
 			_helixClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
 			_helixClient.DefaultRequestHeaders.TryAddWithoutValidation("Client-ID", constants.TwitchClientId);
 

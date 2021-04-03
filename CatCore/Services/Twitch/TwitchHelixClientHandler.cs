@@ -8,16 +8,16 @@ namespace CatCore.Services.Twitch
 {
 	internal class TwitchHelixClientHandler : HttpClientHandler
 	{
-		private readonly ITwitchCredentialsProvider _twitchAuthService;
+		private readonly ITwitchAuthService _twitchAuthService;
 
-		public TwitchHelixClientHandler(ITwitchCredentialsProvider twitchAuthService)
+		public TwitchHelixClientHandler(ITwitchAuthService twitchAuthService)
 		{
 			_twitchAuthService = twitchAuthService;
 		}
 
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
-			request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _twitchAuthService.Credentials.AccessToken);
+			request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _twitchAuthService.AccessToken);
 
 			return base.SendAsync(request, cancellationToken);
 		}
