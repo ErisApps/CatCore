@@ -219,7 +219,7 @@
 		</div>
 	</div>
 	<div class="row center-align">
-		<button id="saveButton" class="btn waves-effect waves-light" onclick="saveSettings(event)">Save settings
+		<button id="saveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
 			<i class="material-icons right">send</i>
 		</button>
 	</div>
@@ -411,6 +411,81 @@
 						element.value = state[key];
 						break;
 				}
+			}
+		}
+	}
+
+	// Saving state
+	async function SaveSettings(event) {
+		event.preventDefault();
+
+		// Disable save button to prevent concurrent stuffs
+		saveButtonElement.enabled = false;
+		saveButtonElement.classList.add("disabled");
+
+		try {
+			await Promise.all([SaveTwitchState(), SaveGlobalState()]);
+		} catch (ex) {
+			console.error(ex);
+		} finally {
+			saveButtonElement.classList.remove("disabled")
+			saveButtonElement.enabled = true;
+		}
+	}
+
+	async function SaveTwitchState() {
+		try {
+			await fetch('/api/twitch/state', {
+				method: 'POST',
+				body: JSON.stringify({
+					SelfEnabled: LookupCurrentValue("SelfEnabled"),
+					AdditionalChannelsData: twitchChannelData
+						.filter(x => !x.IsSelf)
+						.reduce((a, x) => ({...a, [x.ChannelId]: x.LoginName}), {}),
+					ParseBttvEmotes: LookupCurrentValue("ParseBttvEmotes"),
+					ParseFfzEmotes: LookupCurrentValue("ParseFfzEmotes"),
+					ParseTwitchEmotes: LookupCurrentValue("ParseTwitchEmotes"),
+					ParseCheermotes: LookupCurrentValue("ParseCheermotes"),
+				})
+			})
+
+			M.toast({html: "Twitch settings have been saved successfully."})
+		} catch (ex) {
+			M.toast({html: "Something went wrong while trying to save the Twitch settings. Make sure Beat Saber is still running."});
+			console.error(ex);
+		}
+	}
+
+	async function SaveGlobalState() {
+		try {
+			await fetch('/api/global/state', {
+				method: 'POST',
+				body: JSON.stringify({
+					LaunchWebAppOnStart: LookupCurrentValue("LaunchWebAppOnStart"),
+					ParseEmojis: LookupCurrentValue("ParseEmojis")
+				})
+			})
+
+			M.toast({html: "Global settings have been saved successfully."})
+		} catch (ex) {
+			M.toast({html: "Something went wrong while trying to save the global settings. Make sure Beat Saber is still running."});
+			console.error(ex);
+		}
+	}
+
+	function LookupCurrentValue(id) {
+		let element = document.getElementById(id);
+
+		if (element === null) {
+			return;
+		}
+
+		if (element.tagName.toLowerCase() === "input") {
+			switch (element.type) {
+				case "checkbox":
+					return element.checked;
+				case "text":
+					return element.value;
 			}
 		}
 	}
