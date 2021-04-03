@@ -147,6 +147,7 @@ namespace CatCore.Services
 					if (code != null)
 					{
 						await _twitchAuthService.GetTokensByAuthorizationCode(code, request.Url.GetLeftPart(UriPartial.Path)).ConfigureAwait(false);
+						await _twitchAuthService.ValidateAccessToken().ConfigureAwait(false);
 					}
 
 					response.Redirect(request.Url.GetLeftPart(UriPartial.Authority));
