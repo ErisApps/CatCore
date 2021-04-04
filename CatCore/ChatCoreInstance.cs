@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using CatCore.Helpers;
 using CatCore.Logging;
 using CatCore.Services;
 using CatCore.Services.Interfaces;
@@ -16,7 +18,7 @@ namespace CatCore
 {
 	public class ChatCoreInstance
 	{
-		private static readonly object _creationLock = new object();
+		private static readonly SemaphoreSlim _creationLocker = new SemaphoreSlim(1, 1);
 
 		private static ChatCoreInstance? _instance;
 
@@ -35,29 +37,27 @@ namespace CatCore
 
 		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
-			lock (_creationLock)
+			using var _ = Synchronization.Lock(_creationLocker);
+			if (_instance != null)
 			{
-				if (_instance != null)
-				{
-					if (logHandler != null)
-					{
-						_instance.OnLogReceived += logHandler;
-					}
-
-					return _instance;
-				}
-
-				_instance ??= new ChatCoreInstance();
 				if (logHandler != null)
 				{
 					_instance.OnLogReceived += logHandler;
 				}
 
-				_instance.CreateLogger();
-				_instance.CreateContainer();
-
 				return _instance;
 			}
+
+			_instance ??= new ChatCoreInstance();
+			if (logHandler != null)
+			{
+				_instance.OnLogReceived += logHandler;
+			}
+
+			_instance.CreateLogger();
+			_instance.CreateContainer();
+
+			return _instance;
 		}
 
 		private void CreateLogger()
