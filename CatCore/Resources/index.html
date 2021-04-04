@@ -226,7 +226,7 @@
 	</div>
 
 	<div class="row center-align">
-		<button id="saveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
+		<button id="SaveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
 			<i class="material-icons right">send</i>
 		</button>
 	</div>
@@ -237,6 +237,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
+	const saveButtonElement = document.getElementById("SaveButton");
+
 	let twitchChannelData;
 	let additionalTwitchChannelsSuggestionsData;
 	let additionalTwitchChannelsAutocompleteInstance;
