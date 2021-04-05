@@ -12,7 +12,7 @@ namespace CatCore.Services.Interfaces
 		event Action<string>? OnMessageReceived;
 
 		Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null);
-		Task Disconnect();
+		Task Disconnect(string? reason = null);
 		void SendMessage(string message);
 	}
 }

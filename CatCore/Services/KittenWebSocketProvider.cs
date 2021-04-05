@@ -39,7 +39,7 @@ namespace CatCore.Services
 		{
 			_customHeartBeatMessage = customHeartBeatMessage ?? DEFAULT_HEART_BEAT_MESSAGE;
 
-			await Disconnect().ConfigureAwait(false);
+			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
 			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero}});
 			_reconnectHappenedSubscription = _wss.ReconnectionHappened.Subscribe(ReconnectHappenedHandler);
@@ -56,14 +56,13 @@ namespace CatCore.Services
 			}
 		}
 
-		public async Task Disconnect()
+		public async Task Disconnect(string? reason = null)
 		{
 			_heartBeatTimer?.Stop();
 
 			if (_wss?.IsStarted ?? false)
 			{
-				// TODO: Add WebSocket closure reason
-				await _wss.Stop(WebSocketCloseStatus.NormalClosure, string.Empty).ConfigureAwait(false);
+				await _wss.Stop(WebSocketCloseStatus.NormalClosure, reason ?? "Closure was requested").ConfigureAwait(false);
 				_reconnectHappenedSubscription?.Dispose();
 				_disconnectionHappenedSubscription?.Dispose();
 				_messageReceivedSubscription?.Dispose();
