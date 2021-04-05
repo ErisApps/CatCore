@@ -35,7 +35,7 @@ namespace CatCore.Services
 		public event Action? OnClose;
 		public event Action<string>? OnMessageReceived;
 
-		internal async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
+		public async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
 		{
 			_customHeartBeatMessage = customHeartBeatMessage ?? DEFAULT_HEART_BEAT_MESSAGE;
 
@@ -56,7 +56,7 @@ namespace CatCore.Services
 			}
 		}
 
-		internal async Task Disconnect()
+		public async Task Disconnect()
 		{
 			_heartBeatTimer?.Stop();
 
@@ -72,7 +72,7 @@ namespace CatCore.Services
 			}
 		}
 
-		internal void SendMessage(string message)
+		public void SendMessage(string message)
 		{
 			if (IsConnected)
 			{
