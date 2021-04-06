@@ -17,7 +17,8 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 	[CategoriesColumn, AllStatisticsColumn, BaselineColumn, MinColumn, Q1Column, MeanColumn, Q3Column, MaxColumn, MedianColumn]
 	public class TwitchIrcMessageTagsDeconstructionBenchmark
 	{
-		private readonly Regex _twitchTagsRegex = new Regex(@"([^=]+)=(.*?)(?:$|;)", RegexOptions.Compiled | RegexOptions.Multiline);
+		private readonly Regex _chatCoreBaselineRegex = new Regex(@"(?<Tag>[^@^;^=]+)=(?<Value>[^;\s]+)", RegexOptions.Compiled | RegexOptions.Multiline);
+		private readonly Regex _suggestedTagsRegex = new Regex(@"([^=]+)=(.*?)(?:$|;)", RegexOptions.Compiled | RegexOptions.Multiline);
 
 		[Params(
 			"badge-info=subscriber/1;badges=broadcaster/1,subscriber/0;client-nonce=1ef9899702c12a2081fa33899d7e8465;color=#FF69B4;display-name=RealEris;emotes=;flags=;id=b4595e1c-dd1b-4e45-b7df-a3403c945ad6;mod=0;room-id=405499635;subscriber=1;tmi-sent-ts=1614390981294;turbo=0;user-id=405499635;user-type=",
@@ -26,6 +27,16 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 		public string IrcTagsPart;
 
 		[Benchmark(Baseline = true)]
+		public Dictionary<string, string> ChatCoreBaselineBenchmark()
+		{
+			return _chatCoreBaselineRegex.Matches(IrcTagsPart).Cast<Match>().Aggregate(new Dictionary<string, string>(), (dict, m) =>
+			{
+				dict[m.Groups["Tag"].Value] = m.Groups["Value"].Value;
+				return dict;
+			});
+		}
+
+		[Benchmark]
 		public Dictionary<string, string> LinqSplitBenchmark()
 		{
 			var tags = new Dictionary<string, string>();
@@ -44,7 +55,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 		{
 			var tags = new Dictionary<string, string>();
 
-			foreach (Match match in _twitchTagsRegex.Matches(IrcTagsPart))
+			foreach (Match match in _suggestedTagsRegex.Matches(IrcTagsPart))
 			{
 				tags[match.Groups[1].Value] = match.Groups[2].Value;
 			}
