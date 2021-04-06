@@ -19,7 +19,7 @@ namespace CatCoreTesterMod.Services
 
 		public async void Initialize()
 		{
-			var userInfo = await _chatCoreInstance.TwitchService.HelixApiService.FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
+			var userInfo = await _chatCoreInstance.RunTwitchServices().GetHelixApiService().FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
 			if (userInfo != null)
 			{
 				var erisProfileData = userInfo.Value.Data.First();
