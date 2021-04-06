@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Environments;
@@ -49,9 +47,6 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 		// ReSharper disable once CognitiveComplexity
 		public void SpanDissectionBenchmark()
 		{
-			// Twitch IRC Message spec
-			// https://ircv3.net/specs/extensions/message-tags
-
 			// Null-ing this here as I can't do that in the method signature
 			string? tags = null;
 			string? prefix = null;
