@@ -79,7 +79,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 			var charSeparator = '=';
 			var startPos = 0;
 
-			string keyTmp = null;
+			string? keyTmp = null;
 
 			for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
 			{
@@ -87,7 +87,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 				{
 					if (lookingForTagSeparator)
 					{
-						tags[keyTmp] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+						tags[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
 
 						lookingForTagSeparator = false;
 						charSeparator = '=';
@@ -122,7 +122,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 			var charSeparator = '=';
 			var startPos = 0;
 
-			string keyTmp = null;
+			string? keyTmp = null;
 
 			for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
 			{
@@ -130,7 +130,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 				{
 					if (charSeparator == ';')
 					{
-						tags[keyTmp] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+						tags[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
 
 						charSeparator = '=';
 						startPos = curPos + 1;
