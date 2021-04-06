@@ -6,6 +6,7 @@
 		<LangVersion>8</LangVersion>
 		<Configurations>Debug;Release;Develop</Configurations>
 		<Platforms>AnyCPU</Platforms>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
