@@ -7,7 +7,7 @@ namespace CatCoreBenchmarkSandbox
 	{
 		public static void Main(string[] args)
 		{
-			var summary = BenchmarkRunner.Run<TwitchIrcMessageTagsDeconstructionBenchmark>();
+			var summary = BenchmarkRunner.Run<TwitchIrcMessageCompoundDeconstructionBenchmark>();
 		}
 	}
 }
