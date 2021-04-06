@@ -12,7 +12,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 	[Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	[RankColumn(NumeralSystem.Stars)]
 	[CategoriesColumn, AllStatisticsColumn, BaselineColumn, MinColumn, Q1Column, MeanColumn, Q3Column, MaxColumn, MedianColumn]
-	public class TwitchIrcMessageDeconstructionBenchmark
+	public class TwitchIrcMessageHighLevelDeconstructionBenchmark
 	{
 		private readonly Regex _twitchMessageRegex =
 			new Regex(
