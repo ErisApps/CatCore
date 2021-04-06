@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using CatCore.Exceptions;
 using CatCore.Helpers;
 using CatCore.Logging;
 using CatCore.Services;
@@ -19,6 +21,7 @@ namespace CatCore
 	public class ChatCoreInstance
 	{
 		private static readonly SemaphoreSlim _creationLocker = new SemaphoreSlim(1, 1);
+		private static readonly SemaphoreSlim _runLocker = new SemaphoreSlim(1, 1);
 
 		private static ChatCoreInstance? _instance;
 
@@ -113,8 +116,8 @@ namespace CatCore
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 
-			// TODO: Interface registration
-			_container.Register<TwitchService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			_container.Register<ITwitchService, TwitchService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			_container.Register<TwitchServiceManager>(Reuse.Singleton);
 
 			// Spin up internal web api service
 			if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchWebAppOnStartup)
@@ -123,7 +126,33 @@ namespace CatCore
 			}
 		}
 
-		public TwitchService TwitchService => _container.Resolve<TwitchService>();
+		/// <summary>
+		/// Starts the Twitch services if they haven't been already.
+		/// </summary>
+		/// <returns>A reference to the Twitch service</returns>
+		public ITwitchService RunTwitchServices()
+		{
+			using var _ = Synchronization.Lock(_runLocker);
+			if (_container == null)
+			{
+				throw new CatCoreNotInitializedException();
+			}
+
+			var twitchServiceManager = _container.Resolve<TwitchServiceManager>();
+			twitchServiceManager.Start(Assembly.GetCallingAssembly());
+			return twitchServiceManager.GetService();
+		}
+
+		/// <summary>
+		/// Stops the Twitch services as long as no references remain. Make sure to unregister any callbacks first!
+		/// </summary>
+		public void StopTwitchServices()
+		{
+			using var _ = Synchronization.Lock(_runLocker);
+			{
+				_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
+			}
+		}
 
 		public void LaunchWebPortal()
 		{
