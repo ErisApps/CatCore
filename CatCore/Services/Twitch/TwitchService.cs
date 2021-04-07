@@ -8,11 +8,13 @@ namespace CatCore.Services.Twitch
 	public class TwitchService : ITwitchService
 	{
 		private readonly ILogger _logger;
+		private readonly ITwitchIrcService _twitchIrcService;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
-		internal TwitchService(ILogger logger, ITwitchHelixApiService twitchHelixApiService)
+		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchHelixApiService twitchHelixApiService)
 		{
 			_logger = logger;
+			_twitchIrcService = twitchIrcService;
 			_twitchHelixApiService = twitchHelixApiService;
 		}
 
@@ -20,12 +22,14 @@ namespace CatCore.Services.Twitch
 
 		void IPlatformService.Start()
 		{
-			// TODO: Implement this
+			_logger.Information("Initializing {Type}", nameof(TwitchService));
+			_twitchIrcService.Start();
 		}
 
 		void IPlatformService.Stop()
 		{
-			// TODO: Implement this
+			_logger.Information("Stopped {Type}", nameof(TwitchService));
+			_twitchIrcService.Stop();
 		}
 	}
 }
