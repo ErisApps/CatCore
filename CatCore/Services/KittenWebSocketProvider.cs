@@ -2,14 +2,14 @@
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
-using CatCore.Services.Interfaces;
 using Serilog;
 using Websocket.Client;
+using Websocket.Client.Logging;
 using Websocket.Client.Models;
 
 namespace CatCore.Services
 {
-	internal class KittenWebSocketProvider : IKittenWebSocketProvider
+	internal abstract class KittenWebSocketProvider
 	{
 		private const string DEFAULT_HEART_BEAT_MESSAGE = "ping";
 
@@ -24,18 +24,17 @@ namespace CatCore.Services
 		private IDisposable? _disconnectionHappenedSubscription;
 		private IDisposable? _messageReceivedSubscription;
 
-		public KittenWebSocketProvider(ILogger logger)
+		protected KittenWebSocketProvider(ILogger logger)
 		{
 			_logger = logger;
+
+			// Disable internal Websocket.Client logging
+			LogProvider.IsDisabled = true;
 		}
 
 		public bool IsConnected => _wss?.IsRunning ?? false;
 
-		public event Action? OnOpen;
-		public event Action? OnClose;
-		public event Action<string>? OnMessageReceived;
-
-		public async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
+		protected async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
 		{
 			_customHeartBeatMessage = customHeartBeatMessage ?? DEFAULT_HEART_BEAT_MESSAGE;
 
@@ -56,7 +55,7 @@ namespace CatCore.Services
 			}
 		}
 
-		public async Task Disconnect(string? reason = null)
+		protected async Task Disconnect(string? reason = null)
 		{
 			_heartBeatTimer?.Stop();
 
@@ -79,28 +78,29 @@ namespace CatCore.Services
 			}
 		}
 
-		private void ReconnectHappenedHandler(ReconnectionInfo info)
+		protected virtual void ReconnectHappenedHandler(ReconnectionInfo info)
 		{
-			_heartBeatTimer?.Stop();
-			_heartBeatTimer?.Start();
+			if (_heartBeatTimer != null)
+			{
+				_heartBeatTimer.Stop();
+				_heartBeatTimer.Start();
+			}
+
 			_logger.Debug("(Re)connect happened - {Url} - {Type}", _wss!.Url.AbsoluteUri, info.Type);
-
-			OnOpen?.Invoke();
 		}
 
-		private void DisconnectHappenedHandler(DisconnectionInfo info)
+		protected virtual void DisconnectHappenedHandler(DisconnectionInfo info)
 		{
 			_heartBeatTimer?.Stop();
-
-			OnClose?.Invoke();
 		}
 
-		private void MessageReceivedHandler(ResponseMessage message)
+		protected virtual void MessageReceivedHandler(ResponseMessage response)
 		{
-			_heartBeatTimer?.Stop();
-			_heartBeatTimer?.Start();
-
-			OnMessageReceived?.Invoke(message.Text);
+			if (_heartBeatTimer != null)
+			{
+				_heartBeatTimer.Stop();
+				_heartBeatTimer.Start();
+			}
 		}
 
 		private void HeartBeatTimerOnElapsed(object sender, ElapsedEventArgs e)
