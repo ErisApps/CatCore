@@ -178,11 +178,15 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 					message = messageAsSpan.Slice(position + 1).ToString();
 
 					// Handle everything before the colon as the channelname parameter
-					while (--position < messageAsSpan.Length && messageAsSpan[position] == ' ')
+					while (--position > 0 && messageAsSpan[position] == ' ')
 					{
 					}
 
-					channelName = messageAsSpan.Slice(0, position + 1).ToString();
+					if (position > 0)
+					{
+						channelName = messageAsSpan.Slice(0, position + 1).ToString();
+					}
+
 					break;
 				}
 
