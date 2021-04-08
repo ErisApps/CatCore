@@ -63,12 +63,7 @@ namespace CatCore.Services.Twitch
 				_logger.Verbose("");
 #endif
 
-				switch (commandType)
-				{
-					case "PING":
-						SendMessage("PONG :tmi.twitch.tv");
-						break;
-				}
+				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message);
 			}
 		}
 
@@ -216,6 +211,35 @@ namespace CatCore.Services.Twitch
 			if (!handledInLoop)
 			{
 				channelName = messageAsSpan.ToString();
+			}
+		}
+
+		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? tags, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
+		{
+			switch (commandType)
+			{
+				case "PING":
+					SendMessage("PONG :tmi.twitch.tv");
+					break;
+				case "376":
+					break;
+				case "NOTICE":
+					break;
+				case "USERNOTICE":
+				case "PRIVMSG":
+					break;
+				case "JOIN":
+				case "PART":
+					break;
+				case "ROOMSTATE":
+					break;
+				case "USERSTATE":
+				case "GLOBALUSERSTATE":
+					break;
+				case "CLEARCHAT":
+					break;
+				case "CLEARMSG":
+					break;
 			}
 		}
 	}
