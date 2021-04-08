@@ -16,10 +16,14 @@ namespace CatCore.Services.Twitch
 		private readonly ILogger _logger;
 		private readonly ITwitchAuthService _twitchAuthService;
 
+		private readonly char[] _ircMessageSeparator;
+
 		public TwitchIrcService(ILogger logger, ITwitchAuthService twitchAuthService) : base(logger)
 		{
 			_logger = logger;
 			_twitchAuthService = twitchAuthService;
+
+			_ircMessageSeparator = new[] {'\r', '\n'};
 		}
 
 		public Task Start()
@@ -54,7 +58,7 @@ namespace CatCore.Services.Twitch
 
 		protected override void MessageReceivedHandler(ResponseMessage response)
 		{
-			var messages = response.Text.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
+			var messages = response.Text.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
 
 			foreach (var messageInternal in messages)
 			{
