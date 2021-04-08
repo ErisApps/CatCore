@@ -36,16 +36,6 @@ namespace CatCore.Services.Twitch
 			return Disconnect("Requested by service manager");
 		}
 
-		private void WebSocketProviderOnOnOpen()
-		{
-			_logger.Information("Opened connection to Twitch IRC server");
-
-			SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
-
-			SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
-			SendMessage($"NICK {_twitchAuthService.LoggedInUser?.LoginName ?? "."}");
-		}
-
 		protected override void ReconnectHappenedHandler(ReconnectionInfo info)
 		{
 			_logger.Debug("(Re)connect happened - {Url} - {Type}", TWITCH_IRC_ENDPOINT, info.Type);
