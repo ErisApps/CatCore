@@ -40,7 +40,10 @@ namespace CatCore.Services
 
 			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
-			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero}});
+			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero}})
+			{
+				ReconnectTimeout = TimeSpan.FromMinutes(10)
+			};
 			_reconnectHappenedSubscription = _wss.ReconnectionHappened.Subscribe(ReconnectHappenedHandler);
 			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.Subscribe(DisconnectHappenedHandler);
 			_messageReceivedSubscription = _wss.MessageReceived.Subscribe(MessageReceivedHandler);
@@ -85,8 +88,6 @@ namespace CatCore.Services
 				_heartBeatTimer.Stop();
 				_heartBeatTimer.Start();
 			}
-
-			_logger.Debug("(Re)connect happened - {Url} - {Type}", _wss!.Url.AbsoluteUri, info.Type);
 		}
 
 		protected virtual void DisconnectHappenedHandler(DisconnectionInfo info)
