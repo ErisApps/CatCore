@@ -20,8 +20,8 @@ namespace CatCore
 {
 	public class ChatCoreInstance
 	{
-		private static readonly SemaphoreSlim _creationLocker = new SemaphoreSlim(1, 1);
-		private static readonly SemaphoreSlim _runLocker = new SemaphoreSlim(1, 1);
+		private static readonly SemaphoreSlim CreationLocker = new SemaphoreSlim(1, 1);
+		private static readonly SemaphoreSlim RunLocker = new SemaphoreSlim(1, 1);
 
 		private static ChatCoreInstance? _instance;
 
@@ -40,7 +40,7 @@ namespace CatCore
 
 		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
-			using var _ = Synchronization.Lock(_creationLocker);
+			using var _ = Synchronization.Lock(CreationLocker);
 			if (_instance != null)
 			{
 				if (logHandler != null)
@@ -132,7 +132,7 @@ namespace CatCore
 		/// <returns>A reference to the Twitch service</returns>
 		public ITwitchService RunTwitchServices()
 		{
-			using var _ = Synchronization.Lock(_runLocker);
+			using var _ = Synchronization.Lock(RunLocker);
 			if (_container == null)
 			{
 				throw new CatCoreNotInitializedException();
@@ -148,7 +148,7 @@ namespace CatCore
 		/// </summary>
 		public void StopTwitchServices()
 		{
-			using var _ = Synchronization.Lock(_runLocker);
+			using var _ = Synchronization.Lock(RunLocker);
 			{
 				_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
 			}
