@@ -181,7 +181,7 @@ namespace CatCore.Services
 					response.ContentEncoding = Encoding.UTF8;
 					response.ContentType = "application/json";
 					await JsonSerializer
-						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.IsValid, _twitchAuthService.LoggedInUser, userInfos, _settingsService.Config.TwitchConfig))
+						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.TokenIsValid, _twitchAuthService.LoggedInUser, userInfos, _settingsService.Config.TwitchConfig))
 						.ConfigureAwait(false);
 
 					return true;
@@ -190,7 +190,7 @@ namespace CatCore.Services
 					using (_settingsService.ChangeTransaction())
 					{
 						var twitchConfig = _settingsService.Config.TwitchConfig;
-						if (_twitchAuthService.IsValid)
+						if (_twitchAuthService.TokenIsValid)
 						{
 							twitchConfig.OwnChannelEnabled = twitchStateRequestDto.SelfEnabled;
 							twitchConfig.AdditionalChannelsData = twitchStateRequestDto.AdditionalChannelsData;
