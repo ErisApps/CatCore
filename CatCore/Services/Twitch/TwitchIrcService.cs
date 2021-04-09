@@ -85,7 +85,7 @@ namespace CatCore.Services.Twitch
 			// https://ircv3.net/specs/extensions/message-tags
 
 			var position = 0;
-			var nextSpacePosition = 0;
+			int nextSpacePosition;
 
 			var messageAsSpan = messageInternal.AsSpan();
 
