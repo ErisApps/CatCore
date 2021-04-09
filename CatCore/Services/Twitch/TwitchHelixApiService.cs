@@ -143,10 +143,14 @@ namespace CatCore.Services.Twitch
 
 			_logger.Verbose("Invoking Helix endpoint GET {Url}", url);
 #endif
-			// TODO: Validate that this doesn't have any unintended side-effects, maybe attempt token refresh beforehand
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
+				return null;
+			}
+
+			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
+			{
 				return null;
 			}
 
@@ -175,10 +179,14 @@ namespace CatCore.Services.Twitch
 
 			_logger.Verbose("Invoking Helix endpoint POST {Url}", url);
 #endif
-			// TODO: Validate that this doesn't have any unintended side-effects, maybe attempt token refresh beforehand
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
+				return null;
+			}
+
+			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
+			{
 				return null;
 			}
 
