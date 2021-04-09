@@ -194,7 +194,7 @@ namespace CatCore.Services.Twitch
 
 		public async Task<bool> RevokeTokens()
 		{
-			if (string.IsNullOrWhiteSpace(AccessToken))
+			if (string.IsNullOrWhiteSpace(RefreshToken))
 			{
 				return false;
 			}
