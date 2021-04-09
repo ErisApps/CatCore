@@ -119,7 +119,7 @@ namespace CatCore.Services.Twitch
 			RefreshToken = authorizationResponse.Value.RefreshToken;
 			ValidUntil = authorizationResponse.Value.ExpiresIn;
 
-			Store();
+			await ValidateAccessToken().ConfigureAwait(false);
 
 			return authorizationResponse;
 		}
