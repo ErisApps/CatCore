@@ -7,13 +7,14 @@ namespace CatCore.Services.Twitch.Interfaces
 	internal interface ITwitchAuthService : INeedAsyncInitialization
 	{
 		string? AccessToken { get; }
-		bool IsValid { get; }
+		bool HasTokens { get; }
+		bool TokenIsValid { get; }
 
 		ValidationResponse? LoggedInUser { get; }
 
 		string AuthorizationUrl(string redirectUrl);
 		Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl);
-		Task<ValidationResponse?> ValidateAccessToken();
+		Task<ValidationResponse?> ValidateAccessToken(bool resetDataOnFailure = true);
 		Task<bool> RefreshTokens();
 		Task<bool> RevokeTokens();
 	}

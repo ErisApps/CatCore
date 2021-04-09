@@ -45,7 +45,12 @@ namespace CatCore.Services.Twitch
 			private set => Credentials.AccessToken = value;
 		}
 
-		public bool IsValid => !string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken) && ValidUntil > DateTimeOffset.Now;
+		public bool HasTokens => !string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken);
+
+		/// <remark>
+		/// Consider token as not valid anymore when it has less than 5 minutes remaining
+		/// </remark>
+		public bool TokenIsValid => ValidUntil > DateTimeOffset.Now.AddMinutes(5);
 
 		public ValidationResponse? LoggedInUser { get; private set; }
 
@@ -62,12 +67,13 @@ namespace CatCore.Services.Twitch
 		{
 			_logger.Information("Validating Twitch Credentials");
 
-			if (!string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(RefreshToken))
+			if (HasTokens)
 			{
-				var validateAccessToken = await ValidateAccessToken().ConfigureAwait(false);
-				_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", AccessToken != null, RefreshToken != null);
-				if (validateAccessToken != null && ValidUntil < DateTimeOffset.Now.AddMinutes(5))
+				var validateAccessToken = await ValidateAccessToken(false).ConfigureAwait(false);
+				_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", validateAccessToken != null && TokenIsValid, RefreshToken != null);
+				if (validateAccessToken == null || !TokenIsValid)
 				{
+					_logger.Information("Refreshing tokens");
 					await RefreshTokens().ConfigureAwait(false);
 				}
 			}
@@ -118,7 +124,7 @@ namespace CatCore.Services.Twitch
 			return authorizationResponse;
 		}
 
-		public async Task<ValidationResponse?> ValidateAccessToken()
+		public async Task<ValidationResponse?> ValidateAccessToken(bool resetDataOnFailure = true)
 		{
 			if (string.IsNullOrWhiteSpace(AccessToken))
 			{
@@ -130,7 +136,7 @@ namespace CatCore.Services.Twitch
 			var responseMessage = await _authClient.SendAsync(requestMessage).ConfigureAwait(false);
 
 			using var _ = ChangeTransaction();
-			if (!responseMessage.IsSuccessStatusCode)
+			if (!responseMessage.IsSuccessStatusCode && resetDataOnFailure)
 			{
 				AccessToken = null;
 				RefreshToken = null;
