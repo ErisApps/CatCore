@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Environments;
@@ -6,19 +9,21 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Mathematics;
 using BenchmarkDotNet.Order;
 
-namespace CatCoreBenchmarkSandbox.Benchmarks
+namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 {
 	[MediumRunJob(RuntimeMoniker.Net472, Jit.LegacyJit, Platform.X64)]
 	[Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	[RankColumn(NumeralSystem.Stars)]
 	[MemoryDiagnoser]
 	[CategoriesColumn, AllStatisticsColumn, BaselineColumn, MinColumn, Q1Column, MeanColumn, Q3Column, MaxColumn, MedianColumn]
-	public class TwitchIrcMessageHighLevelDeconstructionBenchmark
+	public class TwitchIrcMessageCompoundDeconstructionBenchmark
 	{
 		private readonly Regex _twitchMessageRegex =
 			new Regex(
 				@"^(?:@(?<Tags>[^\r\n ]*) +|())(?::(?<HostName>[^\r\n ]+) +|())(?<MessageType>[^\r\n ]+)(?: +(?<ChannelName>[^:\r\n ]+[^\r\n ]*(?: +[^:\r\n ]+[^\r\n ]*)*)|())?(?: +:(?<Message>[^\r\n]*)| +())?[\r\n]*$",
 				RegexOptions.Compiled);
+		private readonly Regex _tagRegex = new Regex(@"(?<Tag>[^@^;^=]+)=(?<Value>[^;\s]+)", RegexOptions.Compiled | RegexOptions.Multiline);
+
 
 		[Params(
 			":tmi.twitch.tv 376 realeris :>",
@@ -36,7 +41,11 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 		{
 			var match = _twitchMessageRegex.Match(IrcMessage);
 
-			var tags = match.Groups["Tags"].Success ? match.Groups["Tags"].Value : null;
+			var tags = match.Groups["Tags"].Success ? new ReadOnlyDictionary<string, string>(_tagRegex.Matches(match.Value).Cast<Match>().Aggregate(new Dictionary<string, string>(), (dict, m) =>
+			{
+				dict[m.Groups["Tag"].Value] = m.Groups["Value"].Value;
+				return dict;
+			})) : null;
 			var userName = match.Groups["HostName"].Success ? match.Groups["HostName"].Value.Split('!')[0] : null;
 			var messageType = match.Groups["MessageType"].Value;
 			var channelName = match.Groups["ChannelName"].Success ? match.Groups["ChannelName"].Value.Trim('#') : null;
@@ -47,10 +56,13 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 		// ReSharper disable once CognitiveComplexity
 		public void SpanDissectionBenchmark()
 		{
+			// Twitch IRC Message spec
+			// https://ircv3.net/specs/extensions/message-tags
+
 			// Null-ing this here as I can't do that in the method signature
-			string? tags = null;
+			ReadOnlyDictionary<string, string>? tags = null;
 			string? prefix = null;
-			string commandType;
+			string commandType = null!;
 			string? channelName = null;
 			string? message = null;
 
@@ -79,7 +91,36 @@ namespace CatCoreBenchmarkSandbox.Benchmarks
 					throw new Exception("Invalid IRC Message");
 				}
 
-				tags = messageAsSpan.Slice(1, nextSpacePosition - 1).ToString();
+				var tagsAsSpan = messageAsSpan.Slice(1, nextSpacePosition - 1);
+
+				var tagsDictInternal = new Dictionary<string, string>();
+
+				var charSeparator = '=';
+				var startPos = 0;
+
+				string? keyTmp = null;
+				for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
+				{
+					if (tagsAsSpan[curPos] == charSeparator)
+					{
+						if (charSeparator == ';')
+						{
+							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+
+							charSeparator = '=';
+							startPos = curPos + 1;
+						}
+						else
+						{
+							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+
+							charSeparator = ';';
+							startPos = curPos + 1;
+						}
+					}
+				}
+
+				tags = new ReadOnlyDictionary<string, string>(tagsDictInternal);
 
 				position = nextSpacePosition + 1;
 				SkipToNextNonSpaceCharacter(ref messageAsSpan);

@@ -8,7 +8,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Mathematics;
 using BenchmarkDotNet.Order;
 
-namespace CatCoreBenchmarkSandbox.Benchmarks
+namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 {
 	[MediumRunJob(RuntimeMoniker.Net472, Jit.LegacyJit, Platform.X64)]
 	[Orderer(SummaryOrderPolicy.FastestToSlowest)]
