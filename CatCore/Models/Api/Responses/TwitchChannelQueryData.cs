@@ -16,5 +16,13 @@ namespace CatCore.Models.Api.Responses
 			LoginName = channelData.BroadcasterLogin;
 			ChannelId = channelData.ChannelId;
 		}
+
+		public TwitchChannelQueryData(UserData userData)
+		{
+			ThumbnailUrl = userData.ProfileImageUrl;
+			DisplayName = userData.DisplayName;
+			LoginName = userData.LoginName;
+			ChannelId = userData.UserId;
+		}
 	}
 }

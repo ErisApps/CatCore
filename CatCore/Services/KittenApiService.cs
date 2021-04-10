@@ -142,6 +142,7 @@ namespace CatCore.Services
 			}
 		}
 
+		// ReSharper disable once CognitiveComplexity
 		private async Task<bool> HandleTwitchApiRequests(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			switch (request.Url.Segments.ElementAtOrDefault(3))
@@ -203,18 +204,28 @@ namespace CatCore.Services
 
 					return true;
 				case "channels" when request.HttpMethod == "GET":
-					var channels = await _helixApiService.SearchChannels(request.QueryString["query"]).ConfigureAwait(false);
+					var query = request.QueryString["query"];
+					var directChannelNameSearch = await _helixApiService.FetchUserInfo(loginNames: query);
+					var searchQueryChannels = await _helixApiService.SearchChannels(query).ConfigureAwait(false);
+
+					var channelQueryData = new List<TwitchChannelQueryData>();
+					if (directChannelNameSearch != null)
+					{
+						channelQueryData.Add(new TwitchChannelQueryData(directChannelNameSearch.Value.Data.First()));
+					}
+
+					if (searchQueryChannels != null)
+					{
+						channelQueryData.AddRange(searchQueryChannels.Value.Data
+							.Select(channelData => new TwitchChannelQueryData(channelData))
+							.Except(channelQueryData)
+							.OrderBy(x => x.DisplayName.Length)
+							.ThenBy(x => x.DisplayName));
+					}
 
 					response.ContentEncoding = Encoding.UTF8;
 					response.ContentType = "application/json";
-					await JsonSerializer
-						.SerializeAsync(response.OutputStream, channels != null
-							? channels.Value.Data.Select(channelData => new TwitchChannelQueryData(channelData))
-								.OrderBy(x => x.DisplayName.Length)
-								.ThenBy(x => x.DisplayName)
-								.ToList()
-							: new List<TwitchChannelQueryData>())
-						.ConfigureAwait(false);
+					await JsonSerializer.SerializeAsync(response.OutputStream, channelQueryData).ConfigureAwait(false);
 
 					return true;
 				default:
