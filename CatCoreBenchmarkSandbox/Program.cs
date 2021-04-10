@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
-using CatCoreBenchmarkSandbox.Benchmarks;
+using CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub;
 
 namespace CatCoreBenchmarkSandbox
 {
@@ -7,7 +7,7 @@ namespace CatCoreBenchmarkSandbox
 	{
 		public static void Main(string[] args)
 		{
-			var summary = BenchmarkRunner.Run<TwitchIrcMessageCompoundDeconstructionBenchmark>();
+			var summary = BenchmarkRunner.Run<TwitchPubSubNonceGenerationBenchmark>();
 		}
 	}
 }
