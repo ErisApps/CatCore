@@ -19,7 +19,7 @@ namespace CatCore.Services.Twitch
 			_twitchHelixApiService = twitchHelixApiService;
 		}
 
-		public List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState)
+		public List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new List<string>();
 			var self = _twitchAuthService.LoggedInUser;
@@ -29,6 +29,20 @@ namespace CatCore.Services.Twitch
 			}
 
 			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Values);
+
+			return allChannels;
+		}
+
+		public List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false)
+		{
+			var allChannels = new List<string>();
+			var self = _twitchAuthService.LoggedInUser;
+			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
+			{
+				allChannels.Add(self.Value.UserId);
+			}
+
+			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Keys);
 
 			return allChannels;
 		}

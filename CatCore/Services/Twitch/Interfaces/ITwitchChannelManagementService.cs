@@ -6,7 +6,8 @@ namespace CatCore.Services.Twitch.Interfaces
 {
 	public interface ITwitchChannelManagementService
 	{
-		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState);
+		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
+		List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false);
 		Task<List<UserData>> GetAllChannelsEnriched();
 	}
 }
