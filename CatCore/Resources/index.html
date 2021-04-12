@@ -280,8 +280,8 @@
 	}, 650);
 
 	function GenerateAdditionalTwitchChannel(channel) {
-		return `<li id="TwitchChannel-${channel.ChannelId}" class="collection-item avatar additionalchannel">
-						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle">
+		return `<li id="TwitchChannel-${channel.ChannelId}" class="collection-item avatar">
+						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle z-depth-1">
 						<span class="title">${channel.DisplayName}</span>
 						<p>${channel.LoginName}</p>
 						<a class="secondary-content valign-wrapper" style="cursor: pointer">
@@ -331,7 +331,7 @@
 
 		function GenerateOwnTwitchChannel(channel, isEnabled) {
 			return `<li class="collection-item avatar">
-						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle">
+						<img src="${channel.ThumbnailUrl}" alt="${channel.DisplayName}'s profile picture" class="circle z-depth-1">
 						<span class="title">${channel.DisplayName} (you)</span>
 						<p>${channel.LoginName}</p>
 						<a class="secondary-content valign-wrapper">
