@@ -209,7 +209,7 @@ namespace CatCore.Services
 					var searchQueryChannels = await _helixApiService.SearchChannels(query).ConfigureAwait(false);
 
 					var channelQueryData = new List<TwitchChannelQueryData>();
-					if (directChannelNameSearch != null)
+					if (directChannelNameSearch != null && directChannelNameSearch.Value.Data.Any())
 					{
 						channelQueryData.Add(new TwitchChannelQueryData(directChannelNameSearch.Value.Data.First()));
 					}
