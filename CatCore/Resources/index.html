@@ -122,7 +122,8 @@
 						<div class="input-field">
 							<i class="material-icons prefix">person_search</i>
 							<input type="text" id="additionalchannel-input" class="autocomplete">
-							<label for="additionalchannel-input">Add additional channel</label>
+							<label for="additionalchannel-input">Add additional channel by filling in the channel name</label>
+							<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
 						</div>
 					</div>
 
@@ -270,9 +271,10 @@
 		try {
 			const existingChannelIds = twitchChannelData.map(ch => ch.ChannelId);
 			const response = await fetch(`/api/twitch/channels?query=${currentInput}`);
-			additionalTwitchChannelsSuggestionsData = (await response.json()).filter(ch => !existingChannelIds.includes(ch.ChannelId));
+			additionalTwitchChannelsSuggestionsData = (await response.json()).filter(ch => !existingChannelIds.includes(ch.ChannelId)
+				&& (ch.LoginName.startsWith(currentInput.toLowerCase()) || ch.DisplayName.startsWith(currentInput)));
 
-			additionalTwitchChannelsAutocompleteInstance.updateData(additionalTwitchChannelsSuggestionsData.reduce((a, x) => ({...a, [x.DisplayName]: x.ThumbnailUrl}), {}));
+			additionalTwitchChannelsAutocompleteInstance.updateData(additionalTwitchChannelsSuggestionsData.reduce((a, x) => ({...a, [`${x.DisplayName} (${x.LoginName})`]: x.ThumbnailUrl}), {}));
 			additionalTwitchChannelsAutocompleteInstance.open();
 		} catch (ex) {
 			console.error(ex);
@@ -313,12 +315,15 @@
 		additionalTwitchChannelsAutocompleteInstance = M.Autocomplete.init(twitchChannelsAutocomplete, {
 			data: {},
 			minLength: 3,
-			onAutocomplete: (displayName) => {
-				const channelToAdd = additionalTwitchChannelsSuggestionsData.find(ch => ch.DisplayName === displayName);
+			onAutocomplete: (autocompleteCellLabelText) => {
+				const loginName = autocompleteCellLabelText.slice(autocompleteCellLabelText.indexOf(' (') + 2 , -1); // Extract login name from label... I know... it's a hacky work-around...
+				const channelToAdd = additionalTwitchChannelsSuggestionsData.find(ch => ch.LoginName === loginName);
 				twitchChannelData.push(channelToAdd);
 				document.getElementById("twitch-channels").innerHTML += GenerateAdditionalTwitchChannel(channelToAdd);
 
 				additionalTwitchChannelsAutocompleteInstance.el.value = "";
+
+				// TODO: Look into visually resetting the autocomplete element (hint stays above the input field)
 			}
 		});
 
