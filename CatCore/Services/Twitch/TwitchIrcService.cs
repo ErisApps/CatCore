@@ -29,7 +29,7 @@ namespace CatCore.Services.Twitch
 			_ircMessageSeparator = new[] {'\r', '\n'};
 		}
 
-		public Task Start()
+		async Task ITwitchIrcService.Start()
 		{
 			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
 			_kittenWebSocketProvider.ReconnectHappened += ReconnectHappenedHandler;
@@ -43,7 +43,7 @@ namespace CatCore.Services.Twitch
 			return _kittenWebSocketProvider.Connect(TWITCH_IRC_ENDPOINT);
 		}
 
-		public async Task Stop()
+		async Task ITwitchIrcService.Stop()
 		{
 			await _kittenWebSocketProvider.Disconnect("Requested by service manager").ConfigureAwait(false);
 

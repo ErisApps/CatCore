@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks;
+using CatCore.Services.Interfaces;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
-	internal interface ITwitchIrcService
+	public interface ITwitchIrcService : IChatService
 	{
-		Task Start();
-		Task Stop();
+		internal Task Start();
+		internal Task Stop();
 	}
 }
