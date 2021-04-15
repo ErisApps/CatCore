@@ -8,6 +8,7 @@ using CatCore.Helpers;
 using CatCore.Logging;
 using CatCore.Services;
 using CatCore.Services.Interfaces;
+using CatCore.Services.Multiplexer;
 using CatCore.Services.Twitch;
 using CatCore.Services.Twitch.Interfaces;
 using DryIoc;
@@ -91,6 +92,7 @@ namespace CatCore
 				.WithoutThrowOnRegisteringDisposableTransient());
 
 			_container.Use(_version);
+			_container.Use(typeof(ChatCoreInstance).Assembly);
 			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 			_container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
 			_container.Register<Random>(made: Made.Of(r => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
@@ -121,12 +123,47 @@ namespace CatCore
 
 			_container.RegisterMany(new[] {typeof(IPlatformService), typeof(ITwitchService)}, typeof(TwitchService), Reuse.Singleton,
 				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<TwitchServiceManager>(Reuse.Singleton);
+			_container.RegisterMany(new[] {typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager)}, typeof(TwitchServiceManager), Reuse.Singleton);
+
+			// Register multiplexer services
+			_container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
+			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
 			// Spin up internal web api service
 			if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchWebAppOnStartup)
 			{
 				LaunchWebPortal();
+			}
+		}
+
+		/// <summary>
+		/// Starts all services if they haven't been already.
+		/// </summary>
+		/// <returns>A reference to the generic chat multiplexer</returns>
+		public ChatServiceMultiplexer RunAllServices()
+		{
+			using var _ = Synchronization.Lock(RunLocker);
+			if (_container == null)
+			{
+				throw new CatCoreNotInitializedException();
+			}
+
+			var multiplexerManager = _container.Resolve<ChatServiceMultiplexerManager>();
+			multiplexerManager.Start(Assembly.GetCallingAssembly());
+			return multiplexerManager.GetMultiplexer();
+		}
+
+		/// <summary>
+		/// Stops all services as soon as there aren't registered assemblies anymore.
+		/// </summary>
+		/// <remarks>
+		/// Make sure to unregister any callbacks first!
+		/// </remarks>
+		public void StopAllServices()
+		{
+			using var _ = Synchronization.Lock(RunLocker);
+			{
+				_container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
 			}
 		}
 
@@ -148,8 +185,11 @@ namespace CatCore
 		}
 
 		/// <summary>
-		/// Stops the Twitch services as long as no references remain. Make sure to unregister any callbacks first!
+		/// Stops the Twitch services as soon as there aren't registered assemblies anymore.
 		/// </summary>
+		/// <remarks>
+		/// Make sure to unregister any callbacks first!
+		/// </remarks>
 		public void StopTwitchServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
