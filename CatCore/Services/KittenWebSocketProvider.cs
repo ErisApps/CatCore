@@ -1,46 +1,38 @@
 ﻿using System;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using System.Timers;
-using Serilog;
+using CatCore.Services.Interfaces;
 using Websocket.Client;
 using Websocket.Client.Logging;
 using Websocket.Client.Models;
 
 namespace CatCore.Services
 {
-	internal abstract class KittenWebSocketProvider
+	internal class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
-		private const string DEFAULT_HEART_BEAT_MESSAGE = "ping";
-
-		private readonly ILogger _logger;
-
 		private WebsocketClient? _wss;
-
-		private Timer? _heartBeatTimer;
-		private string? _customHeartBeatMessage;
 
 		private IDisposable? _reconnectHappenedSubscription;
 		private IDisposable? _disconnectionHappenedSubscription;
 		private IDisposable? _messageReceivedSubscription;
 
-		protected KittenWebSocketProvider(ILogger logger)
-		{
-			_logger = logger;
+		public event Action<ReconnectionInfo>? ReconnectHappened;
+		public event Action<DisconnectionInfo>? DisconnectHappened;
+		public event Action<ResponseMessage>? MessageReceived;
 
+		public KittenWebSocketProvider()
+		{
 			// Disable internal Websocket.Client logging
 			LogProvider.IsDisabled = true;
 		}
 
 		public bool IsConnected => _wss?.IsRunning ?? false;
 
-		protected async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
+		public async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
 		{
-			_customHeartBeatMessage = customHeartBeatMessage ?? DEFAULT_HEART_BEAT_MESSAGE;
-
 			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
-			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero}})
+			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero, Proxy = new System.Net.WebProxy("192.168.0.126", 8888)}})
 			{
 				ReconnectTimeout = TimeSpan.FromMinutes(10)
 			};
@@ -49,22 +41,13 @@ namespace CatCore.Services
 			_messageReceivedSubscription = _wss.MessageReceived.Subscribe(MessageReceivedHandler);
 
 			await _wss.StartOrFail().ConfigureAwait(false);
-
-			if (heartBeatInterval != null)
-			{
-				_heartBeatTimer = new Timer(heartBeatInterval.Value.TotalMilliseconds);
-				_heartBeatTimer.Start();
-				_heartBeatTimer.Elapsed += HeartBeatTimerOnElapsed;
-			}
 		}
 
-		protected async Task Disconnect(string? reason = null)
+		public async Task Disconnect(string? reason = null)
 		{
-			_heartBeatTimer?.Stop();
-
 			if (_wss?.IsStarted ?? false)
 			{
-				await _wss.Stop(WebSocketCloseStatus.NormalClosure, reason ?? "Closure was requested").ConfigureAwait(false);
+				await _wss.Stop(WebSocketCloseStatus.NormalClosure, reason).ConfigureAwait(false);
 				_reconnectHappenedSubscription?.Dispose();
 				_disconnectionHappenedSubscription?.Dispose();
 				_messageReceivedSubscription?.Dispose();
@@ -81,32 +64,19 @@ namespace CatCore.Services
 			}
 		}
 
-		protected virtual void ReconnectHappenedHandler(ReconnectionInfo info)
+		private void ReconnectHappenedHandler(ReconnectionInfo info)
 		{
-			if (_heartBeatTimer != null)
-			{
-				_heartBeatTimer.Stop();
-				_heartBeatTimer.Start();
-			}
+			ReconnectHappened?.Invoke(info);
 		}
 
-		protected virtual void DisconnectHappenedHandler(DisconnectionInfo info)
+		private void DisconnectHappenedHandler(DisconnectionInfo info)
 		{
-			_heartBeatTimer?.Stop();
+			DisconnectHappened?.Invoke(info);
 		}
 
-		protected virtual void MessageReceivedHandler(ResponseMessage response)
+		private void MessageReceivedHandler(ResponseMessage message)
 		{
-			if (_heartBeatTimer != null)
-			{
-				_heartBeatTimer.Stop();
-				_heartBeatTimer.Start();
-			}
-		}
-
-		private void HeartBeatTimerOnElapsed(object sender, ElapsedEventArgs e)
-		{
-			SendMessage(_customHeartBeatMessage!);
+			MessageReceived?.Invoke(message);
 		}
 	}
 }
