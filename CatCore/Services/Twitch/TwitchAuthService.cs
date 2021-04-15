@@ -2,7 +2,9 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Helpers;
 using CatCore.Models.Credentials;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Interfaces;
@@ -15,6 +17,8 @@ namespace CatCore.Services.Twitch
 	{
 		private const string SERVICE_TYPE = nameof(Twitch);
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
+
+		private readonly SemaphoreSlim _refreshLocker = new SemaphoreSlim(1, 1);
 
 		private readonly string[] _twitchAuthorizationScope =
 		{
@@ -154,9 +158,15 @@ namespace CatCore.Services.Twitch
 
 		public async Task<bool> RefreshTokens()
 		{
+			using var _ = Synchronization.LockAsync(_refreshLocker);
 			if (string.IsNullOrWhiteSpace(RefreshToken))
 			{
 				return false;
+			}
+
+			if (TokenIsValid)
+			{
+				return true;
 			}
 
 			var responseMessage = await _authClient
