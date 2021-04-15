@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
 using Websocket.Client;
@@ -9,18 +10,20 @@ using Websocket.Client.Models;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchIrcService : KittenWebSocketProvider, ITwitchIrcService
+	internal class TwitchIrcService : ITwitchIrcService
 	{
 		private const string TWITCH_IRC_ENDPOINT = "wss://irc-ws.chat.twitch.tv:443";
 
 		private readonly ILogger _logger;
+		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 		private readonly ITwitchAuthService _twitchAuthService;
 
 		private readonly char[] _ircMessageSeparator;
 
-		public TwitchIrcService(ILogger logger, ITwitchAuthService twitchAuthService) : base(logger)
+		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, ITwitchAuthService twitchAuthService)
 		{
 			_logger = logger;
+			_kittenWebSocketProvider = kittenWebSocketProvider;
 			_twitchAuthService = twitchAuthService;
 
 			_ircMessageSeparator = new[] {'\r', '\n'};
@@ -28,25 +31,43 @@ namespace CatCore.Services.Twitch
 
 		public Task Start()
 		{
-			return Connect(TWITCH_IRC_ENDPOINT);
+			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
+			_kittenWebSocketProvider.ReconnectHappened += ReconnectHappenedHandler;
+
+			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
+			_kittenWebSocketProvider.DisconnectHappened += DisconnectHappenedHandler;
+
+			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
+			_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
+
+			return _kittenWebSocketProvider.Connect(TWITCH_IRC_ENDPOINT);
 		}
 
-		public Task Stop()
+		public async Task Stop()
 		{
-			return Disconnect("Requested by service manager");
+			await _kittenWebSocketProvider.Disconnect("Requested by service manager").ConfigureAwait(false);
+
+			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
+			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
+			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 		}
 
-		protected override void ReconnectHappenedHandler(ReconnectionInfo info)
+		private void ReconnectHappenedHandler(ReconnectionInfo info)
 		{
 			_logger.Debug("(Re)connect happened - {Url} - {Type}", TWITCH_IRC_ENDPOINT, info.Type);
 
-			SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
+			_kittenWebSocketProvider.SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
 
-			SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
-			SendMessage($"NICK {_twitchAuthService.LoggedInUser?.LoginName ?? "."}");
+			_kittenWebSocketProvider.SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
+			_kittenWebSocketProvider.SendMessage($"NICK {_twitchAuthService.LoggedInUser?.LoginName ?? "."}");
 		}
 
-		protected override void MessageReceivedHandler(ResponseMessage response)
+		private void DisconnectHappenedHandler(DisconnectionInfo info)
+		{
+			_logger.Information("Closed connection to Twitch IRC server");
+		}
+
+		private void MessageReceivedHandler(ResponseMessage response)
 		{
 			var messages = response.Text.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
 
@@ -65,11 +86,6 @@ namespace CatCore.Services.Twitch
 
 				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message);
 			}
-		}
-
-		protected override void DisconnectHappenedHandler(DisconnectionInfo info)
-		{
-			_logger.Information("Closed connection to Twitch IRC server");
 		}
 
 		// ReSharper disable once CognitiveComplexity
@@ -214,12 +230,13 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? tags, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
+		// ReSharper disable once CognitiveComplexity
+		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
 		{
 			switch (commandType)
 			{
 				case "PING":
-					SendMessage("PONG :tmi.twitch.tv");
+					_kittenWebSocketProvider.SendMessage("PONG :tmi.twitch.tv");
 					break;
 				case "376":
 					break;
@@ -229,6 +246,7 @@ namespace CatCore.Services.Twitch
 				case "PRIVMSG":
 					break;
 				case "JOIN":
+					break;
 				case "PART":
 					break;
 				case "ROOMSTATE":
