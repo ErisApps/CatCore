@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -9,7 +8,7 @@ using Serilog;
 
 namespace CatCore.Services
 {
-	internal abstract class KittenPlatformServiceManagerBase<T> : IDisposable where T : IPlatformService
+	internal abstract class KittenPlatformServiceManagerBase<T> : IKittenPlatformServiceManagerBase where T : IPlatformService
 	{
 		private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
 
@@ -28,7 +27,7 @@ namespace CatCore.Services
 
 		public bool IsRunning { get; private set; }
 
-		internal void Start(Assembly callingAssembly)
+		public void Start(Assembly callingAssembly)
 		{
 			using var _ = Synchronization.Lock(_locker);
 			RegisteredAssemblies.Add(callingAssembly);
@@ -44,7 +43,7 @@ namespace CatCore.Services
 			_logger.Information("Started");
 		}
 
-		internal void Stop(Assembly? callingAssembly)
+		public void Stop(Assembly? callingAssembly)
 		{
 			using var _ = Synchronization.Lock(_locker);
 			if (!IsRunning)
