@@ -117,9 +117,10 @@ namespace CatCore
 			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize().GetAwaiter().GetResult());
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
+			_container.RegisterMany(new[] {typeof(IChatService), typeof(ITwitchIrcService)}, typeof(TwitchIrcService), Reuse.Singleton);
 
-			_container.Register<ITwitchService, TwitchService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			_container.RegisterMany(new[] {typeof(IPlatformService), typeof(ITwitchService)}, typeof(TwitchService), Reuse.Singleton,
+				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<TwitchServiceManager>(Reuse.Singleton);
 
 			// Spin up internal web api service

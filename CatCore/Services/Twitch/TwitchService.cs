@@ -1,5 +1,4 @@
-﻿using System;
-using CatCore.Services.Interfaces;
+﻿using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
 
@@ -18,6 +17,7 @@ namespace CatCore.Services.Twitch
 			_twitchHelixApiService = twitchHelixApiService;
 		}
 
+		public IChatService GetChatService() => _twitchIrcService;
 		public ITwitchHelixApiService GetHelixApiService() => _twitchHelixApiService;
 
 		void IPlatformService.Start()
