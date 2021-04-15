@@ -10,7 +10,7 @@ using Websocket.Client.Models;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchIrcService : ITwitchIrcService
+	internal class TwitchIrcService : KittenChatServiceBase, ITwitchIrcService
 	{
 		private const string TWITCH_IRC_ENDPOINT = "wss://irc-ws.chat.twitch.tv:443";
 
