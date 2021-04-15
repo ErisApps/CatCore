@@ -184,13 +184,15 @@ namespace CatCore.Services.Twitch
 
 			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
 
-			using var transaction = ChangeTransaction();
 			if (authorizationResponse == null)
 			{
-				AccessToken = null;
-				RefreshToken = null;
-				ValidUntil = null;
-				LoggedInUser = null!;
+				using (ChangeTransaction())
+				{
+					AccessToken = null;
+					RefreshToken = null;
+					ValidUntil = null;
+					LoggedInUser = null!;
+				}
 
 				return false;
 			}
