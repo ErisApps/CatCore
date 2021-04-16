@@ -31,6 +31,16 @@ namespace CatCore.Services.Twitch
 
 		async Task ITwitchIrcService.Start()
 		{
+			if (!_twitchAuthService.HasTokens)
+			{
+				return;
+			}
+
+			if (!_twitchAuthService.TokenIsValid)
+			{
+				await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
+			}
+
 			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
 			_kittenWebSocketProvider.ReconnectHappened += ReconnectHappenedHandler;
 
@@ -40,7 +50,7 @@ namespace CatCore.Services.Twitch
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 			_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
 
-			return _kittenWebSocketProvider.Connect(TWITCH_IRC_ENDPOINT);
+			await _kittenWebSocketProvider.Connect(TWITCH_IRC_ENDPOINT).ConfigureAwait(false);
 		}
 
 		async Task ITwitchIrcService.Stop()
