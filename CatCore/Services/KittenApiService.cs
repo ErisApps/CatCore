@@ -40,8 +40,6 @@ namespace CatCore.Services
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_helixApiService = helixApiService;
 			_libraryVersion = libraryVersion;
-
-			logger.Information("Nyaa~~");
 		}
 
 		public async Task Initialize()
@@ -57,29 +55,37 @@ namespace CatCore.Services
 			_logger.Information("Purring up internal webserver");
 
 			_listener = new HttpListener {Prefixes = {ServerUri}};
-			_listener.Start();
+
+			try
+			{
+				_listener.Start();
 
 #pragma warning disable 4014
-			Task.Run(async () =>
+				Task.Run(async () =>
 #pragma warning restore 4014
-			{
-				while (true)
 				{
-					try
+					while (true)
 					{
-						var context = await _listener.GetContextAsync().ConfigureAwait(false);
-						await HandleContext(context).ConfigureAwait(false);
+						try
+						{
+							var context = await _listener.GetContextAsync().ConfigureAwait(false);
+							await HandleContext(context).ConfigureAwait(false);
+						}
+						catch (Exception e)
+						{
+							_logger.Error(e, "An error occured while trying to handle an incoming request");
+						}
 					}
-					catch (Exception e)
-					{
-						_logger.Error(e, "An error occured while trying to handle an incoming request");
-					}
-				}
 
-				// ReSharper disable once FunctionNeverReturns
-			});
+					// ReSharper disable once FunctionNeverReturns
+				});
 
-			_logger.Information("Internal webserver has been purred up");
+				_logger.Information("Internal webserver has been purred up");
+			}
+			catch (Exception e)
+			{
+				_logger.Error(e, "The portal webpage is most likely not available because an error occurred while trying to purr up the internal webserver");
+			}
 		}
 
 		private async Task HandleContext(HttpListenerContext ctx)
