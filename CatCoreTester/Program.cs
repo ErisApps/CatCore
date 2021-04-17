@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CatCore;
 using CatCore.Services.Twitch.Interfaces;
@@ -14,7 +15,12 @@ namespace CatCoreTester
 			Console.WriteLine("Tester init");
 
 			stoppyWatch.Start();
-			var chatCoreInstance = ChatCoreInstance.CreateInstance((level, context, message) => Console.WriteLine($"External logger: {level}|{context}|{message}"));
+			var chatCoreInstance = ChatCoreInstance.CreateInstance(
+#if !DEBUG
+				(level, context, message) => Console.Write($"External logger: {level}|{context}|{message}")
+#endif
+			);
+
 			stoppyWatch.Stop();
 
 			Console.WriteLine($"Tester finished. Instance creation time: {stoppyWatch.Elapsed:g}");
@@ -31,7 +37,7 @@ namespace CatCoreTester
 			}
 
 			Console.WriteLine();
-            Console.WriteLine();
+			Console.WriteLine();
 
 #if DEBUG
 			var twitchAuthService = chatCoreInstance.Container!.Resolve<ITwitchAuthService>();
@@ -61,7 +67,10 @@ namespace CatCoreTester
 			Console.WriteLine("Requesting some data through Helix");
 			var userInfoResponse = await twitchHelixApiService.FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
 
-			Console.WriteLine("Creating stream marker through Helix without a description. (Will fail when stream on the requested channel is offline.)");
+			Console.WriteLine("Search channels through Helix");
+			var channelData = await twitchHelixApiService.SearchChannels("realeris").ConfigureAwait(false);
+			var ccc = channelData.Value.Data.FirstOrDefault(x => x.BroadcasterLogin == "realeris");
+			Console.WriteLine(ccc.StartedAt);
 
 			/*Console.WriteLine("Creating stream marker through Helix without a description. (Will fail when stream on the requested channel is offline.)");
 			var streamMarkerResponse = await twitchHelixApiService.CreateStreamMarker(userInfoResponse!.Value.Data[0].UserId).ConfigureAwait(false);
