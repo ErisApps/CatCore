@@ -244,6 +244,8 @@ namespace CatCore.Services.Twitch
 		// ReSharper disable once CognitiveComplexity
 		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
 		{
+			// CommandMeta documentation: https://dev.twitch.tv/docs/irc/tags
+
 			switch (commandType)
 			{
 				case "PING":
@@ -252,6 +254,8 @@ namespace CatCore.Services.Twitch
 				case "376":
 					break;
 				case "NOTICE":
+					// MessageId for NOTICE documentation: https://dev.twitch.tv/docs/irc/msg-id
+
 					break;
 				case "USERNOTICE":
 				case "PRIVMSG":
