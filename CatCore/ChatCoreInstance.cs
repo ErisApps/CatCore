@@ -106,6 +106,7 @@ namespace CatCore
 				setup: Setup.With(condition: r => r.Parent.ImplementationType != null));
 
 			// Register internal standalone services
+			_container.Register<IKittenPlatformActiveStateManager, KittenPlatformActiveStateManager>(Reuse.Singleton);
 			_container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
 			_container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
