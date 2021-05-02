@@ -42,7 +42,7 @@ namespace CatCore.Services
 				return;
 			}
 
-			_activeStateManager.UpdateState(_platformType, false);
+			_activeStateManager.UpdateState(_platformType, true);
 			_platformService.Start();
 
 			_logger.Information("Started");
