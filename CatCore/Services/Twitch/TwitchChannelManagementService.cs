@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Services.Interfaces;
@@ -11,6 +14,8 @@ namespace CatCore.Services.Twitch
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
+
+		public event EventHandler<TwitchChannelsUpdatedEventArgs>? TwitchChannelsUpdated;
 
 		internal TwitchChannelManagementService(IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
 		{
@@ -52,6 +57,46 @@ namespace CatCore.Services.Twitch
 			var allLoginNames = GetAllActiveLoginNames(true);
 			var userInfos = await _twitchHelixApiService.FetchUserInfo(loginNames: allLoginNames.ToArray()).ConfigureAwait(false);
 			return userInfos?.Data ?? new List<UserData>();
+		}
+
+		void ITwitchChannelManagementService.UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData)
+		{
+			Dictionary<string, string> enabledChannels = new Dictionary<string, string>();
+			Dictionary<string, string> disabledChannels = new Dictionary<string, string>();
+
+			if (_twitchAuthService.LoggedInUser != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled != ownChannelActive)
+			{
+				_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled = ownChannelActive;
+				(ownChannelActive ? enabledChannels : disabledChannels).Add(_twitchAuthService.LoggedInUser.Value.UserId, _twitchAuthService.LoggedInUser.Value.LoginName);
+			}
+
+			var twitchChannelData = _kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData;
+
+			foreach (var keyValuePair in twitchChannelData.Except(additionalChannelsData))
+			{
+				disabledChannels.Add(keyValuePair.Key, keyValuePair.Value);
+			}
+
+			foreach (var keyValuePair in additionalChannelsData.Except(twitchChannelData))
+			{
+				enabledChannels.Add(keyValuePair.Key, keyValuePair.Value);
+			}
+
+			_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData = additionalChannelsData;
+
+			TwitchChannelsUpdated?.Invoke(this, new TwitchChannelsUpdatedEventArgs(enabledChannels, disabledChannels));
+		}
+
+		public class TwitchChannelsUpdatedEventArgs : EventArgs
+		{
+			public TwitchChannelsUpdatedEventArgs(IDictionary<string, string> enabledChannels, IDictionary<string, string> disabledChannels)
+			{
+				EnabledChannels = new ReadOnlyDictionary<string, string>(enabledChannels);
+				DisabledChannels = new ReadOnlyDictionary<string, string>(disabledChannels);
+			}
+
+			public readonly ReadOnlyDictionary<string, string> EnabledChannels;
+			public readonly ReadOnlyDictionary<string, string> DisabledChannels;
 		}
 	}
 }

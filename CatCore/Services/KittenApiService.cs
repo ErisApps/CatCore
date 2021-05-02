@@ -198,8 +198,7 @@ namespace CatCore.Services
 						var twitchConfig = _settingsService.Config.TwitchConfig;
 						if (_twitchAuthService.TokenIsValid)
 						{
-							twitchConfig.OwnChannelEnabled = twitchStateRequestDto.SelfEnabled;
-							twitchConfig.AdditionalChannelsData = twitchStateRequestDto.AdditionalChannelsData;
+							_twitchChannelManagementService.UpdateChannels(twitchStateRequestDto.SelfEnabled, twitchStateRequestDto.AdditionalChannelsData);
 						}
 
 						twitchConfig.ParseBttvEmotes = twitchStateRequestDto.ParseBttvEmotes;

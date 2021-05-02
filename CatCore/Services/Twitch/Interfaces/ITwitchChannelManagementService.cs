@@ -9,5 +9,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
 		List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false);
 		Task<List<UserData>> GetAllChannelsEnriched();
+
+		internal void UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData);
 	}
 }
