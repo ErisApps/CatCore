@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CatCore.Models.Shared;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -16,15 +17,19 @@ namespace CatCore.Services.Twitch
 
 		private readonly ILogger _logger;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
+		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly ITwitchAuthService _twitchAuthService;
 
 		private readonly char[] _ircMessageSeparator;
 
-		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, ITwitchAuthService twitchAuthService)
+		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
+			_activeStateManager = activeStateManager;
 			_twitchAuthService = twitchAuthService;
+
+			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 
 			_ircMessageSeparator = new[] {'\r', '\n'};
 		}
@@ -60,6 +65,21 @@ namespace CatCore.Services.Twitch
 			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
+		}
+
+		private async void TwitchAuthServiceOnOnCredentialsChanged()
+		{
+			if (_twitchAuthService.HasTokens)
+			{
+				if (_activeStateManager.GetState(PlatformType.Twitch))
+				{
+					await ((ITwitchIrcService) this).Start().ConfigureAwait(false);
+				}
+			}
+			else
+			{
+				await ((ITwitchIrcService) this).Stop().ConfigureAwait(false);
+			}
 		}
 
 		private void ReconnectHappenedHandler(ReconnectionInfo info)

@@ -27,6 +27,8 @@ namespace CatCore.Services
 
 		protected T Credentials { get; private set; } = null!;
 
+		public event Action? OnCredentialsChanged;
+
 		protected KittenCredentialsProvider(ILogger logger, IKittenPathProvider pathProvider)
 		{
 			_logger = logger;
@@ -55,6 +57,8 @@ namespace CatCore.Services
 				}
 
 				File.WriteAllText(_credentialsFilePath, JsonSerializer.Serialize(Credentials, _jsonSerializerOptions));
+
+				OnCredentialsChanged?.Invoke();
 			}
 			catch (Exception e)
 			{

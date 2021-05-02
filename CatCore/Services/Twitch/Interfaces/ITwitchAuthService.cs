@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Interfaces;
 
@@ -9,6 +10,8 @@ namespace CatCore.Services.Twitch.Interfaces
 		string? AccessToken { get; }
 		bool HasTokens { get; }
 		bool TokenIsValid { get; }
+
+		event Action? OnCredentialsChanged;
 
 		ValidationResponse? LoggedInUser { get; }
 
