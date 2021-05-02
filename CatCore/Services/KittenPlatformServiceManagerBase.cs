@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using CatCore.Helpers;
+using CatCore.Models.Shared;
 using CatCore.Services.Interfaces;
 using Serilog;
 
@@ -14,18 +15,22 @@ namespace CatCore.Services
 
 		private readonly ILogger _logger;
 		private readonly T _platformService;
+		private readonly IKittenPlatformActiveStateManager _activeStateManager;
+		private readonly PlatformType _platformType;
 
 		internal HashSet<Assembly> RegisteredAssemblies { get; }
 
-		internal KittenPlatformServiceManagerBase(ILogger logger, T platformService)
+		internal KittenPlatformServiceManagerBase(ILogger logger, T platformService, IKittenPlatformActiveStateManager activeStateManager, PlatformType platformType)
 		{
 			_logger = logger;
 			_platformService = platformService;
+			_activeStateManager = activeStateManager;
+			_platformType = platformType;
 
 			RegisteredAssemblies = new HashSet<Assembly>();
 		}
 
-		public bool IsRunning { get; private set; }
+		public bool IsRunning => _activeStateManager.GetState(_platformType);
 
 		public void Start(Assembly callingAssembly)
 		{
@@ -37,8 +42,8 @@ namespace CatCore.Services
 				return;
 			}
 
+			_activeStateManager.UpdateState(_platformType, false);
 			_platformService.Start();
-			IsRunning = true;
 
 			_logger.Information("Started");
 		}
@@ -64,8 +69,8 @@ namespace CatCore.Services
 				RegisteredAssemblies.Clear();
 			}
 
+			_activeStateManager.UpdateState(_platformType, false);
 			_platformService.Stop();
-			IsRunning = false;
 
 			_logger.Information("Stopped");
 		}
