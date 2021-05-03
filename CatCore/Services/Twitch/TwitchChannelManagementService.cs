@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CatCore.Models.EventArgs;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -15,7 +15,7 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
-		public event EventHandler<TwitchChannelsUpdatedEventArgs>? TwitchChannelsUpdated;
+		public event EventHandler<TwitchChannelsUpdatedEventArgs>? ChannelsUpdated;
 
 		internal TwitchChannelManagementService(IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
 		{
@@ -84,19 +84,7 @@ namespace CatCore.Services.Twitch
 
 			_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData = additionalChannelsData;
 
-			TwitchChannelsUpdated?.Invoke(this, new TwitchChannelsUpdatedEventArgs(enabledChannels, disabledChannels));
-		}
-
-		public class TwitchChannelsUpdatedEventArgs : EventArgs
-		{
-			public TwitchChannelsUpdatedEventArgs(IDictionary<string, string> enabledChannels, IDictionary<string, string> disabledChannels)
-			{
-				EnabledChannels = new ReadOnlyDictionary<string, string>(enabledChannels);
-				DisabledChannels = new ReadOnlyDictionary<string, string>(disabledChannels);
-			}
-
-			public readonly ReadOnlyDictionary<string, string> EnabledChannels;
-			public readonly ReadOnlyDictionary<string, string> DisabledChannels;
+			ChannelsUpdated?.Invoke(this, new TwitchChannelsUpdatedEventArgs(enabledChannels, disabledChannels));
 		}
 	}
 }

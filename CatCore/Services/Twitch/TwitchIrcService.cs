@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -19,17 +20,21 @@ namespace CatCore.Services.Twitch
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly ITwitchAuthService _twitchAuthService;
+		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 
 		private readonly char[] _ircMessageSeparator;
 
-		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService)
+		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
+			ITwitchChannelManagementService twitchChannelManagementService)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
 			_activeStateManager = activeStateManager;
 			_twitchAuthService = twitchAuthService;
+			_twitchChannelManagementService = twitchChannelManagementService;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
+			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
 			_ircMessageSeparator = new[] {'\r', '\n'};
 		}
@@ -79,6 +84,22 @@ namespace CatCore.Services.Twitch
 			else
 			{
 				await ((ITwitchIrcService) this).Stop().ConfigureAwait(false);
+			}
+		}
+
+		private void TwitchChannelManagementServiceOnChannelsUpdated(object sender, TwitchChannelsUpdatedEventArgs e)
+		{
+			if (_activeStateManager.GetState(PlatformType.Twitch))
+			{
+				foreach (var disabledChannel in e.DisabledChannels)
+				{
+					_kittenWebSocketProvider.SendMessage($"PART #{disabledChannel.Value}");
+				}
+
+				foreach (var enabledChannel in e.EnabledChannels)
+				{
+					_kittenWebSocketProvider.SendMessage($"JOIN #{enabledChannel.Value}");
+				}
 			}
 		}
 
@@ -262,6 +283,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		// ReSharper disable once CognitiveComplexity
+		// ReSharper disable once CyclomaticComplexity
 		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
 		{
 			// CommandMeta documentation: https://dev.twitch.tv/docs/irc/tags
@@ -272,6 +294,11 @@ namespace CatCore.Services.Twitch
 					_kittenWebSocketProvider.SendMessage("PONG :tmi.twitch.tv");
 					break;
 				case "376":
+					foreach (var loginName in _twitchChannelManagementService.GetAllActiveLoginNames())
+					{
+						_kittenWebSocketProvider.SendMessage($"JOIN #{loginName}");
+					}
+
 					break;
 				case "NOTICE":
 					// MessageId for NOTICE documentation: https://dev.twitch.tv/docs/irc/msg-id
@@ -287,6 +314,7 @@ namespace CatCore.Services.Twitch
 				case "ROOMSTATE":
 					break;
 				case "USERSTATE":
+					break;
 				case "GLOBALUSERSTATE":
 					break;
 				case "CLEARCHAT":
