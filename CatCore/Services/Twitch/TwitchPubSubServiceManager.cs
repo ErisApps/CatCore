@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using CatCore.Helpers;
+using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -28,6 +29,7 @@ namespace CatCore.Services.Twitch
 			_twitchChannelManagementService = twitchChannelManagementService;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
+			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
 			_activePubSubConnections = new Dictionary<string, TwitchPubSubServiceAgent>();
 		}
@@ -36,10 +38,7 @@ namespace CatCore.Services.Twitch
 		{
 			foreach (var channelId in _twitchChannelManagementService.GetAllActiveChannelIds())
 			{
-				var agent = new TwitchPubSubServiceAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, channelId);
-				await agent.Start().ConfigureAwait(false);
-
-				_activePubSubConnections[channelId] = agent;
+				await CreatePubSubAgent(channelId).ConfigureAwait(false);
 			}
 		}
 
@@ -72,6 +71,34 @@ namespace CatCore.Services.Twitch
 					await twitchPubSubServiceAgent.Value.Stop().ConfigureAwait(false);
 				}
 			}
+		}
+
+		private async void TwitchChannelManagementServiceOnChannelsUpdated(object sender, TwitchChannelsUpdatedEventArgs args)
+		{
+			if (_activeStateManager.GetState(PlatformType.Twitch))
+			{
+				foreach (var disabledChannel in args.DisabledChannels)
+				{
+					if (_activePubSubConnections.TryGetValue(disabledChannel.Key, out var twitchPubSubServiceAgent))
+					{
+						await twitchPubSubServiceAgent.Stop().ConfigureAwait(false);
+						_activePubSubConnections.Remove(disabledChannel.Key);
+					}
+				}
+
+				foreach (var enabledChannel in args.EnabledChannels)
+				{
+					await CreatePubSubAgent(enabledChannel.Key).ConfigureAwait(false);
+				}
+			}
+		}
+
+		private async Task CreatePubSubAgent(string channelId)
+		{
+			var agent = new TwitchPubSubServiceAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, channelId);
+			await agent.Start().ConfigureAwait(false);
+
+			_activePubSubConnections[channelId] = agent;
 		}
 	}
 }
