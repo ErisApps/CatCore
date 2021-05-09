@@ -12,8 +12,6 @@ namespace CatCore.Services.Multiplexer
 	public class ChatServiceMultiplexer : IChatService
 	{
 		private readonly ILogger _logger;
-		private readonly IList<IPlatformService> _platformServices;
-
 		private readonly ITwitchService _twitchPlatformService;
 
 		public event Action<IPlatformService>? OnLogin;
@@ -25,9 +23,8 @@ namespace CatCore.Services.Multiplexer
 		public ChatServiceMultiplexer(ILogger logger, IList<IPlatformService> platformServices)
 		{
 			_logger = logger;
-			_platformServices = platformServices;
 
-			foreach (var platformService in _platformServices)
+			foreach (var platformService in platformServices)
 			{
 				// TODO: Register to all event handlers of IChatService
 				platformService.OnLogin += ChatServiceOnOnLogin;
@@ -37,7 +34,7 @@ namespace CatCore.Services.Multiplexer
 				platformService.OnTextMessageReceived += ChatServiceOnOnTextMessageReceived;
 			}
 
-			_twitchPlatformService = _platformServices.OfType<ITwitchService>().First();
+			_twitchPlatformService = platformServices.OfType<ITwitchService>().First();
 		}
 
 		public ITwitchService GetTwitchPlatformService()
@@ -53,6 +50,7 @@ namespace CatCore.Services.Multiplexer
 					GetTwitchPlatformService().SendMessage(channel, message);
 					break;
 				default:
+					_logger.Error("Sending a message of type {Type} isn't supported (yet)", channel.GetType().Name);
 					throw new NotSupportedException();
 			}
 		}
