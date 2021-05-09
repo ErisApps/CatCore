@@ -1,10 +1,12 @@
-﻿namespace CatCore.Services.Interfaces
+﻿using CatCore.Models.Shared;
+
+namespace CatCore.Services.Interfaces
 {
-	public interface IPlatformService
+	public interface IPlatformService : IChatService
 	{
 		internal void Start();
 		internal void Stop();
 
-		public IChatService GetChatService();
+		public IChatChannel? DefaultChannel { get; }
 	}
 }

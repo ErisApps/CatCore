@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
+using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -12,7 +13,7 @@ using Websocket.Client.Models;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchIrcService : KittenChatServiceBase, ITwitchIrcService
+	internal class TwitchIrcService : ITwitchIrcService
 	{
 		private const string TWITCH_IRC_ENDPOINT = "wss://irc-ws.chat.twitch.tv:443";
 
@@ -38,6 +39,12 @@ namespace CatCore.Services.Twitch
 
 			_ircMessageSeparator = new[] {'\r', '\n'};
 		}
+
+		public event Action? OnLogin;
+		public event Action<IChatChannel>? OnJoinChannel;
+		public event Action<IChatChannel>? OnLeaveChannel;
+		public event Action<IChatChannel>? OnRoomStateChanged;
+		public event Action<IChatMessage>? OnMessageReceived;
 
 		async Task ITwitchIrcService.Start()
 		{
@@ -294,9 +301,19 @@ namespace CatCore.Services.Twitch
 					_kittenWebSocketProvider.SendMessage("PONG :tmi.twitch.tv");
 					break;
 				case "376":
+					OnLogin?.Invoke();
 					foreach (var loginName in _twitchChannelManagementService.GetAllActiveLoginNames())
 					{
 						_kittenWebSocketProvider.SendMessage($"JOIN #{loginName}");
+					}
+
+					// TODO: Remove this placeholder code... seriously... It's just here so the code would compile 😸
+					if (prefix == "")
+					{
+						OnJoinChannel?.Invoke(null!);
+						OnLeaveChannel?.Invoke(null!);
+						OnRoomStateChanged?.Invoke(null!);
+						OnMessageReceived?.Invoke(null!);
 					}
 
 					break;
@@ -305,6 +322,7 @@ namespace CatCore.Services.Twitch
 
 					break;
 				case "USERNOTICE":
+					break;
 				case "PRIVMSG":
 					break;
 				case "JOIN":

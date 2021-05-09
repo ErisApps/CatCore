@@ -92,7 +92,6 @@ namespace CatCore
 				.WithoutThrowOnRegisteringDisposableTransient());
 
 			_container.Use(_version);
-			_container.Use(typeof(ChatCoreInstance).Assembly);
 			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 			_container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
 			_container.Register<Random>(made: Made.Of(r => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
@@ -121,7 +120,7 @@ namespace CatCore
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
-			_container.RegisterMany(new[] {typeof(IChatService), typeof(ITwitchIrcService)}, typeof(TwitchIrcService), Reuse.Singleton);
+			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
 			_container.RegisterMany(new[] {typeof(IPlatformService), typeof(ITwitchService)}, typeof(TwitchService), Reuse.Singleton,
 				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
