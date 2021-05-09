@@ -18,7 +18,7 @@ namespace CatCore.Services.Multiplexer
 			_platformServices = platformServices;
 		}
 
-		public bool IsRunning { get; }
+		public bool IsRunning => false;
 
 		public void Start(Assembly callingAssembly)
 		{
