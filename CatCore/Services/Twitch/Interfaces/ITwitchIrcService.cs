@@ -1,11 +1,18 @@
-﻿using System.Threading.Tasks;
-using CatCore.Services.Interfaces;
+﻿using System;
+using System.Threading.Tasks;
+using CatCore.Models.Shared;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
-	public interface ITwitchIrcService : IChatService
+	internal interface ITwitchIrcService
 	{
-		internal Task Start();
-		internal Task Stop();
+		event Action? OnLogin;
+		event Action<IChatChannel>? OnJoinChannel;
+		event Action<IChatChannel>? OnLeaveChannel;
+		event Action<IChatChannel>? OnRoomStateChanged;
+		event Action<IChatMessage>? OnMessageReceived;
+
+		public Task Start();
+		public Task Stop();
 	}
 }
