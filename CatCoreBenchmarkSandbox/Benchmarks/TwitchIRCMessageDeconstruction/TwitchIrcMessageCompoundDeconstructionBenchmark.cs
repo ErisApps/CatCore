@@ -41,11 +41,14 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 		{
 			var match = _twitchMessageRegex.Match(IrcMessage);
 
-			var tags = match.Groups["Tags"].Success ? new ReadOnlyDictionary<string, string>(_tagRegex.Matches(match.Value).Cast<Match>().Aggregate(new Dictionary<string, string>(), (dict, m) =>
-			{
-				dict[m.Groups["Tag"].Value] = m.Groups["Value"].Value;
-				return dict;
-			})) : null;
+			var tags = match.Groups["Tags"].Success
+				? new ReadOnlyDictionary<string, string>(_tagRegex.Matches(match.Value).Cast<Match>()
+					.Aggregate(new Dictionary<string, string>(), (dict, m) =>
+					{
+						dict[m.Groups["Tag"].Value] = m.Groups["Value"].Value;
+						return dict;
+					}))
+				: null;
 			var userName = match.Groups["HostName"].Success ? match.Groups["HostName"].Value.Split('!')[0] : null;
 			var messageType = match.Groups["MessageType"].Value;
 			var channelName = match.Groups["ChannelName"].Success ? match.Groups["ChannelName"].Value.Trim('#') : null;
@@ -105,14 +108,14 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 					{
 						if (charSeparator == ';')
 						{
-							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
 
 							charSeparator = '=';
 							startPos = curPos + 1;
 						}
 						else
 						{
-							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
 
 							charSeparator = ';';
 							startPos = curPos + 1;

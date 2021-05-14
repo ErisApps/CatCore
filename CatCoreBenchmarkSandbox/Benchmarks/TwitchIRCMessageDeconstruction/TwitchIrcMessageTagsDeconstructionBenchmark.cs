@@ -87,6 +87,92 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 				{
 					if (lookingForTagSeparator)
 					{
+						tags[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+
+						lookingForTagSeparator = false;
+						charSeparator = '=';
+						startPos = curPos + 1;
+					}
+					else
+					{
+						keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+
+						lookingForTagSeparator = true;
+						charSeparator = ';';
+						startPos = curPos + 1;
+					}
+				}
+			}
+
+			return tags;
+		}
+
+		[Benchmark]
+		public Dictionary<string, string> SpanDissectionBenchmarkV2()
+		{
+			// Twitch IRC Message spec
+			// https://ircv3.net/specs/extensions/message-tags
+
+			var tagsAsSpan = IrcTagsPart.AsSpan();
+
+			var tags = new Dictionary<string, string>();
+
+
+			// false means looking for separator between key and value, true means looking for separator between
+			var charSeparator = '=';
+			var startPos = 0;
+
+			string? keyTmp = null;
+
+			for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
+			{
+				if (tagsAsSpan[curPos] == charSeparator)
+				{
+					if (charSeparator == ';')
+					{
+						tags[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+
+						charSeparator = '=';
+						startPos = curPos + 1;
+					}
+					else
+					{
+						keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+
+						charSeparator = ';';
+						startPos = curPos + 1;
+					}
+				}
+			}
+
+			return tags;
+		}
+
+		// Kept to 2 benchmarks below to measure the performance impact of the fix
+		[Benchmark]
+		public Dictionary<string, string> SpanDissectionBenchmarkBroken()
+		{
+			// Twitch IRC Message spec
+			// https://ircv3.net/specs/extensions/message-tags
+
+			var tagsAsSpan = IrcTagsPart.AsSpan();
+
+			var tags = new Dictionary<string, string>();
+
+
+			// false means looking for separator between key and value, true means looking for separator between
+			var lookingForTagSeparator = false;
+			var charSeparator = '=';
+			var startPos = 0;
+
+			string? keyTmp = null;
+
+			for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
+			{
+				if (tagsAsSpan[curPos] == charSeparator)
+				{
+					if (lookingForTagSeparator)
+					{
 						tags[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
 
 						lookingForTagSeparator = false;
@@ -107,8 +193,9 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 			return tags;
 		}
 
+
 		[Benchmark]
-		public Dictionary<string, string> SpanDissectionBenchmarkV2()
+		public Dictionary<string, string> SpanDissectionBenchmarkV2Broken()
 		{
 			// Twitch IRC Message spec
 			// https://ircv3.net/specs/extensions/message-tags

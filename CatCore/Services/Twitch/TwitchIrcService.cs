@@ -195,14 +195,14 @@ namespace CatCore.Services.Twitch
 					{
 						if (charSeparator == ';')
 						{
-							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
 
 							charSeparator = '=';
 							startPos = curPos + 1;
 						}
 						else
 						{
-							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos - 1).ToString();
+							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
 
 							charSeparator = ';';
 							startPos = curPos + 1;
