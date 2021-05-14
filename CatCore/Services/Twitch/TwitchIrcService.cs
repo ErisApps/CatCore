@@ -188,21 +188,24 @@ namespace CatCore.Services.Twitch
 				var charSeparator = '=';
 				var startPos = 0;
 
-				string? keyTmp = null;
+				ReadOnlySpan<char> keyTmp = null;
 				for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
 				{
 					if (tagsAsSpan[curPos] == charSeparator)
 					{
 						if (charSeparator == ';')
 						{
-							tagsDictInternal[keyTmp!] = (curPos == startPos) ? string.Empty : tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+							if (curPos != startPos)
+							{
+								tagsDictInternal[keyTmp.ToString()] = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+							}
 
 							charSeparator = '=';
 							startPos = curPos + 1;
 						}
 						else
 						{
-							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+							keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos);
 
 							charSeparator = ';';
 							startPos = curPos + 1;
