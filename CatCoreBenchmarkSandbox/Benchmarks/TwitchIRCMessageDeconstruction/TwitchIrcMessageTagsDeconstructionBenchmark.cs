@@ -148,6 +148,51 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 			return tags;
 		}
 
+		[Benchmark]
+		// ReSharper disable once CognitiveComplexity
+		public Dictionary<string, string> SpanDissectionBenchmarkV3()
+		{
+			// Twitch IRC Message spec
+			// https://ircv3.net/specs/extensions/message-tags
+
+			var tagsAsSpan = IrcTagsPart.AsSpan();
+
+			var tags = new Dictionary<string, string>();
+
+
+			// false means looking for separator between key and value, true means looking for separator between
+			var charSeparator = '=';
+			var startPos = 0;
+
+			ReadOnlySpan<char> keyTmp = null;
+
+			for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
+			{
+				if (tagsAsSpan[curPos] == charSeparator)
+				{
+					if (charSeparator == ';')
+					{
+						if (curPos != startPos)
+						{
+							tags[keyTmp.ToString()] = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
+						}
+
+						charSeparator = '=';
+						startPos = curPos + 1;
+					}
+					else
+					{
+						keyTmp = tagsAsSpan.Slice(startPos, curPos - startPos);
+
+						charSeparator = ';';
+						startPos = curPos + 1;
+					}
+				}
+			}
+
+			return tags;
+		}
+
 		// Kept to 2 benchmarks below to measure the performance impact of the fix
 		[Benchmark]
 		public Dictionary<string, string> SpanDissectionBenchmarkBroken()
