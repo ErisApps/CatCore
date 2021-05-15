@@ -13,6 +13,10 @@ namespace CatCore.Services.Twitch
 		public TwitchHelixClientHandler(ITwitchAuthService twitchAuthService)
 		{
 			_twitchAuthService = twitchAuthService;
+
+#if !RELEASE
+			// Placeholder for proxy configuration
+#endif
 		}
 
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
