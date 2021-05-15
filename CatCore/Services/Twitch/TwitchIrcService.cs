@@ -300,10 +300,10 @@ namespace CatCore.Services.Twitch
 
 			switch (commandType)
 			{
-				case "PING":
+				case IrcCommands.PING:
 					_kittenWebSocketProvider.SendMessage("PONG :tmi.twitch.tv");
 					break;
-				case "376":
+				case IrcCommands.RPL_ENDOFMOTD:
 					OnLogin?.Invoke();
 					foreach (var loginName in _twitchChannelManagementService.GetAllActiveLoginNames())
 					{
@@ -320,27 +320,30 @@ namespace CatCore.Services.Twitch
 					}
 
 					break;
-				case "NOTICE":
+				case IrcCommands.NOTICE:
 					// MessageId for NOTICE documentation: https://dev.twitch.tv/docs/irc/msg-id
 
 					break;
-				case "USERNOTICE":
+				case TwitchIrcCommands.USERNOTICE:
+				case IrcCommands.PRIVMSG:
 					break;
-				case "PRIVMSG":
+				case IrcCommands.JOIN:
 					break;
-				case "JOIN":
+				case IrcCommands.PART:
 					break;
-				case "PART":
+				case TwitchIrcCommands.ROOMSTATE:
 					break;
-				case "ROOMSTATE":
+				case TwitchIrcCommands.USERSTATE:
 					break;
-				case "USERSTATE":
+				case TwitchIrcCommands.GLOBALUSERSTATE:
 					break;
-				case "GLOBALUSERSTATE":
+				case TwitchIrcCommands.CLEARCHAT:
 					break;
-				case "CLEARCHAT":
+				case TwitchIrcCommands.CLEARMSG:
 					break;
-				case "CLEARMSG":
+				case TwitchIrcCommands.RECONNECT:
+					break;
+				case TwitchIrcCommands.HOSTTARGET:
 					break;
 			}
 		}
