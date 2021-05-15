@@ -94,7 +94,7 @@ namespace CatCore
 			_container.Use(_version);
 			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 			_container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
-			_container.Register<Random>(made: Made.Of(r => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
+			_container.Register(Made.Of(r => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
 
 			// Default logger
 			_container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));
