@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
 using Websocket.Client;
@@ -36,9 +38,10 @@ namespace CatCore.Services
 			{
 				ReconnectTimeout = TimeSpan.FromMinutes(10)
 			};
-			_reconnectHappenedSubscription = _wss.ReconnectionHappened.Subscribe(ReconnectHappenedHandler);
-			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.Subscribe(DisconnectHappenedHandler);
-			_messageReceivedSubscription = _wss.MessageReceived.Subscribe(MessageReceivedHandler);
+
+			_reconnectHappenedSubscription = _wss.ReconnectionHappened.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(ReconnectHappenedHandler);
+			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(DisconnectHappenedHandler);
+			_messageReceivedSubscription = _wss.MessageReceived.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(MessageReceivedHandler);
 
 			await _wss.StartOrFail().ConfigureAwait(false);
 		}
