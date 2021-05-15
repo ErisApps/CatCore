@@ -24,9 +24,11 @@
 			<InputAssemblies Include="System.Memory.dll"/>
 			<InputAssemblies Include="System.Net.Http.Json.dll"/>
 			<InputAssemblies Include="System.Numerics.Vectors.dll"/>
+			<InputAssemblies Include="System.Reactive.dll"/>
 			<InputAssemblies Include="System.Runtime.CompilerServices.Unsafe.dll"/>
 			<InputAssemblies Include="System.Text.Encodings.Web.dll"/>
 			<InputAssemblies Include="System.Text.Json.dll"/>
+			<InputAssemblies Include="System.Threading.Channels.dll"/>
 			<InputAssemblies Include="System.Threading.Tasks.Extensions.dll"/>
 			<InputAssemblies Include="Websocket.Client.dll"/>
 		</ItemGroup>
