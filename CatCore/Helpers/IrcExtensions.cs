@@ -4,14 +4,14 @@ namespace CatCore.Helpers
 {
 	internal static class IrcExtensions
 	{
-		internal static bool ParsePrefix(this string rawPrefix, out bool? isServer, out string? nickname, out string? username, out string? hostname)
+		internal static bool ParsePrefix(this string? rawPrefix, out bool? isServer, out string? nickname, out string? username, out string? hostname)
 		{
 			isServer = null;
 			nickname = null;
 			username = null;
 			hostname = null;
 
-			if (rawPrefix.Length == 0)
+			if (string.IsNullOrEmpty(rawPrefix))
 			{
 				return false;
 			}
@@ -55,7 +55,6 @@ namespace CatCore.Helpers
 			{
 				nickname = rawPrefix;
 			}
-
 
 			return true;
 		}
