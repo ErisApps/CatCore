@@ -127,8 +127,13 @@ namespace CatCore.Services.Twitch
 
 		private void MessageReceivedHandler(ResponseMessage response)
 		{
+			MessageReceivedHandlerInternal(response.Text);
+		}
+
+		private void MessageReceivedHandlerInternal(string rawMessage)
+		{
 			// TODO: Investigate possibility to split a message string into ReadOnlySpans<char> types instead of strings again, would prevents unnecessary heap allocations which might in turn improve the throughput
-			var messages = response.Text.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
+			var messages = rawMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
 
 			foreach (var messageInternal in messages)
 			{
