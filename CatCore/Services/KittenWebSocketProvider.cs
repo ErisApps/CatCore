@@ -34,7 +34,16 @@ namespace CatCore.Services
 		{
 			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
-			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket {Options = {KeepAliveInterval = TimeSpan.Zero, Proxy = new System.Net.WebProxy("192.168.0.126", 8888)}})
+			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket
+			{
+				Options =
+				{
+					KeepAliveInterval = TimeSpan.Zero,
+#if !RELEASE
+					// Placeholder for proxy configuration
+#endif
+				}
+			})
 			{
 				ReconnectTimeout = TimeSpan.FromMinutes(10)
 			};
