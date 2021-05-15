@@ -296,6 +296,8 @@ namespace CatCore.Services.Twitch
 		// ReSharper disable once CyclomaticComplexity
 		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
 		{
+			// Command official documentation: https://datatracker.ietf.org/doc/html/rfc1459 and https://datatracker.ietf.org/doc/html/rfc2812
+			// Command Twitch documentation: https://dev.twitch.tv/docs/irc/commands
 			// CommandMeta documentation: https://dev.twitch.tv/docs/irc/tags
 
 			switch (commandType)
