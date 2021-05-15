@@ -303,7 +303,7 @@ namespace CatCore.Services.Twitch
 			switch (commandType)
 			{
 				case IrcCommands.PING:
-					_kittenWebSocketProvider.SendMessage("PONG :tmi.twitch.tv");
+					_kittenWebSocketProvider.SendMessage($"{IrcCommands.PONG} :{message!}");
 					break;
 				case IrcCommands.RPL_ENDOFMOTD:
 					OnLogin?.Invoke();
