@@ -54,7 +54,7 @@ namespace CatCore.Services.Twitch
 
 		public void SendMessage(IChatChannel channel, string message)
 		{
-			throw new NotImplementedException();
+			_twitchIrcService.SendMessage(channel, message);
 		}
 
 		private void RegisterInternalEventHandlers()
