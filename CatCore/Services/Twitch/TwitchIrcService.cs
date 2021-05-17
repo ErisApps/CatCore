@@ -46,6 +46,12 @@ namespace CatCore.Services.Twitch
 		public event Action<IChatChannel>? OnRoomStateChanged;
 		public event Action<IChatMessage>? OnMessageReceived;
 
+		public void SendMessage(IChatChannel channel, string message)
+		{
+			// TODO: Add actual global rate limiting. 100msg/30s when broadcaster/moderator on channel, 20msg/30s when otherwise
+			_kittenWebSocketProvider.SendMessage($"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Id} :{message}");
+		}
+
 		async Task ITwitchIrcService.Start()
 		{
 			if (!_twitchAuthService.HasTokens)

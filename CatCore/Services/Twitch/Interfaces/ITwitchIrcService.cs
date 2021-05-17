@@ -12,6 +12,8 @@ namespace CatCore.Services.Twitch.Interfaces
 		event Action<IChatChannel>? OnRoomStateChanged;
 		event Action<IChatMessage>? OnMessageReceived;
 
+		void SendMessage(IChatChannel channel, string message);
+
 		public Task Start();
 		public Task Stop();
 	}
