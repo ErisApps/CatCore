@@ -64,8 +64,8 @@ namespace CatCore.Services.Twitch
 				await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
 			}
 
-			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
-			_kittenWebSocketProvider.ReconnectHappened += ReconnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
 
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened += DisconnectHappenedHandler;
@@ -80,7 +80,7 @@ namespace CatCore.Services.Twitch
 		{
 			await _kittenWebSocketProvider.Disconnect("Requested by service manager").ConfigureAwait(false);
 
-			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 		}
@@ -116,24 +116,22 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		private void ReconnectHappenedHandler(ReconnectionInfo info)
+		private void ConnectHappenedHandler()
 		{
-			_logger.Debug("(Re)connect happened - {Url} - {Type}", TWITCH_IRC_ENDPOINT, info.Type);
-
 			_kittenWebSocketProvider.SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
 
 			_kittenWebSocketProvider.SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
 			_kittenWebSocketProvider.SendMessage($"NICK {_twitchAuthService.LoggedInUser?.LoginName ?? "."}");
 		}
 
-		private void DisconnectHappenedHandler(DisconnectionInfo info)
+		private void DisconnectHappenedHandler()
 		{
 			_logger.Information("Closed connection to Twitch IRC server");
 		}
 
-		private void MessageReceivedHandler(ResponseMessage response)
+		private void MessageReceivedHandler(string message)
 		{
-			MessageReceivedHandlerInternal(response.Text);
+			MessageReceivedHandlerInternal(message);
 		}
 
 		private void MessageReceivedHandlerInternal(string rawMessage)

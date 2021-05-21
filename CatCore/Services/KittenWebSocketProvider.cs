@@ -4,6 +4,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
+using Serilog;
 using Websocket.Client;
 using Websocket.Client.Logging;
 using Websocket.Client.Models;
@@ -12,25 +13,28 @@ namespace CatCore.Services
 {
 	internal class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
+		private readonly ILogger _logger;
 		private WebsocketClient? _wss;
 
 		private IDisposable? _reconnectHappenedSubscription;
 		private IDisposable? _disconnectionHappenedSubscription;
 		private IDisposable? _messageReceivedSubscription;
 
-		public event Action<ReconnectionInfo>? ReconnectHappened;
-		public event Action<DisconnectionInfo>? DisconnectHappened;
-		public event Action<ResponseMessage>? MessageReceived;
+		public event Action? ConnectHappened;
+		public event Action? DisconnectHappened;
+		public event Action<string>? MessageReceived;
 
-		public KittenWebSocketProvider()
+		public KittenWebSocketProvider(ILogger logger)
 		{
+			_logger = logger;
+
 			// Disable internal Websocket.Client logging
 			LogProvider.IsDisabled = true;
 		}
 
 		public bool IsConnected => _wss?.IsRunning ?? false;
 
-		public async Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null)
+		public async Task Connect(string uri)
 		{
 			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
@@ -41,6 +45,7 @@ namespace CatCore.Services
 					KeepAliveInterval = TimeSpan.Zero,
 #if !RELEASE
 					// Placeholder for proxy configuration
+					Proxy = new System.Net.WebProxy("192.168.0.126", 8888)
 #endif
 				}
 			})
@@ -76,19 +81,31 @@ namespace CatCore.Services
 			}
 		}
 
+		public async Task SendMessageInstant(string message)
+		{
+			if (IsConnected)
+			{
+				await _wss!.SendInstant(message).ConfigureAwait(false);
+			}
+		}
+
 		private void ReconnectHappenedHandler(ReconnectionInfo info)
 		{
-			ReconnectHappened?.Invoke(info);
+			_logger.Debug("(Re)connect happened - Url: {Url} - Type: {Type}", _wss!.Url.ToString(), info.Type);
+
+			ConnectHappened?.Invoke();
 		}
 
 		private void DisconnectHappenedHandler(DisconnectionInfo info)
 		{
-			DisconnectHappened?.Invoke(info);
+			DisconnectHappened?.Invoke();
+
+			_logger.Warning("Closed connection to the server - Url: {Url} - Type: {Type}", _wss!.Url.ToString(), info.Type);
 		}
 
-		private void MessageReceivedHandler(ResponseMessage message)
+		private void MessageReceivedHandler(ResponseMessage responseMessage)
 		{
-			MessageReceived?.Invoke(message);
+			MessageReceived?.Invoke(responseMessage.Text);
 		}
 	}
 }
