@@ -1,21 +1,31 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Helpers;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
 using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
-using Websocket.Client;
-using Websocket.Client.Models;
 
 namespace CatCore.Services.Twitch
 {
 	internal class TwitchIrcService : ITwitchIrcService
 	{
 		private const string TWITCH_IRC_ENDPOINT = "wss://irc-ws.chat.twitch.tv:443";
+
+		/// <remark>
+		/// According to the official documentation, the rate limiting window interval is 30 seconds.
+		/// However, due to delays in the connection/Twitch servers and this library being too precise time-wise,
+		/// it might result in going over the rate limit again when it should have been reset.
+		/// Resulting in a global temporary chat ban of 30 minutes, hence why we pick an internal time window of 32 seconds.
+		/// </remark>
+		private const long MESSAGE_SENDING_TIME_WINDOW_TICKS = 32 * TimeSpan.TicksPerSecond;
 
 		private readonly ILogger _logger;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
@@ -24,6 +34,15 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 
 		private readonly char[] _ircMessageSeparator;
+
+		private readonly ConcurrentQueue<(string channelName, string message)> _messageQueue;
+		private readonly ConcurrentDictionary<string, long> _forcedSendChannelMessageSendDelays;
+		private readonly List<long> _messageSendTimestamps;
+
+		private readonly SemaphoreSlim _workerCanSleepSemaphoreSlim = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim _workerSemaphoreSlim = new SemaphoreSlim(0, 1);
+
+		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 
 		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
 			ITwitchChannelManagementService twitchChannelManagementService)
@@ -38,6 +57,10 @@ namespace CatCore.Services.Twitch
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
 			_ircMessageSeparator = new[] {'\r', '\n'};
+
+			_messageQueue = new ConcurrentQueue<(string channelName, string message)>();
+			_forcedSendChannelMessageSendDelays = new ConcurrentDictionary<string, long>();
+			_messageSendTimestamps = new List<long>();
 		}
 
 		public event Action? OnLogin;
@@ -48,8 +71,15 @@ namespace CatCore.Services.Twitch
 
 		public void SendMessage(IChatChannel channel, string message)
 		{
-			// TODO: Add actual global rate limiting. 100msg/30s when broadcaster/moderator on channel, 20msg/30s when otherwise
-			_kittenWebSocketProvider.SendMessage($"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Id} :{message}");
+			_workerCanSleepSemaphoreSlim.Wait();
+			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Id} :{message}"));
+			_workerCanSleepSemaphoreSlim.Release();
+
+			// Trigger re-activation of worker thread
+			if (_workerSemaphoreSlim.CurrentCount == 0)
+			{
+				_workerSemaphoreSlim.Release();
+			}
 		}
 
 		async Task ITwitchIrcService.Start()
@@ -126,7 +156,8 @@ namespace CatCore.Services.Twitch
 
 		private void DisconnectHappenedHandler()
 		{
-			_logger.Information("Closed connection to Twitch IRC server");
+			_messageQueueProcessorCancellationTokenSource?.Cancel();
+			_messageQueueProcessorCancellationTokenSource = null;
 		}
 
 		private void MessageReceivedHandler(string message)
@@ -321,6 +352,11 @@ namespace CatCore.Services.Twitch
 						_kittenWebSocketProvider.SendMessage($"JOIN #{loginName}");
 					}
 
+					_messageQueueProcessorCancellationTokenSource?.Cancel();
+					_messageQueueProcessorCancellationTokenSource = new CancellationTokenSource();
+
+					_ = Task.Run(() => ProcessQueuedMessage(_messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token).ConfigureAwait(false);
+
 					// TODO: Remove this placeholder code... seriously... It's just here so the code would compile 😸
 					if (prefix == "")
 					{
@@ -357,6 +393,110 @@ namespace CatCore.Services.Twitch
 				case TwitchIrcCommands.HOSTTARGET:
 					break;
 			}
+		}
+
+		// ReSharper disable once CognitiveComplexity
+		private async Task ProcessQueuedMessage(CancellationToken cts)
+		{
+			long? GetTicksTillReset()
+			{
+				if (_messageQueue.IsEmpty)
+				{
+					return null;
+				}
+
+				var rateLimit = (int) GetRateLimit(_messageQueue.First().channelName);
+
+				if (_messageSendTimestamps.Count < rateLimit)
+				{
+					return 0;
+				}
+
+				var ticksTillReset = _messageSendTimestamps[_messageSendTimestamps.Count - rateLimit] + MESSAGE_SENDING_TIME_WINDOW_TICKS - DateTime.UtcNow.Ticks;
+				return ticksTillReset > 0 ? ticksTillReset : 0;
+			}
+
+			void UpdateRateLimitState()
+			{
+				while (_messageSendTimestamps.Count > 0 && DateTime.UtcNow.Ticks - _messageSendTimestamps.First() > MESSAGE_SENDING_TIME_WINDOW_TICKS)
+				{
+					_messageSendTimestamps.RemoveAt(0);
+				}
+			}
+
+			bool CheckIfConsumable()
+			{
+				UpdateRateLimitState();
+
+				return !_messageQueue.IsEmpty && _messageSendTimestamps.Count < (int) GetRateLimit(_messageQueue.First().channelName);
+			}
+
+			async Task HandleQueue()
+			{
+				while (_messageQueue.TryPeek(out var msg))
+				{
+					var rateLimit = GetRateLimit(msg.channelName);
+					if (_messageSendTimestamps.Count >= (int) rateLimit)
+					{
+						_logger.Debug("Hit rate limit. Type {RateLimit}", rateLimit.ToString("G"));
+						break;
+					}
+
+					if (_forcedSendChannelMessageSendDelays.TryGetValue(msg.channelName, out var ticksSinceLastChannelMessage))
+					{
+						var ticksTillReset = ticksSinceLastChannelMessage + (rateLimit == MessageSendingRateLimit.Relaxed ? 50 : 1250) * TimeSpan.TicksPerMillisecond - DateTime.UtcNow.Ticks;
+						if (ticksTillReset > 0)
+						{
+							var msTillReset = (int) Math.Ceiling((double) ticksTillReset / TimeSpan.TicksPerMillisecond);
+							_logger.Verbose("Delayed message sending, will send next message in {TimeTillReset}ms", msTillReset);
+							await Task.Delay(msTillReset, CancellationToken.None).ConfigureAwait(false);
+						}
+					}
+
+					_messageQueue.TryDequeue(out msg);
+
+					// Send message
+					await _kittenWebSocketProvider.SendMessageInstant(msg.message).ConfigureAwait(false);
+					// TODO: Add forwarding to internal message received handler
+					// _logger.Information(msg.message);
+
+					var ticksNow = DateTime.UtcNow.Ticks;
+					_messageSendTimestamps.Add(ticksNow);
+					_forcedSendChannelMessageSendDelays[msg.channelName] = ticksNow;
+				}
+			}
+
+			while (!cts.IsCancellationRequested)
+			{
+				await HandleQueue().ConfigureAwait(false);
+
+				do
+				{
+					_logger.Verbose("Hibernating worker queue");
+
+					await _workerCanSleepSemaphoreSlim.WaitAsync(CancellationToken.None);
+					var canConsume = !_messageQueue.IsEmpty;
+					_workerCanSleepSemaphoreSlim.Release();
+
+					var remainingTicks = GetTicksTillReset();
+					var autoReExecutionDelay = canConsume ? remainingTicks > 0 ? (int) Math.Ceiling((double) remainingTicks / TimeSpan.TicksPerMillisecond) : 0 : -1;
+					_logger.Information("Auto re-execution delay: {AutoReExecutionDelay}ms", autoReExecutionDelay);
+
+					await Task.WhenAny(
+						Task.Delay(autoReExecutionDelay, cts),
+						_workerSemaphoreSlim.WaitAsync(cts));
+
+					_logger.Verbose("Waking up worker queue");
+				} while (!CheckIfConsumable() && !cts.IsCancellationRequested);
+			}
+
+			_logger.Warning("Stopped worker queue");
+		}
+
+		private MessageSendingRateLimit GetRateLimit(string channelName)
+		{
+			// TODO: Add code to check for moderator rights on other channels
+			return _twitchAuthService.LoggedInUser?.LoginName == channelName ? MessageSendingRateLimit.Relaxed : MessageSendingRateLimit.Normal;
 		}
 	}
 }
