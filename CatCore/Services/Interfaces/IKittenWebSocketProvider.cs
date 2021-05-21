@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Websocket.Client;
-using Websocket.Client.Models;
 
 namespace CatCore.Services.Interfaces
 {
 	internal interface IKittenWebSocketProvider
 	{
 		bool IsConnected { get; }
-		Task Connect(string uri, TimeSpan? heartBeatInterval = null, string? customHeartBeatMessage = null);
+		Task Connect(string uri);
 		Task Disconnect(string? reason = null);
 		void SendMessage(string message);
+		Task SendMessageInstant(string message);
 
-		event Action<ReconnectionInfo>? ReconnectHappened;
-		event Action<DisconnectionInfo>? DisconnectHappened;
-		event Action<ResponseMessage>? MessageReceived;
+		event Action? ConnectHappened;
+		event Action? DisconnectHappened;
+		event Action<string>? MessageReceived;
 	}
 }

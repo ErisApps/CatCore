@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Timers;
 using CatCore.Models.Twitch.PubSub;
@@ -9,9 +8,6 @@ using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
-using Websocket.Client;
-using Websocket.Client.Models;
-using ResponseMessage = Websocket.Client.ResponseMessage;
 
 namespace CatCore.Services.Twitch
 {
@@ -42,7 +38,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService = twitchAuthService;
 			_channelId = channelId;
 
-			_kittenWebSocketProvider = new KittenWebSocketProvider(); // manual resolution // TODO: Find a better way for this to ensure testability in the long run
+			_kittenWebSocketProvider = new KittenWebSocketProvider(logger); // manual resolution // TODO: Find a better way for this to ensure testability in the long run
 
 			// According to the Twitch PubSub docs, we should send a ping message at least once every 5 minutes
 			// => Sending one every 2 or 3 minutes sounds like a sane number.
@@ -92,8 +88,8 @@ namespace CatCore.Services.Twitch
 				await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
 			}
 
-			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
-			_kittenWebSocketProvider.ReconnectHappened += ReconnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
 
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened += DisconnectHappenedHandler;
@@ -108,7 +104,7 @@ namespace CatCore.Services.Twitch
 		{
 			await _kittenWebSocketProvider.Disconnect().ConfigureAwait(false);
 
-			_kittenWebSocketProvider.ReconnectHappened -= ReconnectHappenedHandler;
+			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 		}
@@ -126,7 +122,7 @@ namespace CatCore.Services.Twitch
 			_kittenWebSocketProvider.SendMessage(JsonSerializer.Serialize(new ListenMessage(topic, new ListenMessage.ListenMessageData(_twitchAuthService.AccessToken!, topic))));
 		}
 
-		protected void ReconnectHappenedHandler(ReconnectionInfo info)
+		private void ConnectHappenedHandler()
 		{
 			_pingTimer!.Start();
 
@@ -141,13 +137,13 @@ namespace CatCore.Services.Twitch
 			SendListenTopicPubSubMessage($"community-points-channel-v1.{_channelId}");
 		}
 
-		protected void DisconnectHappenedHandler(DisconnectionInfo info)
+		private void DisconnectHappenedHandler()
 		{
 			_pingTimer.Stop();
 			_pongTimer.Stop();
 		}
 
-		protected void MessageReceivedHandler(ResponseMessage response)
+		private void MessageReceivedHandler(string receivedMessage)
 		{
 			try
 			{
