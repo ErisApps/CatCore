@@ -122,7 +122,7 @@
 						<div class="input-field">
 							<i class="material-icons prefix">person_search</i>
 							<input type="text" id="additionalchannel-input" class="autocomplete">
-							<label for="additionalchannel-input">Add additional channel by filling in the channel name</label>
+							<label id="additionalchannel-input-label" for="additionalchannel-input">Add additional channel by filling in the channel name</label>
 							<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
 						</div>
 					</div>
@@ -322,8 +322,7 @@
 				document.getElementById("twitch-channels").innerHTML += GenerateAdditionalTwitchChannel(channelToAdd);
 
 				additionalTwitchChannelsAutocompleteInstance.el.value = "";
-
-				// TODO: Look into visually resetting the autocomplete element (hint stays above the input field)
+				document.getElementById("additionalchannel-input-label").classList.remove("active");
 			}
 		});
 
