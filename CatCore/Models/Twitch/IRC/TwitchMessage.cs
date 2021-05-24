@@ -1,45 +1,57 @@
 ﻿using System.Collections.ObjectModel;
 using CatCore.Models.Shared;
+using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
 {
 	public class TwitchMessage : IChatMessage
 	{
 		/// <inheritdoc cref="IChatMessage.Id"/>
-		public string Id { get; }
+		[PublicAPI]
+		public string Id { get; internal set;  }
 
 		/// <inheritdoc cref="IChatMessage.IsSystemMessage"/>
-		public bool IsSystemMessage { get; }
+		[PublicAPI]
+		public bool IsSystemMessage { get; internal set;  }
 
 		/// <inheritdoc cref="IChatMessage.IsActionMessage"/>
-		public bool IsActionMessage { get; }
+		[PublicAPI]
+		public bool IsActionMessage { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.IsHighlighted"/>
-		public bool IsHighlighted { get; }
+		[PublicAPI]
+		public bool IsHighlighted { get; internal set;  }
 
 		/// <inheritdoc cref="IChatMessage.IsPing"/>
-		public bool IsPing { get; }
+		[PublicAPI]
+		public bool IsPing { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Message"/>
-		public string Message { get; }
+		[PublicAPI]
+		public string Message { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Sender"/>
-		public IChatUser Sender { get; }
+		[PublicAPI]
+		public IChatUser Sender { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Channel"/>
-		public IChatChannel Channel { get; }
+		[PublicAPI]
+		public IChatChannel Channel { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Metadata"/>
-		public ReadOnlyDictionary<string, string> Metadata { get; }
+		[PublicAPI]
+		public ReadOnlyDictionary<string, string> Metadata { get; internal set; }
 
 		/// <summary>
 		/// The IRC message type for this TwitchMessage
 		/// </summary>
+		[PublicAPI]
 		public string Type { get; internal set; }
 
 		/// <summary>
 		/// The number of bits in this message, if any.
 		/// </summary>
+		[PublicAPI]
 		public int Bits { get; internal set; }
 
 		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isHighlighted, bool isPing, string message, IChatUser sender, IChatChannel channel,
