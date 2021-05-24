@@ -1,41 +1,50 @@
-﻿namespace CatCore.Models.Twitch.IRC
+﻿using JetBrains.Annotations;
+
+namespace CatCore.Models.Twitch.IRC
 {
 	public class TwitchRoomState
 	{
 		/// <summary>
 		/// The id of the channel to which the room state belongs.
 		/// </summary>
-		public string RoomId { get; }
+		[PublicAPI]
+		public string RoomId { get; internal set; }
 
 		/// <summary>
 		/// If enabled, only emotes are allowed in chat.
 		/// </summary>
-		public bool EmoteOnly { get; }
+		[PublicAPI]
+		public bool EmoteOnly { get; internal set; }
 
 		/// <summary>
 		/// If enabled, controls which followers can chat.
 		/// </summary>
-		public bool FollowersOnly { get; }
+		[PublicAPI]
+		public bool FollowersOnly { get; internal set; }
 
 		/// <summary>
 		/// If enabled, only subscribers and moderators can chat.
 		/// </summary>
-		public bool SubscribersOnly { get; }
+		[PublicAPI]
+		public bool SubscribersOnly { get; internal set; }
 
 		/// <summary>
 		/// If enabled, messages with more than 9 characters must be unique.
 		/// </summary>
-		public bool R9K { get; }
+		[PublicAPI]
+		public bool R9K { get; internal set; }
 
 		/// <summary>
 		/// The number of seconds a chatter without moderator privileges must wait between sending messages.
 		/// </summary>
-		public int SlowModeInterval { get; }
+		[PublicAPI]
+		public int SlowModeInterval { get; internal set; }
 
 		/// <summary>
 		/// If FollowersOnly is true, this specifies the number of minutes a user must be following before they can chat.
 		/// </summary>
-		public int MinFollowTime { get; }
+		[PublicAPI]
+		public int MinFollowTime { get; internal set; }
 
 		public TwitchRoomState(string roomId, bool emoteOnly, bool followersOnly, bool subscribersOnly, bool r9K, int slowModeInterval, int minFollowTime)
 		{
