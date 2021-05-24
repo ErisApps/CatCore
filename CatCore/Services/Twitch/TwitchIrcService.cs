@@ -33,6 +33,7 @@ namespace CatCore.Services.Twitch
 		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
+		private readonly ITwitchRoomStateTrackerService _roomStateTrackerService;
 
 		private readonly char[] _ircMessageSeparator;
 
@@ -46,13 +47,14 @@ namespace CatCore.Services.Twitch
 		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 
 		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
-			ITwitchChannelManagementService twitchChannelManagementService)
+			ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
 			_activeStateManager = activeStateManager;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
+			_roomStateTrackerService = roomStateTrackerService;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
@@ -234,8 +236,12 @@ namespace CatCore.Services.Twitch
 				case IrcCommands.JOIN:
 					break;
 				case IrcCommands.PART:
+					_roomStateTrackerService.UpdateRoomState(channelName!, null);
+
 					break;
 				case TwitchIrcCommands.ROOMSTATE:
+					_roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
+
 					break;
 				case TwitchIrcCommands.USERSTATE:
 					break;
