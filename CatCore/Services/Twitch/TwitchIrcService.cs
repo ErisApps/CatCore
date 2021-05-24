@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CatCore.Helpers;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
+using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
