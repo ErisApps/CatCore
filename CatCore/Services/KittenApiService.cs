@@ -60,9 +60,7 @@ namespace CatCore.Services
 			{
 				_listener.Start();
 
-#pragma warning disable 4014
-				Task.Run(async () =>
-#pragma warning restore 4014
+				_ = Task.Run(async () =>
 				{
 					while (true)
 					{
