@@ -6,5 +6,6 @@ namespace CatCore.Services.Twitch.Interfaces
 	{
 		ITwitchPubSubServiceManager GetPubSubService();
 		ITwitchHelixApiService GetHelixApiService();
+		ITwitchRoomStateTrackerService GetRoomStateTrackerService();
 	}
 }

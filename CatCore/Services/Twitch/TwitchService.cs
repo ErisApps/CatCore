@@ -12,17 +12,20 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchIrcService _twitchIrcService;
 		private readonly ITwitchPubSubServiceManager _twitchPubSubServiceManager;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
+		private readonly ITwitchRoomStateTrackerService _twitchRoomStateTrackerService;
 
-		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager, ITwitchHelixApiService twitchHelixApiService)
+		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager, ITwitchHelixApiService twitchHelixApiService, ITwitchRoomStateTrackerService twitchRoomStateTrackerService)
 		{
 			_logger = logger;
 			_twitchIrcService = twitchIrcService;
 			_twitchPubSubServiceManager = twitchPubSubServiceManager;
 			_twitchHelixApiService = twitchHelixApiService;
+			_twitchRoomStateTrackerService = twitchRoomStateTrackerService;
 		}
 
 		public ITwitchPubSubServiceManager GetPubSubService() => _twitchPubSubServiceManager;
 		public ITwitchHelixApiService GetHelixApiService() => _twitchHelixApiService;
+		public ITwitchRoomStateTrackerService GetRoomStateTrackerService() => _twitchRoomStateTrackerService;
 
 		void IPlatformService.Start()
 		{

@@ -120,6 +120,7 @@ namespace CatCore
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
+			_container.Register<ITwitchRoomStateTrackerService, TwitchRoomStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
 			_container.RegisterMany(new[] {typeof(IPlatformService), typeof(ITwitchService)}, typeof(TwitchService), Reuse.Singleton,
