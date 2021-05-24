@@ -143,7 +143,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 
 					if (position > 0)
 					{
-						channelName = messageAsSpan.Slice(0, position + 1).ToString();
+						channelName = messageAsSpan.Slice(messageAsSpan[0] == '#' ? 1 : 0, position + 1).ToString();
 					}
 
 					break;
@@ -152,10 +152,17 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 				position++;
 			}
 
-			if (!handledInLoop)
+			if (handledInLoop)
 			{
-				channelName = messageAsSpan.ToString();
+				return;
 			}
+
+			if (messageAsSpan[0] == '#')
+			{
+				messageAsSpan = messageAsSpan.Slice(1);
+			}
+
+			channelName = messageAsSpan.ToString();
 		}
 	}
 }
