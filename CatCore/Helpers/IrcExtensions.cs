@@ -137,7 +137,7 @@ namespace CatCore.Helpers
 
 					if (position > 0)
 					{
-						channelName = messageAsSpan.Slice(1, position + 1).ToString();
+						channelName = messageAsSpan.Slice(messageAsSpan[0] == '#' ? 1 : 0, position + 1).ToString();
 					}
 
 					break;
@@ -146,10 +146,17 @@ namespace CatCore.Helpers
 				position++;
 			}
 
-			if (!handledInLoop)
+			if (handledInLoop)
 			{
-				channelName = messageAsSpan.Slice(1).ToString();
+				return;
 			}
+
+			if (messageAsSpan[0] == '#')
+			{
+				messageAsSpan = messageAsSpan.Slice(1);
+			}
+
+			channelName = messageAsSpan.ToString();
 		}
 
 		internal static bool ParsePrefix(this string? rawPrefix, out bool? isServer, out string? nickname, out string? username, out string? hostname)
