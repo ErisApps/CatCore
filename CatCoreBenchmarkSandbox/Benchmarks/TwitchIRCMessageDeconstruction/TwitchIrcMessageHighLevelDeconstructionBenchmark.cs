@@ -143,7 +143,8 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 
 					if (position > 0)
 					{
-						channelName = messageAsSpan.Slice(messageAsSpan[0] == '#' ? 1 : 0, position + 1).ToString();
+						var offset = messageAsSpan[0] == '#' ? 1 : 0;
+						channelName = messageAsSpan.Slice(offset, position + 1 - offset).ToString();
 					}
 
 					break;
