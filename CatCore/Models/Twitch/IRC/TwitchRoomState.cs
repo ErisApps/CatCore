@@ -2,8 +2,6 @@
 {
 	public class TwitchRoomState
 	{
-		public string BroadcasterLang { get; }
-
 		/// <summary>
 		/// The id of the channel to which the room state belongs.
 		/// </summary>
@@ -39,9 +37,8 @@
 		/// </summary>
 		public int MinFollowTime { get; }
 
-		public TwitchRoomState(string broadcasterLang, string roomId, bool emoteOnly, bool followersOnly, bool subscribersOnly, bool r9K, int slowModeInterval, int minFollowTime)
+		public TwitchRoomState(string roomId, bool emoteOnly, bool followersOnly, bool subscribersOnly, bool r9K, int slowModeInterval, int minFollowTime)
 		{
-			BroadcasterLang = broadcasterLang;
 			RoomId = roomId;
 			EmoteOnly = emoteOnly;
 			FollowersOnly = followersOnly;
