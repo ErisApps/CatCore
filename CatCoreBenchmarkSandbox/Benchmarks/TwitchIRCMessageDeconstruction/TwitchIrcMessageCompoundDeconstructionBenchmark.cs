@@ -100,9 +100,10 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 
 				var charSeparator = '=';
 				var startPos = 0;
+				int curPos;
 
 				ReadOnlySpan<char> keyTmp = null;
-				for (var curPos = 0; curPos < tagsAsSpan.Length; curPos++)
+				for (curPos = 0; curPos < tagsAsSpan.Length; curPos++)
 				{
 					if (tagsAsSpan[curPos] == charSeparator)
 					{
@@ -124,6 +125,11 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 							startPos = curPos + 1;
 						}
 					}
+				}
+
+				if (curPos != startPos)
+				{
+					tagsDictInternal[keyTmp.ToString()] = tagsAsSpan.Slice(startPos, curPos - startPos).ToString();
 				}
 
 				tags = new ReadOnlyDictionary<string, string>(tagsDictInternal);
