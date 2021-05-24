@@ -17,6 +17,7 @@ using Serilog.Events;
 using Serilog.Formatting.Display;
 
 [assembly: InternalsVisibleTo("CatCoreTester")]
+[assembly: InternalsVisibleTo("CatCoreTests")]
 namespace CatCore
 {
 	public class ChatCoreInstance
