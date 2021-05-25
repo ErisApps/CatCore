@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CatCore.Models.EventArgs;
+using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -22,6 +23,12 @@ namespace CatCore.Services.Twitch
 			_kittenSettingsService = kittenSettingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchHelixApiService = twitchHelixApiService;
+		}
+
+		public TwitchChannel? GetOwnChannel()
+		{
+			var self = _twitchAuthService.LoggedInUser;
+			return self != null && !_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(self.Value.UserId, self.Value.LoginName) : null;
 		}
 
 		public List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false)

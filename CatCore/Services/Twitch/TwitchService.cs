@@ -54,7 +54,7 @@ namespace CatCore.Services.Twitch
 			_twitchPubSubServiceManager.Stop();
 		}
 
-		public IChatChannel? DefaultChannel { get; }
+		public IChatChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
 
 		public event Action<IPlatformService>? OnLogin;
 		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
