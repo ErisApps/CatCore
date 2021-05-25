@@ -2,6 +2,5 @@
 {
 	internal interface IKittenApiService : INeedAsyncInitialization
 	{
-		string ServerUri { get; }
 	}
 }

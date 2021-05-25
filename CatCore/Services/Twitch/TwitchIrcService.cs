@@ -89,7 +89,7 @@ namespace CatCore.Services.Twitch
 
 		async Task ITwitchIrcService.Start()
 		{
-			if (!_twitchAuthService.HasTokens)
+			if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
 			{
 				return;
 			}

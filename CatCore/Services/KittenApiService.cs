@@ -17,10 +17,9 @@ namespace CatCore.Services
 {
 	internal class KittenApiService : IKittenApiService
 	{
-		private const int WEB_APP_PORT = 8338;
-
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;
+		private readonly IKittenBrowserLauncherService _browserLauncherService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly ITwitchHelixApiService _helixApiService;
@@ -29,13 +28,12 @@ namespace CatCore.Services
 		private HttpListener? _listener;
 		private string? _webSitePage;
 
-		public string ServerUri => $"http://localhost:{WEB_APP_PORT}/";
-
-		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService,
-			ITwitchHelixApiService helixApiService, Version libraryVersion)
+		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, IKittenBrowserLauncherService browserLauncherService, ITwitchAuthService twitchAuthService,
+			ITwitchChannelManagementService twitchChannelManagementService, ITwitchHelixApiService helixApiService, Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
+			_browserLauncherService = browserLauncherService;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_helixApiService = helixApiService;
@@ -54,7 +52,7 @@ namespace CatCore.Services
 
 			_logger.Information("Purring up internal webserver");
 
-			_listener = new HttpListener {Prefixes = {ServerUri}};
+			_listener = new HttpListener {Prefixes = {ConstantsBase.InternalApiServerUri}};
 
 			try
 			{
@@ -79,6 +77,12 @@ namespace CatCore.Services
 				});
 
 				_logger.Information("Internal webserver has been purred up");
+
+				if (_settingsService.Config.GlobalConfig.LaunchWebAppOnStartup)
+				{
+					_logger.Debug("Launching web portal");
+					_browserLauncherService.LaunchWebPortal();
+				}
 			}
 			catch (Exception e)
 			{
