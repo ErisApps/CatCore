@@ -170,9 +170,7 @@ namespace CatCore
 		public void StopAllServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
-			{
-				_container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
-			}
+			_container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -201,9 +199,7 @@ namespace CatCore
 		public void StopTwitchServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
-			{
-				_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
-			}
+			_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		public void LaunchWebPortal()
