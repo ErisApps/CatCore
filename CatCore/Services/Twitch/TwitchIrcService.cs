@@ -34,6 +34,7 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly ITwitchRoomStateTrackerService _roomStateTrackerService;
+		private readonly ITwitchUserStateTrackerService _userStateTrackerService;
 
 		private readonly char[] _ircMessageSeparator;
 
@@ -47,7 +48,7 @@ namespace CatCore.Services.Twitch
 		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 
 		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
-			ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService)
+			ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService, ITwitchUserStateTrackerService userStateTrackerService)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
@@ -55,6 +56,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_roomStateTrackerService = roomStateTrackerService;
+			_userStateTrackerService = userStateTrackerService;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
@@ -237,6 +239,7 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.PART:
 					_roomStateTrackerService.UpdateRoomState(channelName!, null);
+					_userStateTrackerService.UpdateUserState(channelName!, null);
 
 					break;
 				case TwitchIrcCommands.ROOMSTATE:
@@ -244,8 +247,12 @@ namespace CatCore.Services.Twitch
 
 					break;
 				case TwitchIrcCommands.USERSTATE:
+					_userStateTrackerService.UpdateUserState(channelName!, messageMeta);
+
 					break;
 				case TwitchIrcCommands.GLOBALUSERSTATE:
+					_userStateTrackerService.UpdateGlobalUserState(messageMeta);
+
 					break;
 				case TwitchIrcCommands.CLEARCHAT:
 					break;
