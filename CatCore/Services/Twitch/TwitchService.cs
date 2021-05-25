@@ -13,19 +13,26 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchPubSubServiceManager _twitchPubSubServiceManager;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 		private readonly ITwitchRoomStateTrackerService _twitchRoomStateTrackerService;
+		private readonly ITwitchUserStateTrackerService _twitchUserStateTrackerService;
+		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 
-		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager, ITwitchHelixApiService twitchHelixApiService, ITwitchRoomStateTrackerService twitchRoomStateTrackerService)
+		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager, ITwitchHelixApiService twitchHelixApiService,
+			ITwitchRoomStateTrackerService twitchRoomStateTrackerService, ITwitchUserStateTrackerService twitchUserStateTrackerService, ITwitchChannelManagementService twitchChannelManagementService)
 		{
 			_logger = logger;
 			_twitchIrcService = twitchIrcService;
 			_twitchPubSubServiceManager = twitchPubSubServiceManager;
 			_twitchHelixApiService = twitchHelixApiService;
 			_twitchRoomStateTrackerService = twitchRoomStateTrackerService;
+			_twitchUserStateTrackerService = twitchUserStateTrackerService;
+			_twitchChannelManagementService = twitchChannelManagementService;
 		}
 
 		public ITwitchPubSubServiceManager GetPubSubService() => _twitchPubSubServiceManager;
 		public ITwitchHelixApiService GetHelixApiService() => _twitchHelixApiService;
 		public ITwitchRoomStateTrackerService GetRoomStateTrackerService() => _twitchRoomStateTrackerService;
+		public ITwitchUserStateTrackerService GetUserStateTrackerService() => _twitchUserStateTrackerService;
+		public ITwitchChannelManagementService GetChannelManagementService() => _twitchChannelManagementService;
 
 		void IPlatformService.Start()
 		{
