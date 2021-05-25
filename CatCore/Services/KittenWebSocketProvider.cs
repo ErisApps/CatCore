@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Net.WebSockets;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Helpers;
 using CatCore.Services.Interfaces;
 using Serilog;
 using Websocket.Client;
@@ -14,6 +15,8 @@ namespace CatCore.Services
 	internal class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
 		private readonly ILogger _logger;
+		private readonly SemaphoreSlim _connectionLocker = new SemaphoreSlim(1,1 );
+
 		private WebsocketClient? _wss;
 
 		private IDisposable? _reconnectHappenedSubscription;
@@ -38,6 +41,7 @@ namespace CatCore.Services
 		{
 			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
 
+			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
 			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket
 			{
 				Options =
@@ -53,15 +57,16 @@ namespace CatCore.Services
 				ReconnectTimeout = TimeSpan.FromMinutes(10)
 			};
 
-			_reconnectHappenedSubscription = _wss.ReconnectionHappened.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(ReconnectHappenedHandler);
-			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(DisconnectHappenedHandler);
-			_messageReceivedSubscription = _wss.MessageReceived.ObserveOn(ThreadPoolScheduler.Instance).Subscribe(MessageReceivedHandler);
+			_reconnectHappenedSubscription = _wss.ReconnectionHappened.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(ReconnectHappenedHandler);
+			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(DisconnectHappenedHandler);
+			_messageReceivedSubscription = _wss.MessageReceived.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(MessageReceivedHandler);
 
-			await _wss.StartOrFail().ConfigureAwait(false);
+			await _wss.Start().ConfigureAwait(false);
 		}
 
 		public async Task Disconnect(string? reason = null)
 		{
+			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
 			if (_wss?.IsStarted ?? false)
 			{
 				await _wss.Stop(WebSocketCloseStatus.NormalClosure, reason).ConfigureAwait(false);
