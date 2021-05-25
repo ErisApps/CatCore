@@ -122,5 +122,31 @@ namespace CatCoreTests
 			channelName.Should().Be(expectedChannelName);
 			message.Should().Be(expectedMessage);
 		}
+
+		public static IEnumerable<object[]> ParsePrefixData => new[]
+		{
+			new object[] { "tmi.twitch.tv", true, true, null!, null!, "tmi.twitch.tv"},
+			new object[] { "realeris!realeris@realeris.tmi.twitch.tv", true, false, "realeris", "realeris", "realeris.tmi.twitch.tv"},
+			new object[] { "realeris.tmi.twitch.tv", true, true, null!, null!, "realeris.tmi.twitch.tv"}
+		};
+
+
+		[Theory]
+		[MemberData(nameof(ParsePrefixData))]
+		public void ParsePrefixTests(string inputData, bool expectedCouldParse, bool? expectedIsServer, string? expectedNickname, string? expectedUsername, string? expectedHostname)
+		{
+			// Arrange
+			// NOP
+
+			// Act
+			var couldParse = IrcExtensions.ParsePrefix(inputData, out var isServer, out var nickname, out var username, out var hostname);
+
+			// Assert
+			couldParse.Should().Be(expectedCouldParse);
+			isServer.Should().Be(expectedIsServer);
+			nickname.Should().Be(expectedNickname);
+			username.Should().Be(expectedUsername);
+			hostname.Should().Be(expectedHostname);
+		}
 	}
 }
