@@ -18,10 +18,6 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public bool IsActionMessage { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.IsHighlighted"/>
-		[PublicAPI]
-		public bool IsHighlighted { get; internal set;  }
-
 		/// <inheritdoc cref="IChatMessage.IsPing"/>
 		[PublicAPI]
 		public bool IsPing { get; internal set; }
@@ -40,7 +36,7 @@ namespace CatCore.Models.Twitch.IRC
 
 		/// <inheritdoc cref="IChatMessage.Metadata"/>
 		[PublicAPI]
-		public ReadOnlyDictionary<string, string> Metadata { get; internal set; }
+		public ReadOnlyDictionary<string, string>? Metadata { get; internal set; }
 
 		/// <summary>
 		/// The IRC message type for this TwitchMessage
@@ -54,13 +50,12 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public int Bits { get; internal set; }
 
-		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isHighlighted, bool isPing, string message, IChatUser sender, IChatChannel channel,
-			ReadOnlyDictionary<string, string> metadata, string type, int bits)
+		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel,
+			ReadOnlyDictionary<string, string>? metadata, string type, int bits)
 		{
 			Id = id;
 			IsSystemMessage = isSystemMessage;
 			IsActionMessage = isActionMessage;
-			IsHighlighted = isHighlighted;
 			IsPing = isPing;
 			Message = message;
 			Sender = sender;
