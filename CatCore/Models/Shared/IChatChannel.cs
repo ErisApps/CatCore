@@ -1,6 +1,8 @@
-﻿namespace CatCore.Models.Shared
+﻿using System;
+
+namespace CatCore.Models.Shared
 {
-	public interface IChatChannel
+	public interface IChatChannel : ICloneable
 	{
 		string Id { get; }
 		string Name { get; }

@@ -16,5 +16,10 @@ namespace CatCore.Models.Twitch
 			Id = id;
 			Name = name;
 		}
+
+		public object Clone()
+		{
+			return new TwitchChannel(Id, Name);
+		}
 	}
 }
