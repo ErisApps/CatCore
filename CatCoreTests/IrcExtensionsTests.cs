@@ -68,6 +68,39 @@ namespace CatCoreTests
 				"ROOMSTATE",
 				"pinkwastaken",
 				null!
+			},
+			new object[]
+			{
+				@"@badge-info=subscriber/13;badges=subscriber/12;color=#D2691E;display-name=Dav3Schneider;emotes=;flags=;id=042342b6-fb4f-47d4-bf24-b7363abeaa71;login=dav3schneider;mod=0;msg-id=resub;msg-param-cumulative-months=13;msg-param-months=0;msg-param-multimonth-duration=0;msg-param-multimonth-tenure=0;msg-param-should-share-streak=0;msg-param-sub-plan-name=Channel\sSubscription\s(meclipse);msg-param-sub-plan=1000;msg-param-was-gifted=false;room-id=37402112;subscriber=1;system-msg=Dav3Schneider\ssubscribed\sat\sTier\s1.\sThey've\ssubscribed\sfor\s13\smonths!;tmi-sent-ts=1621982140645;user-id=22228110;user-type= :tmi.twitch.tv USERNOTICE #shroud",
+				new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
+				{
+					{"badge-info", "subscriber/13"},
+					{"badges","subscriber/12"},
+					{"color", "#D2691E"},
+					{"display-name", "Dav3Schneider"},
+					{"id","042342b6-fb4f-47d4-bf24-b7363abeaa71"},
+					{"login","dav3schneider"},
+					{"mod","0"},
+					{"msg-id","resub"},
+					{"msg-param-cumulative-months","13"},
+					{"msg-param-months","0"},
+					{"msg-param-multimonth-duration","0"},
+					{"msg-param-multimonth-tenure","0"},
+					{"msg-param-should-share-streak","0"},
+					{"msg-param-sub-plan-name",@"Channel\sSubscription\s(meclipse)"},
+					{"msg-param-sub-plan","1000"},
+					{"msg-param-was-gifted","false"},
+					{"room-id","37402112"},
+					{"subscriber","1"},
+					{"system-msg",@"Dav3Schneider\ssubscribed\sat\sTier\s1.\sThey've\ssubscribed\sfor\s13\smonths!"},
+					{"tmi-sent-ts","1621982140645"},
+					{"user-id","22228110"}
+
+				}),
+				"tmi.twitch.tv",
+				"USERNOTICE",
+				"shroud",
+				null!
 			}
 		};
 
