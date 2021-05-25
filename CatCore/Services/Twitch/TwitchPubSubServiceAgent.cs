@@ -78,7 +78,7 @@ namespace CatCore.Services.Twitch
 
 		public async Task Start()
 		{
-			if (!_twitchAuthService.HasTokens)
+			if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
 			{
 				return;
 			}

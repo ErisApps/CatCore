@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using CatCore.Exceptions;
 using CatCore.Helpers;
 using CatCore.Logging;
@@ -113,11 +114,11 @@ namespace CatCore
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
 			_container.RegisterInitializer<IKittenSettingsService>((service, context) => service.Initialize());
 			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
-			_container.RegisterInitializer<IKittenApiService>(async (service, context) => await service.Initialize());
+			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
 
 			// Register Twitch-specific services
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
-			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize().GetAwaiter().GetResult());
+			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize());
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
@@ -134,10 +135,13 @@ namespace CatCore
 			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
 			// Spin up internal web api service
-			if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchWebAppOnStartup)
+			Task.Run(() =>
 			{
-				LaunchWebPortal();
-			}
+				if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchWebAppOnStartup)
+				{
+					_container.Resolve<IKittenApiService>();
+				}
+			});
 		}
 
 		/// <summary>
@@ -204,6 +208,7 @@ namespace CatCore
 
 		public void LaunchWebPortal()
 		{
+			// TODO: Make sure this works nicely with the deferred loading
 			_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
 		}
 
