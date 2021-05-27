@@ -20,6 +20,7 @@
 			<InputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
 			<InputAssemblies Include="Polly.dll"/>
 			<InputAssemblies Include="Serilog.dll"/>
+			<InputAssemblies Include="Serilog.Sinks.Async.dll"/>
 			<InputAssemblies Include="System.Buffers.dll"/>
 			<InputAssemblies Include="System.Memory.dll"/>
 			<InputAssemblies Include="System.Net.Http.Json.dll"/>
