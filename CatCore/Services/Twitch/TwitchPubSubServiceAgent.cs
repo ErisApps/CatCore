@@ -147,7 +147,7 @@ namespace CatCore.Services.Twitch
 		{
 			try
 			{
-				var jsonDocument = JsonDocument.Parse(response.Text);
+				var jsonDocument = JsonDocument.Parse(receivedMessage);
 				var rootElement = jsonDocument.RootElement;
 
 				var type = rootElement.GetProperty("type").GetString();
