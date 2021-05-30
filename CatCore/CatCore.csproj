@@ -61,6 +61,10 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\CatCore.Shared\CatCore.Shared.csproj" />
+	</ItemGroup>
+
     <Import Project="ILRepack.targets" />
 
 </Project>

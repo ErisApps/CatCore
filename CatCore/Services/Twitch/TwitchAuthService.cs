@@ -9,6 +9,7 @@ using CatCore.Models.Credentials;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
+using CatCore.Shared.Models.Twitch.OAuth;
 using Serilog;
 
 namespace CatCore.Services.Twitch
