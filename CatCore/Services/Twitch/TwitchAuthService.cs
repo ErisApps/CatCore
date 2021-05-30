@@ -159,7 +159,7 @@ namespace CatCore.Services.Twitch
 
 		public async Task<bool> RefreshTokens()
 		{
-			using var _ = Synchronization.LockAsync(_refreshLocker);
+			using var _ = await Synchronization.LockAsync(_refreshLocker);
 			if (string.IsNullOrWhiteSpace(RefreshToken))
 			{
 				return false;
