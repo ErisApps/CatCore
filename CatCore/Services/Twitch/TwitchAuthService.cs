@@ -28,7 +28,8 @@ namespace CatCore.Services.Twitch
 
 		private readonly ILogger _logger;
 		private readonly ConstantsBase _constants;
-		private readonly HttpClient _authClient;
+		private readonly HttpClient _twitchAuthClient;
+		private readonly HttpClient _catCoreAuthClient;
 
 		protected override string ServiceType => SERVICE_TYPE;
 
@@ -64,8 +65,13 @@ namespace CatCore.Services.Twitch
 			_logger = logger;
 			_constants = constants;
 
-			_authClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
-			_authClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
+			var userAgent = $"{nameof(CatCore)}/{libraryVersion.ToString(3)}";
+
+			_twitchAuthClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
+			_twitchAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
+
+			_catCoreAuthClient = new HttpClient(new HttpClientHandler{Proxy = new System.Net.WebProxy("192.168.0.145", 8888)}) {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
+			_catCoreAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 		}
 
 		public async Task Initialize()
@@ -100,12 +106,9 @@ namespace CatCore.Services.Twitch
 
 		public async Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
-			var responseMessage = await _authClient
-				.PostAsync("https://id.twitch.tv/oauth2/token" +
-				           $"?client_id={_constants.TwitchClientId}" +
-				           $"&client_secret={_constants.TwitchClientSecret}" +
-				           $"&code={authorizationCode}" +
-				           "&grant_type=authorization_code" +
+			var responseMessage = await _catCoreAuthClient
+				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/authorize" +
+				           $"?code={authorizationCode}" +
 				           $"&redirect_uri={redirectUrl}", null)
 				.ConfigureAwait(false);
 
@@ -138,7 +141,7 @@ namespace CatCore.Services.Twitch
 
 			using var requestMessage = new HttpRequestMessage(HttpMethod.Get, TWITCH_AUTH_BASEURL + "validate");
 			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-			var responseMessage = await _authClient.SendAsync(requestMessage).ConfigureAwait(false);
+			var responseMessage = await _twitchAuthClient.SendAsync(requestMessage).ConfigureAwait(false);
 
 			using var _ = ChangeTransaction();
 			if (!responseMessage.IsSuccessStatusCode && resetDataOnFailure)
@@ -170,12 +173,9 @@ namespace CatCore.Services.Twitch
 				return true;
 			}
 
-			var responseMessage = await _authClient
-				.PostAsync("https://id.twitch.tv/oauth2/token" +
-				           $"?client_id={_constants.TwitchClientId}" +
-				           $"&client_secret={_constants.TwitchClientSecret}" +
-				           "&grant_type=refresh_token" +
-				           $"&refresh_token={RefreshToken}", null)
+			var responseMessage = await _catCoreAuthClient
+				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/refresh" +
+				           $"?refresh_token={RefreshToken}", null)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
@@ -212,7 +212,7 @@ namespace CatCore.Services.Twitch
 				return false;
 			}
 
-			var responseMessage = await _authClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={RefreshToken}", null);
+			var responseMessage = await _twitchAuthClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={RefreshToken}", null);
 
 			AccessToken = null;
 			RefreshToken = null;

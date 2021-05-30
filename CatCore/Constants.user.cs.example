@@ -3,10 +3,12 @@
 	internal partial class Constants
 	{
 		// Implement/Add the missing properties in this file.
+		private const string CATCORE_AUTH_SERVER_URI = " {{ CATCORE_AUTH_SERVER_URI }} ";
+
 		private const string TWITCH_CLIENT_ID = " {{ TWITCH_CLIENT_ID }} ";
-		private const string TWITCH_CLIENT_SECRET = " {{ TWITCH_CLIENT_SECRET }} ";
+
+		internal override string CatCoreAuthServerUri => CATCORE_AUTH_SERVER_URI;
 
 		internal override string TwitchClientId => TWITCH_CLIENT_ID;
-		internal override string TwitchClientSecret => TWITCH_CLIENT_SECRET;
 	}
 }

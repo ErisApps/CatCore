@@ -8,7 +8,8 @@
 	{
 		internal static string InternalApiServerUri => "http://localhost:8338/";
 
+		internal abstract string CatCoreAuthServerUri { get; }
+
 		internal abstract string TwitchClientId { get; }
-		internal abstract string TwitchClientSecret { get; }
 	}
 }
