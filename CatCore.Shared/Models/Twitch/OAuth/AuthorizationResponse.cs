@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace CatCore.Models.Twitch.OAuth
+namespace CatCore.Shared.Models.Twitch.OAuth
 {
-	internal readonly struct AuthorizationResponse
+	public readonly struct AuthorizationResponse
 	{
 		[JsonPropertyName("access_token")]
 		public string AccessToken { get; }

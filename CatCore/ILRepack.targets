@@ -17,6 +17,7 @@
 		<ItemGroup>
 			<InputAssemblies Include="$(TargetPath)"/>
 
+			<InputAssemblies Include="CatCore.Shared.dll"/>
 			<InputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
 			<InputAssemblies Include="Polly.dll"/>
 			<InputAssemblies Include="Serilog.dll"/>
