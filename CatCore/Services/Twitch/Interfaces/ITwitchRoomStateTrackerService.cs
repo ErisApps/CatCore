@@ -9,6 +9,6 @@ namespace CatCore.Services.Twitch.Interfaces
 		[PublicAPI]
 		TwitchRoomState? GetRoomState(string channelName);
 
-		internal void UpdateRoomState(string channelName, ReadOnlyDictionary<string, string>? roomStateUpdate);
+		internal TwitchRoomState? UpdateRoomState(string channelName, ReadOnlyDictionary<string, string>? roomStateUpdate);
 	}
 }

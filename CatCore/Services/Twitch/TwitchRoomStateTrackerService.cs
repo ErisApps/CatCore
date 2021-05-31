@@ -22,11 +22,11 @@ namespace CatCore.Services.Twitch
 		}
 
 		// ReSharper disable once CognitiveComplexity
-		void ITwitchRoomStateTrackerService.UpdateRoomState(string channelName, ReadOnlyDictionary<string, string>? roomStateUpdate)
+		TwitchRoomState? ITwitchRoomStateTrackerService.UpdateRoomState(string channelName, ReadOnlyDictionary<string, string>? roomStateUpdate)
 		{
 			if (roomStateUpdate == null)
 			{
-				_roomStates.TryRemove(channelName, out _);
+				return _roomStates.TryRemove(channelName, out var existingRoomState) ? existingRoomState : null;
 			}
 			else if (_roomStates.TryGetValue(channelName, out var existingRoomState))
 			{
@@ -55,18 +55,22 @@ namespace CatCore.Services.Twitch
 							break;
 					}
 				}
+
+				return existingRoomState;
 			}
 			else
 			{
-				_roomStates.TryAdd(channelName, new TwitchRoomState(
+				var newRoomState = new TwitchRoomState(
 					ExtractRoomId(roomStateUpdate),
 					ExtractEmoteOnly(roomStateUpdate),
 					ExtractFollowersOnly(roomStateUpdate, out var followersOnly),
 					ExtractSubscribersOnly(roomStateUpdate),
 					ExtractR9K(roomStateUpdate),
 					ExtractSlowModeInterval(roomStateUpdate),
-					ParseMinimumFollowTime(followersOnly)
-				));
+					ParseMinimumFollowTime(followersOnly));
+				_roomStates.TryAdd(channelName, newRoomState);
+
+				return newRoomState;
 			}
 		}
 
