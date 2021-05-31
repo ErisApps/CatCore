@@ -49,7 +49,6 @@ namespace CatCore.Services
 					KeepAliveInterval = TimeSpan.Zero,
 #if !RELEASE
 					// Placeholder for proxy configuration
-					Proxy = new System.Net.WebProxy("192.168.0.126", 8888)
 #endif
 				}
 			})
