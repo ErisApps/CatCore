@@ -243,12 +243,31 @@ namespace CatCore.Services.Twitch
 				case IrcCommands.PRIVMSG:
 					break;
 				case IrcCommands.JOIN:
-					break;
-				case IrcCommands.PART:
-					_roomStateTrackerService.UpdateRoomState(channelName!, null);
-					_userStateTrackerService.UpdateUserState(channelName!, null);
+				{
+					prefix.ParsePrefix(out _, out _, out var username, out _);
+					if (_twitchAuthService.LoggedInUser?.LoginName == username)
+					{
+						// TODO: pass channel object with correct Id
+						OnJoinChannel?.Invoke(new TwitchChannel(channelName!, channelName!));
+					}
 
 					break;
+				}
+				case IrcCommands.PART:
+				{
+					prefix.ParsePrefix(out _, out _, out var username, out _);
+					if (_twitchAuthService.LoggedInUser?.LoginName == username)
+					{
+						var roomState = _roomStateTrackerService.GetRoomState(channelName!);
+						// TODO: pass channel object with guaranteed Id
+						OnLeaveChannel?.Invoke(new TwitchChannel(roomState?.RoomId ?? string.Empty, channelName!));
+
+						_roomStateTrackerService.UpdateRoomState(channelName!, null);
+						_userStateTrackerService.UpdateUserState(channelName!, null);
+					}
+
+					break;
+				}
 				case TwitchIrcCommands.ROOMSTATE:
 					var updatedRoomState = _roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
 					// TODO: pass channel object with guaranteed Id
