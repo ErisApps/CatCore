@@ -170,7 +170,7 @@ namespace CatCore.Services.Twitch
 			MessageReceivedHandlerInternal(message);
 		}
 
-		private void MessageReceivedHandlerInternal(string rawMessage)
+		private void MessageReceivedHandlerInternal(string rawMessage, bool sendBySelf = false)
 		{
 			// TODO: Investigate possibility to split a message string into ReadOnlySpans<char> types instead of strings again, would prevents unnecessary heap allocations which might in turn improve the throughput
 			var messages = rawMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
@@ -188,14 +188,15 @@ namespace CatCore.Services.Twitch
 				_logger.Verbose("");
 #endif
 
-				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message);
+				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
 			}
 		}
 
 
 		// ReSharper disable once CognitiveComplexity
 		// ReSharper disable once CyclomaticComplexity
-		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message)
+		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
+			bool wasSendByLibrary)
 		{
 			// Command official documentation: https://datatracker.ietf.org/doc/html/rfc1459 and https://datatracker.ietf.org/doc/html/rfc2812
 			// Command Twitch documentation: https://dev.twitch.tv/docs/irc/commands
@@ -241,6 +242,8 @@ namespace CatCore.Services.Twitch
 					goto case IrcCommands.PRIVMSG;
 				case TwitchIrcCommands.USERNOTICE:
 				case IrcCommands.PRIVMSG:
+					HandlePrivMessage(ref messageMeta, ref prefix, ref commandType, ref channelName, ref message, wasSendByLibrary);
+
 					break;
 				case IrcCommands.JOIN:
 				{
@@ -295,6 +298,128 @@ namespace CatCore.Services.Twitch
 					// Also doesn't cover when the user is the one getting hosted by another channel
 					break;
 			}
+		}
+
+		// ReSharper disable once CognitiveComplexity
+		// ReSharper disable once CyclomaticComplexity
+		private void HandlePrivMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
+			bool wasSendByLibrary)
+		{
+			prefix.ParsePrefix(out var isServer, out var nickname, out var username, out var hostname);
+
+			// Determine channelId
+			string channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
+				? roomId
+				: _roomStateTrackerService.GetRoomState(channelName!)?.RoomId ?? "";
+
+			// Create Channel object
+			var channel = new TwitchChannel(channelId, channelName!);
+
+			// Create sender object
+			TwitchUser twitchUser;
+			if (wasSendByLibrary)
+			{
+				var globalUserState = _userStateTrackerService.GlobalUserState!;
+				var userState = _userStateTrackerService.GetUserState(channelName!);
+				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? "",
+					_twitchAuthService.LoggedInUser?.LoginName ?? "",
+					globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName ?? "",
+					globalUserState?.Color ?? "#ffffff",
+					userState?.IsModerator ?? false,
+					userState?.IsBroadcaster ?? false,
+					userState?.IsSubscriber ?? false,
+					userState?.IsTurbo ?? false,
+					userState?.IsVip ?? false);
+			}
+			else
+			{
+				string userId;
+				string displayName;
+				string color;
+
+				bool isModerator;
+				bool isBroadcaster;
+				bool isSubscriber;
+				bool isTurbo;
+				bool isVip;
+
+				if (messageMeta != null)
+				{
+					if (!messageMeta.TryGetValue(IrcMessageTags.USER_ID, out userId))
+					{
+						userId = string.Empty;
+					}
+
+					if (!messageMeta.TryGetValue(IrcMessageTags.DISPLAY_NAME, out displayName))
+					{
+						displayName = (bool) isServer! ? hostname! : username!;
+					}
+
+					if (!messageMeta.TryGetValue(IrcMessageTags.COLOR, out color))
+					{
+						color = "#ffffff";
+					}
+
+					if (messageMeta.TryGetValue(IrcMessageTags.BADGES, out var badgesString))
+					{
+						isModerator = badgesString.Contains("moderator/");
+						isBroadcaster = badgesString.Contains("broadcaster/");
+						isSubscriber = (badgesString.Contains("subscriber/")) || (badgesString.Contains("founder/"));
+						isTurbo = badgesString.Contains("turbo/");
+						isVip = badgesString.Contains("vip/");
+					}
+					else
+					{
+						isModerator = false;
+						isBroadcaster = false;
+						isSubscriber = false;
+						isTurbo = false;
+						isVip = false;
+					}
+				}
+				else
+				{
+					userId = string.Empty;
+					displayName = (bool) isServer! ? hostname! : username!;
+					color = "#ffffff";
+					isModerator = false;
+					isBroadcaster = false;
+					isSubscriber = false;
+					isTurbo = false;
+					isVip = false;
+				}
+
+				twitchUser = new TwitchUser(userId,
+					(bool) isServer! ? hostname! : username!,
+					displayName,
+					color,
+					isModerator,
+					isBroadcaster,
+					isSubscriber,
+					isTurbo,
+					isVip
+				);
+			}
+
+			var isActionMessage = false;
+			if (message?.StartsWith("ACTION ") ?? false)
+			{
+				isActionMessage = true;
+				message = message.AsSpan().Slice(8, message.Length - 9).ToString();
+			}
+
+			OnMessageReceived?.Invoke(new TwitchMessage(
+				messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ID, out var messageId) ? messageId : Guid.NewGuid().ToString(),
+				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
+				isActionMessage,
+				false,
+				message ?? string.Empty,
+				twitchUser,
+				channel,
+				messageMeta,
+				commandType,
+				0
+			));
 		}
 
 		// ReSharper disable once CognitiveComplexity
