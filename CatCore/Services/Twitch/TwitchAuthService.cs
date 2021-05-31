@@ -70,7 +70,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
 			_twitchAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 
-			_catCoreAuthClient = new HttpClient(new HttpClientHandler{Proxy = new System.Net.WebProxy("192.168.0.145", 8888)}) {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
+			_catCoreAuthClient = new HttpClient {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
 			_catCoreAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 		}
 
