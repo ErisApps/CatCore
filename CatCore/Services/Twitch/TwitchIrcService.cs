@@ -230,8 +230,15 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.NOTICE:
 					// MessageId for NOTICE documentation: https://dev.twitch.tv/docs/irc/msg-id
+					switch (message)
+					{
+						case "Login authentication failed":
+							_logger.Warning("Login failed. Error {ErrorMessage}", message);
+							_kittenWebSocketProvider.Disconnect(message).ConfigureAwait(false);
+							break;
+					}
 
-					break;
+					goto case IrcCommands.PRIVMSG;
 				case TwitchIrcCommands.USERNOTICE:
 				case IrcCommands.PRIVMSG:
 					break;
