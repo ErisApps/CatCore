@@ -259,6 +259,7 @@ namespace CatCore.Services.Twitch
 				case TwitchIrcCommands.CLEARMSG:
 					break;
 				case TwitchIrcCommands.RECONNECT:
+					((ITwitchIrcService) this).Start().ConfigureAwait(false);
 					break;
 				case TwitchIrcCommands.HOSTTARGET:
 					break;
