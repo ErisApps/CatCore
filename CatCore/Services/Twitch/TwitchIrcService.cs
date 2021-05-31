@@ -484,8 +484,9 @@ namespace CatCore.Services.Twitch
 
 					// Send message
 					await _kittenWebSocketProvider.SendMessageInstant(msg.message).ConfigureAwait(false);
-					// TODO: Add forwarding to internal message received handler
-					// _logger.Information(msg.message);
+
+					// Forward to internal message-received handler
+					MessageReceivedHandlerInternal(msg.message, true);
 
 					var ticksNow = DateTime.UtcNow.Ticks;
 					_messageSendTimestamps.Add(ticksNow);
