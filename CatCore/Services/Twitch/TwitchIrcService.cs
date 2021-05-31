@@ -522,8 +522,18 @@ namespace CatCore.Services.Twitch
 
 		private MessageSendingRateLimit GetRateLimit(string channelName)
 		{
-			// TODO: Add code to check for moderator rights on other channels
-			return _twitchAuthService.LoggedInUser?.LoginName == channelName ? MessageSendingRateLimit.Relaxed : MessageSendingRateLimit.Normal;
+			if (_twitchAuthService.LoggedInUser?.LoginName == channelName)
+			{
+				return MessageSendingRateLimit.Relaxed;
+			}
+
+			var userState = _userStateTrackerService.GetUserState(channelName);
+			if (userState != null && (userState.IsBroadcaster || userState.IsModerator))
+			{
+				return MessageSendingRateLimit.Relaxed;
+			}
+
+			return MessageSendingRateLimit.Normal;
 		}
 	}
 }
