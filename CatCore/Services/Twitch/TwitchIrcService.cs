@@ -501,7 +501,7 @@ namespace CatCore.Services.Twitch
 				{
 					_logger.Verbose("Hibernating worker queue");
 
-					await _workerCanSleepSemaphoreSlim.WaitAsync(CancellationToken.None);
+					await _workerCanSleepSemaphoreSlim.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 					var canConsume = !_messageQueue.IsEmpty;
 					_workerCanSleepSemaphoreSlim.Release();
 
@@ -510,8 +510,9 @@ namespace CatCore.Services.Twitch
 					_logger.Information("Auto re-execution delay: {AutoReExecutionDelay}ms", autoReExecutionDelay);
 
 					await Task.WhenAny(
-						Task.Delay(autoReExecutionDelay, cts),
-						_workerSemaphoreSlim.WaitAsync(cts));
+							Task.Delay(autoReExecutionDelay, cts),
+							_workerSemaphoreSlim.WaitAsync(cts))
+						.ConfigureAwait(false);
 
 					_logger.Verbose("Waking up worker queue");
 				} while (!CheckIfConsumable() && !cts.IsCancellationRequested);
