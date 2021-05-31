@@ -250,7 +250,9 @@ namespace CatCore.Services.Twitch
 
 					break;
 				case TwitchIrcCommands.ROOMSTATE:
-					_roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
+					var updatedRoomState = _roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
+					// TODO: pass channel object with guaranteed Id
+					OnRoomStateChanged?.Invoke(new TwitchChannel(updatedRoomState?.RoomId ?? "", channelName!));
 
 					break;
 				case TwitchIrcCommands.USERSTATE:
