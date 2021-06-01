@@ -219,15 +219,6 @@ namespace CatCore.Services.Twitch
 
 					_ = Task.Run(() => ProcessQueuedMessage(_messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token).ConfigureAwait(false);
 
-					// TODO: Remove this placeholder code... seriously... It's just here so the code would compile 😸
-					if (prefix == "")
-					{
-						OnJoinChannel?.Invoke(null!);
-						OnLeaveChannel?.Invoke(null!);
-						OnRoomStateChanged?.Invoke(null!);
-						OnMessageReceived?.Invoke(null!);
-					}
-
 					break;
 				case IrcCommands.NOTICE:
 					// MessageId for NOTICE documentation: https://dev.twitch.tv/docs/irc/msg-id
