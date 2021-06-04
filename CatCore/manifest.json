@@ -5,7 +5,7 @@
 	"author": "Eris",
 	"version": "0.0.1-alpha",
 	"description": "A shared chat client library written in .NET Standard 2.0",
-	"gameVersion": "1.14.0",
+	"gameVersion": "1.16.1",
 	"files": [
 		"Libs/CatCore.dll"
 	],
