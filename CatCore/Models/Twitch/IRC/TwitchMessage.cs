@@ -48,10 +48,10 @@ namespace CatCore.Models.Twitch.IRC
 		/// The number of bits in this message, if any.
 		/// </summary>
 		[PublicAPI]
-		public int Bits { get; internal set; }
+		public uint Bits { get; internal set; }
 
 		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel,
-			ReadOnlyDictionary<string, string>? metadata, string type, int bits)
+			ReadOnlyDictionary<string, string>? metadata, string type, uint bits)
 		{
 			Id = id;
 			IsSystemMessage = isSystemMessage;

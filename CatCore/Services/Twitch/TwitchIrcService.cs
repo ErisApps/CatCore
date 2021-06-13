@@ -306,7 +306,7 @@ namespace CatCore.Services.Twitch
 			// Create Channel object
 			var channel = new TwitchChannel(channelId, channelName!);
 
-			// Create sender object
+			uint bits;
 			TwitchUser twitchUser;
 			if (wasSendByLibrary)
 			{
@@ -321,6 +321,8 @@ namespace CatCore.Services.Twitch
 					userState?.IsSubscriber ?? false,
 					userState?.IsTurbo ?? false,
 					userState?.IsVip ?? false);
+
+				bits = 0;
 			}
 			else
 			{
@@ -367,6 +369,8 @@ namespace CatCore.Services.Twitch
 						isTurbo = false;
 						isVip = false;
 					}
+
+					bits = messageMeta.TryGetValue(IrcMessageTags.BITS, out var bitsString) ? uint.Parse(bitsString) : 0;
 				}
 				else
 				{
@@ -378,6 +382,7 @@ namespace CatCore.Services.Twitch
 					isSubscriber = false;
 					isTurbo = false;
 					isVip = false;
+					bits = 0;
 				}
 
 				twitchUser = new TwitchUser(userId,
@@ -399,6 +404,7 @@ namespace CatCore.Services.Twitch
 				message = message.AsSpan().Slice(8, message.Length - 9).ToString();
 			}
 
+			// TODO: Implement isPing as well as emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
 				messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ID, out var messageId) ? messageId : Guid.NewGuid().ToString(),
 				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
@@ -409,7 +415,7 @@ namespace CatCore.Services.Twitch
 				channel,
 				messageMeta,
 				commandType,
-				0
+				bits
 			));
 		}
 
