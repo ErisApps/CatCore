@@ -416,6 +416,10 @@ namespace CatCore.Services.Twitch
 					isPing = message.Contains($"@{selfDisplayName}");
 				}
 			}
+			else
+			{
+				message = string.Empty;
+			}
 
 			// TODO: Implement isPing as well as emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
@@ -423,7 +427,7 @@ namespace CatCore.Services.Twitch
 				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
 				isActionMessage,
 				isPing,
-				message ?? string.Empty,
+				message,
 				twitchUser,
 				channel,
 				messageMeta,
