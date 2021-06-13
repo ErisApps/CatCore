@@ -313,7 +313,7 @@ namespace CatCore.Services.Twitch
 			// Determine channelId
 			string channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
 				? roomId
-				: _roomStateTrackerService.GetRoomState(channelName!)?.RoomId ?? "";
+				: _roomStateTrackerService.GetRoomState(channelName!)?.RoomId ?? string.Empty;
 
 			// Create Channel object
 			var channel = new TwitchChannel(channelId, channelName!);
@@ -323,6 +323,7 @@ namespace CatCore.Services.Twitch
 
 			var selfDisplayName = globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName;
 
+			string messageId;
 			uint bits;
 			TwitchUser twitchUser;
 			if (wasSendByLibrary)
@@ -338,6 +339,7 @@ namespace CatCore.Services.Twitch
 					userState?.IsTurbo ?? false,
 					userState?.IsVip ?? false);
 
+				messageId = messageMeta![IrcMessageTags.ID]!;
 				bits = 0;
 			}
 			else
@@ -386,6 +388,7 @@ namespace CatCore.Services.Twitch
 						isVip = false;
 					}
 
+					messageId = messageMeta.TryGetValue(IrcMessageTags.ID, out var msgId) ? msgId : Guid.NewGuid().ToString();
 					bits = messageMeta.TryGetValue(IrcMessageTags.BITS, out var bitsString) ? uint.Parse(bitsString) : 0;
 				}
 				else
@@ -398,6 +401,8 @@ namespace CatCore.Services.Twitch
 					isSubscriber = false;
 					isTurbo = false;
 					isVip = false;
+
+					messageId = Guid.NewGuid().ToString();
 					bits = 0;
 				}
 
@@ -433,9 +438,9 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
-			// TODO: Implement isPing as well as emoji support
+			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
-				messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ID, out var messageId) ? messageId : Guid.NewGuid().ToString(),
+				messageId,
 				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
 				isActionMessage,
 				isPing,
