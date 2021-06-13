@@ -170,16 +170,24 @@ namespace CatCore.Services.Twitch
 			MessageReceivedHandlerInternal(message);
 		}
 
+		// TODO: Investigate possibility to split a message string into ReadOnlySpans<char> or ReadOnlyMemory<char> types instead of strings
+		// This would prevents unnecessary heap allocations which might in turn improve the throughput
+		// TODO: Remove debug stopwatches when said optimisation has been done
 		private void MessageReceivedHandlerInternal(string rawMessage, bool sendBySelf = false)
 		{
-			// TODO: Investigate possibility to split a message string into ReadOnlySpans<char> types instead of strings again, would prevents unnecessary heap allocations which might in turn improve the throughput
-			var messages = rawMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
+#if DEBUG
+			var stopwatch = new System.Diagnostics.Stopwatch();
+			stopwatch.Start();
+#endif
 
+			var messages = rawMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var messageInternal in messages)
 			{
 				// Handle IRC messages here
 				IrcExtensions.ParseIrcMessage(messageInternal, out var tags, out var prefix, out string commandType, out var channelName, out var message);
 #if DEBUG
+				_logger.Verbose("{MessageTemplate}", messageInternal);
+
 				_logger.Verbose("Tags count: {Tags}", tags?.Count.ToString() ?? "N/A");
 				_logger.Verbose("Prefix: {Prefix}", prefix ?? "N/A");
 				_logger.Verbose("CommandType: {CommandType}", commandType);
@@ -190,8 +198,12 @@ namespace CatCore.Services.Twitch
 
 				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
 			}
-		}
 
+#if DEBUG
+			stopwatch.Stop();
+			_logger.Information("Handling of {MessageCount} took {ElapsedTime} ticks", messages.Length, stopwatch.ElapsedTicks);
+#endif
+		}
 
 		// ReSharper disable once CognitiveComplexity
 		// ReSharper disable once CyclomaticComplexity
