@@ -306,15 +306,19 @@ namespace CatCore.Services.Twitch
 			// Create Channel object
 			var channel = new TwitchChannel(channelId, channelName!);
 
+			var globalUserState = _userStateTrackerService.GlobalUserState;
+			var userState = _userStateTrackerService.GetUserState(channelName!);
+
+			var selfDisplayName = globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName;
+
 			uint bits;
 			TwitchUser twitchUser;
 			if (wasSendByLibrary)
 			{
-				var globalUserState = _userStateTrackerService.GlobalUserState!;
-				var userState = _userStateTrackerService.GetUserState(channelName!);
-				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? "",
-					_twitchAuthService.LoggedInUser?.LoginName ?? "",
-					globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName ?? "",
+
+				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? string.Empty,
+					_twitchAuthService.LoggedInUser?.LoginName ?? string.Empty,
+					selfDisplayName ?? string.Empty,
 					globalUserState?.Color ?? "#ffffff",
 					userState?.IsModerator ?? false,
 					userState?.IsBroadcaster ?? false,
@@ -398,10 +402,19 @@ namespace CatCore.Services.Twitch
 			}
 
 			var isActionMessage = false;
-			if (message?.StartsWith("ACTION ") ?? false)
+			var isPing = false;
+			if (message != null)
 			{
-				isActionMessage = true;
-				message = message.AsSpan().Slice(8, message.Length - 9).ToString();
+				if (message.StartsWith("ACTION ", StringComparison.Ordinal))
+				{
+					isActionMessage = true;
+					message = message.AsSpan().Slice(8, message.Length - 9).ToString();
+				}
+
+				if (selfDisplayName != null)
+				{
+					isPing = message.Contains($"@{selfDisplayName}");
+				}
 			}
 
 			// TODO: Implement isPing as well as emoji support
@@ -409,7 +422,7 @@ namespace CatCore.Services.Twitch
 				messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ID, out var messageId) ? messageId : Guid.NewGuid().ToString(),
 				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
 				isActionMessage,
-				false,
+				isPing,
 				message ?? string.Empty,
 				twitchUser,
 				channel,
