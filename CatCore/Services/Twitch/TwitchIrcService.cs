@@ -308,7 +308,7 @@ namespace CatCore.Services.Twitch
 		private void HandlePrivMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
 			bool wasSendByLibrary)
 		{
-			prefix.ParsePrefix(out var isServer, out var nickname, out var username, out var hostname);
+			prefix.ParsePrefix(out var isServer, out _, out var username, out var hostname);
 
 			// Determine channelId
 			string channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
