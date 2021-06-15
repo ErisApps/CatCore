@@ -106,10 +106,10 @@ namespace CatCore.Services.Twitch
 
 		public async Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
+			_logger.Information("Exchanging authorization code for credentials using secure CatCore auth back-end");
+
 			var responseMessage = await _catCoreAuthClient
-				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/authorize" +
-				           $"?code={authorizationCode}" +
-				           $"&redirect_uri={redirectUrl}", null)
+				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/authorize?code={authorizationCode}&redirect_uri={redirectUrl}", null)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
@@ -173,9 +173,10 @@ namespace CatCore.Services.Twitch
 				return true;
 			}
 
+			_logger.Information("Refreshing tokens using secure CatCore auth back-end");
+
 			var responseMessage = await _catCoreAuthClient
-				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/refresh" +
-				           $"?refresh_token={RefreshToken}", null)
+				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/refresh?refresh_token={RefreshToken}", null)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
