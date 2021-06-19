@@ -64,7 +64,7 @@ namespace CatCore.Azure.Services.Twitch
 				return null;
 			}
 
-			return await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false); ;
+			return await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
 		}
 	}
 }
