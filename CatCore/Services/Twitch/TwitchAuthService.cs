@@ -80,12 +80,19 @@ namespace CatCore.Services.Twitch
 
 			if (HasTokens)
 			{
-				var validateAccessToken = await ValidateAccessToken(false).ConfigureAwait(false);
-				_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", validateAccessToken != null && TokenIsValid, RefreshToken != null);
-				if (validateAccessToken == null || !TokenIsValid)
+				try
 				{
-					_logger.Information("Refreshing tokens");
-					await RefreshTokens().ConfigureAwait(false);
+					var validateAccessToken = await ValidateAccessToken(false).ConfigureAwait(false);
+					_logger.Information("Validated token: Is valid: {IsValid}, Is refreshable: {IsRefreshable}", validateAccessToken != null && TokenIsValid, RefreshToken != null);
+					if (validateAccessToken == null || !TokenIsValid)
+					{
+						_logger.Information("Refreshing tokens");
+						await RefreshTokens().ConfigureAwait(false);
+					}
+				}
+				catch (HttpRequestException ex)
+				{
+					_logger.Error(ex, "An error occurred while trying to validate/refresh the Twitch tokens. Make sure an active internet connection is available");
 				}
 			}
 			else
