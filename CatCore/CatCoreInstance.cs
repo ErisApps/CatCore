@@ -12,11 +12,14 @@ using CatCore.Models.Twitch.IRC;
 using CatCore.Services;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Multiplexer;
+using CatCore.Services.Sockets;
+using CatCore.Services.Sockets.Packets;
 using CatCore.Services.Twitch;
 using CatCore.Services.Twitch.Interfaces;
 using CatCore.Services.Twitch.Media;
 using DryIoc;
 using JetBrains.Annotations;
+using ImTools;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Display;
@@ -152,6 +155,32 @@ namespace CatCore
 				made: Made.Of(() => MultiplexedPlatformService.From<ITwitchService, TwitchChannel, TwitchMessage>(Arg.Of<ITwitchService>())));
 			_container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
 			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
+
+			// Register socket services
+			_container.Register<IKittenRawSocketProvider, KittenRawSocketProvider>(Reuse.Singleton);
+			_container.RegisterInitializer<IKittenRawSocketProvider>((service, context) => service.Initialize());
+
+			_ = Task.Run(() =>
+			{
+				var socket = _container.Resolve<IKittenRawSocketProvider>();
+				socket.Initialize();
+				socket.OnConnect += clientSocket =>
+				{
+					Log.Logger.Information($"Client connected from {clientSocket.WorkSocket.RemoteEndPoint} and {clientSocket.Uuid}");
+				};
+
+				socket.OnReceive += (clientSocket, data) =>
+				{
+					Log.Logger.Information($"Received from {clientSocket.Uuid}: {data.ReceivedDataStr}");
+
+					var _ = clientSocket.QueueSend(new RespondHello(data.ReceivedDataStr.ToString()));
+				};
+
+				socket.OnDisconnect += clientSocket =>
+				{
+					Log.Logger.Information($"Client disconnected from {clientSocket.WorkSocket.RemoteEndPoint} and {clientSocket.Uuid}");
+				};
+			});
 
 			// Spin up internal web api service
 			_ = Task.Run(() =>

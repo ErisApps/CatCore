@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
@@ -19,8 +18,13 @@ namespace CatCore.Services
 		// Not sure if concurrent is needed here
 		private readonly ConcurrentDictionary<Guid, ClientSocket> _connectedClients = new ConcurrentDictionary<Guid, ClientSocket>();
 
+		private static SemaphoreSlim NewSemaphore()
+		{
+			return new SemaphoreSlim(0, 1);
+		}
+
 		// Thread signal.
-		private readonly SemaphoreSlim _allDone = new SemaphoreSlim(1, 1);
+		private SemaphoreSlim _allDone = NewSemaphore();
 		private readonly ILogger _logger;
 
 		private bool _isServerRunning;
@@ -28,9 +32,9 @@ namespace CatCore.Services
 		internal CancellationTokenSource? ServerCts {  get; private set; }
 
 #pragma warning disable 649
-		public Action<ClientSocket>? OnConnect;
-		public Action<ClientSocket, ReceivedData>? OnReceive;
-		public Action<ClientSocket>? OnDisconnect;
+		public event Action<ClientSocket>? OnConnect;
+		public event Action<ClientSocket, ReceivedData>? OnReceive;
+		public event Action<ClientSocket>? OnDisconnect;
 #pragma warning restore 649
 
 		public KittenRawSocketProvider(ILogger logger)
@@ -38,12 +42,9 @@ namespace CatCore.Services
 			_logger = logger;
 		}
 
-		private void ValidateServerNotRunning()
+		private bool ValidateServerNotRunning()
 		{
-			if (_allDone.CurrentCount > 0 || _isServerRunning || !ServerCts?.IsCancellationRequested != null)
-			{
-				throw new InvalidOperationException("The server is still running, what is wrong with you? The poor kitty can't handle two socket servers! ;-;");
-			}
+			return !_isServerRunning && !ServerCts?.IsCancellationRequested == null;
 		}
 
 		private async void StartListening(CancellationTokenSource cts)
@@ -51,10 +52,7 @@ namespace CatCore.Services
 			ServerCts = cts;
 
 			// Establish the local endpoint for the socket.
-			// The DNS name of the computer
-			// running the listener is "host.contoso.com".
-			IPHostEntry ipHostInfo = await Dns.GetHostEntryAsync(Dns.GetHostName());
-			IPAddress ipAddress = ipHostInfo.AddressList[0];
+			IPAddress ipAddress = IPAddress.Any;
 			IPEndPoint localEndPoint = new IPEndPoint(ipAddress, SOCKET_PORT);
 
 			// Create a TCP/IP socket.
@@ -63,15 +61,16 @@ namespace CatCore.Services
 			// Bind the socket to the local endpoint and listen for incoming connections.
 			try
 			{
+				_logger.Information($"Binding to port {localEndPoint.Address.MapToIPv4()}:{localEndPoint.Port}");
 				listener.Bind(localEndPoint);
 				listener.Listen(20); //back log is amount of clients allowed to wait
+
+				// Set the event to nonsignaled state.
+				_allDone = NewSemaphore();
 
 				_isServerRunning = true;
 				while (!ServerCts.IsCancellationRequested)
 				{
-					// Set the event to nonsignaled state.
-					_allDone.Release();
-
 					// Start an asynchronous socket to listen for connections.
 					_logger.Information("Waiting for a connection...");
 					listener.BeginAccept(
@@ -87,7 +86,7 @@ namespace CatCore.Services
 			}
 			catch (Exception e)
 			{
-				_logger.Fatal(e.Message, e);
+				_logger.Fatal(e.Message, e,ToString());
 			}
 
 			_isServerRunning = false;
@@ -115,58 +114,17 @@ namespace CatCore.Services
 				guid = Guid.NewGuid();
 			}
 
-			ClientSocket clientSocket = new ClientSocket(handler, guid, ServerCts!, HandleDisconnect);
+			ClientSocket clientSocket = new ClientSocket(handler, guid, ServerCts!, HandleDisconnect, HandleRead);
 			_connectedClients[guid] = clientSocket;
 
-
-
 			OnConnect?.Invoke(clientSocket);
-
-			// Create the state object.
-			ReceivedData state = new ReceivedData(clientSocket);
-			handler.BeginReceive(state.Buffer, 0, ReceivedData.BUFFER_SIZE, 0, ReadCallback, state);
 		}
 
-		private void ReadCallback(IAsyncResult ar)
+		private void HandleRead(ClientSocket clientSocket, ReceivedData receivedData)
 		{
-
-			// Retrieve the state object and the handler socket
-			// from the asynchronous state object.
-			ReceivedData state = (ReceivedData) ar.AsyncState;
-			ClientSocket handler = state.ClientSocket;
-
-			if (!handler.WorkSocket.Connected)
-			{
-				HandleDisconnect(handler);
-				return;
-			}
-
-			// Read data from the client socket.
-			var bytesRead = handler.WorkSocket.EndReceive(ar);
-
-			// If 0, no more data is coming
-			if (bytesRead <= 0)
-			{
-				return;
-			}
-
-			// There  might be more data, so store the data received so far.
-			state.ReceivedDataStr.Append(Encoding.UTF8.GetString(state.Buffer, 0, bytesRead));
-
-			// Check for end-of-file tag. If it is not there, read
-			// more data.
-			string content = state.ReceivedDataStr.ToString();
-			if (content.IndexOf("\n", StringComparison.Ordinal) > -1)
-			{
-				OnReceive?.Invoke(handler, state);
-			}
-			else
-			{
-				// Not all data received. Get more.
-				// Not all data gets received at once, so keep checking for more
-				handler.WorkSocket.BeginReceive(state.Buffer, 0, ReceivedData.BUFFER_SIZE, 0, ReadCallback, state);
-			}
+			OnReceive?.Invoke(clientSocket, receivedData);
 		}
+
 
 		private void HandleDisconnect(ClientSocket clientSocket)
 		{
@@ -179,16 +137,31 @@ namespace CatCore.Services
 			}
 
 			_connectedClients.TryRemove(clientSocket.Uuid, out _);
+
+			OnDisconnect?.Invoke(clientSocket);
 		}
 
 		public void Initialize()
 		{
-			ValidateServerNotRunning();
+			if (!ValidateServerNotRunning())
+			{
+				_logger.Warning("(This can be ignored if intentional) The server is still running, what is wrong with you? The poor kitty can't handle two socket servers! ;-;");
+				return;
+			}
+
+			_logger.Information("Starting socket server");
 
 			ServerCts = new CancellationTokenSource();
 			Task.Run(() =>
 			{
-				StartListening(ServerCts);
+				try
+				{
+					StartListening(ServerCts);
+				}
+				catch (Exception e)
+				{
+					_logger.Error(e.Message, e.ToString());
+				}
 			});
 		}
 
