@@ -28,7 +28,7 @@
 	</PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="DryIoc" Version="4.7.4" />
+      <PackageReference Include="DryIoc" Version="4.8.1" />
       <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" />
       <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
       <PackageReference Include="Polly" Version="7.2.2" />
