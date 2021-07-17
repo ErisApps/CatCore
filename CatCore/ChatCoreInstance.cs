@@ -88,6 +88,9 @@ namespace CatCore
 
 		private void CreateContainer()
 		{
+			// TODO: Remove this later on when the CatCore.Azure cold-start taking a long time has been resolved
+			Scope.WaitForScopedServiceIsCreatedTimeoutTicks = 60000;
+
 			// Create container
 			_container = new Container(rules => rules
 				.WithTrackingDisposableTransients()
