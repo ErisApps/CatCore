@@ -127,6 +127,7 @@ namespace CatCore.Services.Twitch
 			_pingTimer!.Start();
 
 			SendListenTopicPubSubMessage($"video-playback-by-id.{_channelId}");
+			SendListenTopicPubSubMessage($"raid.{_channelId}");
 			SendListenTopicPubSubMessage($"following.{_channelId}");
 
 			SendListenTopicPubSubMessage($"channel-bits-events-v1.{_channelId}"); // Only on token channel
@@ -135,6 +136,9 @@ namespace CatCore.Services.Twitch
 			SendListenTopicPubSubMessage($"chat_moderator_actions.{_twitchAuthService.LoggedInUser!.Value.UserId}.{_channelId}");
 
 			SendListenTopicPubSubMessage($"community-points-channel-v1.{_channelId}");
+
+			SendListenTopicPubSubMessage($"polls.{_channelId}");
+			SendListenTopicPubSubMessage($"predictions-channel-v1.{_channelId}");
 		}
 
 		private void DisconnectHappenedHandler()
@@ -182,6 +186,7 @@ namespace CatCore.Services.Twitch
 						switch (topic)
 						{
 							case "video-playback-by-id":
+							{
 								var videoFeedbackDocument = JsonDocument.Parse(message).RootElement;
 								var internalType = videoFeedbackDocument.GetProperty("type").GetString();
 								var serverTime = videoFeedbackDocument.GetProperty("server_time").GetRawText();
@@ -212,6 +217,7 @@ namespace CatCore.Services.Twitch
 								}
 
 								break;
+							}
 							case "following":
 								var followingDocument = JsonDocument.Parse(message).RootElement;
 								var displayName = followingDocument.GetProperty("display_name").GetString()!;
@@ -222,15 +228,18 @@ namespace CatCore.Services.Twitch
 
 								break;
 							case "community-points-channel-v1":
+							{
 								var communityPointsChannelDocument = JsonDocument.Parse(message).RootElement;
-								internalType = communityPointsChannelDocument.GetProperty("type").GetString();
+								var internalType = communityPointsChannelDocument.GetProperty("type").GetString();
 								switch (internalType)
 								{
 									case "reward-redeemed":
+
 										break;
 									case "custom-reward-created":
 										break;
 									case "custom-reward-updated":
+
 										break;
 									case "custom-reward-deleted":
 										break;
@@ -243,15 +252,64 @@ namespace CatCore.Services.Twitch
 								}
 
 								break;
+							}
 							case "raid":
-								// JsonDocument.Parse(message).RootElement;
+							{
+								var raidDocument = JsonDocument.Parse(message).RootElement;
+								var internalType = raidDocument.GetProperty("type").GetString();
+								switch (internalType)
+								{
+									case "raid_update_v2":
+
+										break;
+									case "raid_go_v2":
+
+										break;
+								}
+
 								break;
+							}
 							case "chat_moderator_actions":
 								// JsonDocument.Parse(message).RootElement;
 								break;
 							case "channel-cheer-events-public-v1":
 
 								break;
+							case "polls":
+							{
+								var channelPredictionsDocument = JsonDocument.Parse(message).RootElement;
+								var internalType = channelPredictionsDocument.GetProperty("type").GetString();
+								switch (internalType)
+								{
+									case "POLL_CREATE":
+
+										break;
+									case "POLL_COMPLETE":
+
+										break;
+									case "POLL_ARCHIVE":
+
+										break;
+								}
+
+								break;
+							}
+							case "predictions-channel-v1":
+							{
+								var channelPredictionsDocument = JsonDocument.Parse(message).RootElement;
+								var internalType = channelPredictionsDocument.GetProperty("type").GetString();
+								switch (internalType)
+								{
+									case "event-created":
+
+										break;
+									case "event-updated":
+
+										break;
+								}
+
+								break;
+							}
 							default:
 								break;
 						}
