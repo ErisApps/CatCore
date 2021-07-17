@@ -93,7 +93,7 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(null, cancellationToken ?? default).ConfigureAwait(false);
+			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
 		private async Task<TResponse?> PostAsyncS<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct
@@ -133,7 +133,7 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(null, cancellationToken ?? default).ConfigureAwait(false);
+			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
 		}
 	}
 }

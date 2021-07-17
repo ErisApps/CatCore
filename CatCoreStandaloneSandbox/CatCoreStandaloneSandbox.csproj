@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.Text.Json" Version="5.0.1" />
       <PackageReference Include="Websocket.Client" Version="4.3.30" />
+      <PackageReference Include="System.Text.Json" Version="6.0.0-preview.6.21352.12" />
     </ItemGroup>
 
 </Project>
