@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
+using CatCore.Models.Twitch.PubSub.Responses.Polls;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -285,20 +286,19 @@ namespace CatCore.Services.Twitch
 							{
 								var channelPredictionsDocument = JsonDocument.Parse(message).RootElement;
 								var internalType = channelPredictionsDocument.GetProperty("type").GetString();
+								var pollData = JsonSerializer.Deserialize<PollData>(channelPredictionsDocument.GetProperty("data").GetProperty("poll").GetRawText());
 								switch (internalType)
 								{
 									case "POLL_CREATE":
-										// {"type":"POLL_CREATE","data":{"poll":{"poll_id":"40e530ee-0bb4-4eca-81f3-56848fc2629d","owned_by":"405499635","created_by":"405499635","title":"Pink cute","started_at":"2021-07-17T13:40:35.925129019Z","ended_at":null,"ended_by":null,"duration_seconds":60,"settings":{"multi_choice":{"is_enabled":true},"subscriber_only":{"is_enabled":false},"subscriber_multiplier":{"is_enabled":false},"bits_votes":{"is_enabled":false,"cost":0},"channel_points_votes":{"is_enabled":false,"cost":0}},"status":"ACTIVE","choices":[{"choice_id":"e6f1379a-6b4a-4576-a24e-badc2c9a9ceb","title":"Yes","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0},{"choice_id":"0e79a140-7a3f-4844-b507-19d3eaa9b652","title":"Def","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0}],"votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0,"remaining_duration_milliseconds":59983,"top_contributor":null,"top_bits_contributor":null,"top_channel_points_contributor":null}}}
-
-										break;
+									case "POLL_UPDATE":
 									case "POLL_COMPLETE":
-										// {"type":"POLL_COMPLETE","data":{"poll":{"poll_id":"40e530ee-0bb4-4eca-81f3-56848fc2629d","owned_by":"405499635","created_by":"405499635","title":"Pink cute","started_at":"2021-07-17T13:40:35.925129019Z","ended_at":"2021-07-17T13:41:35.925129019Z","ended_by":null,"duration_seconds":60,"settings":{"multi_choice":{"is_enabled":true},"subscriber_only":{"is_enabled":false},"subscriber_multiplier":{"is_enabled":false},"bits_votes":{"is_enabled":false,"cost":0},"channel_points_votes":{"is_enabled":false,"cost":0}},"status":"COMPLETED","choices":[{"choice_id":"e6f1379a-6b4a-4576-a24e-badc2c9a9ceb","title":"Yes","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0},{"choice_id":"0e79a140-7a3f-4844-b507-19d3eaa9b652","title":"Def","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0}],"votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0,"remaining_duration_milliseconds":0,"top_contributor":null,"top_bits_contributor":null,"top_channel_points_contributor":null}}}
-
-										break;
 									case "POLL_ARCHIVE":
-										// {"type":"POLL_ARCHIVE","data":{"poll":{"poll_id":"40e530ee-0bb4-4eca-81f3-56848fc2629d","owned_by":"405499635","created_by":"405499635","title":"Pink cute","started_at":"2021-07-17T13:40:35.925129019Z","ended_at":"2021-07-17T13:41:35.925129019Z","ended_by":null,"duration_seconds":60,"settings":{"multi_choice":{"is_enabled":true},"subscriber_only":{"is_enabled":false},"subscriber_multiplier":{"is_enabled":false},"bits_votes":{"is_enabled":false,"cost":0},"channel_points_votes":{"is_enabled":false,"cost":0}},"status":"ARCHIVED","choices":[{"choice_id":"e6f1379a-6b4a-4576-a24e-badc2c9a9ceb","title":"Yes","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0},{"choice_id":"0e79a140-7a3f-4844-b507-19d3eaa9b652","title":"Def","votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0}],"votes":{"total":0,"bits":0,"channel_points":0,"base":0},"tokens":{"bits":0,"channel_points":0},"total_voters":0,"remaining_duration_milliseconds":0,"top_contributor":null,"top_bits_contributor":null,"top_channel_points_contributor":null}}}
+									case "POLL_TERMINATE":
+										// TODO: Expose
 
 										break;
+									default:
+										throw new NotSupportedException($"PubSub message of type {internalType} is currently not supported");
 								}
 
 								break;
