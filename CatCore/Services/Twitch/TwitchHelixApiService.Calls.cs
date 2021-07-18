@@ -79,6 +79,52 @@ namespace CatCore.Services.Twitch
 		}
 
 		// ReSharper disable once CognitiveComplexity
+		public Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}polls?broadcaster_id={loggedInUser.Value.UserId}");
+			if (pollIds != null && pollIds.Any())
+			{
+				if (pollIds.Count > 100)
+				{
+					throw new ArgumentException("The pollIds parameter has an upper-limit of 100.", nameof(pollIds));
+				}
+
+				foreach (var pollId in pollIds)
+				{
+					urlBuilder.Append($"&id={pollId}");
+				}
+			}
+
+			if (limit != null)
+			{
+				if (limit.Value > 20)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 20.", nameof(limit));
+				}
+
+				urlBuilder.Append($"&first={limit}");
+			}
+
+			if (continuationCursor != null)
+			{
+				if (string.IsNullOrWhiteSpace(continuationCursor))
+				{
+					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
+				}
+
+				urlBuilder.Append($"&after={continuationCursor}");
+			}
+
+			return GetAsync<ResponseBaseWithPagination<PollData>>(urlBuilder.ToString(), cancellationToken);
+		}
+
+		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null)
 		{
