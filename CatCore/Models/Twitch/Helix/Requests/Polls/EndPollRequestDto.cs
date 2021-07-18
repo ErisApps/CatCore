@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
-using CatCore.Models.Twitch.Helix.Shared;
+using CatCore.Models.Twitch.Shared;
 
 namespace CatCore.Models.Twitch.Helix.Requests.Polls
 {
