@@ -27,7 +27,7 @@ namespace CatCore.Services.Twitch
 				}
 			}
 
-			return GetAsyncS<ResponseBase<UserData>>(uriBuilder.ToString(), cancellationToken);
+			return GetAsync<ResponseBase<UserData>>(uriBuilder.ToString(), cancellationToken);
 		}
 
 		public Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken? cancellationToken = null)
@@ -38,7 +38,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreateStreamMarkerRequestDto(userId, description);
-			return PostAsyncS<ResponseBase<CreateStreamMarkerData>, CreateStreamMarkerRequestDto>($"{TWITCH_HELIX_BASEURL}streams/markers", body, cancellationToken);
+			return PostAsync<ResponseBase<CreateStreamMarkerData>, CreateStreamMarkerRequestDto>($"{TWITCH_HELIX_BASEURL}streams/markers", body, cancellationToken);
 		}
 
 		public Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
@@ -75,7 +75,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsyncS<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
 		}
 
 		// ReSharper disable once CognitiveComplexity
@@ -152,7 +152,7 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
 			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
-			return PostAsyncS<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
+			return PostAsync<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
 		}
 	}
 }

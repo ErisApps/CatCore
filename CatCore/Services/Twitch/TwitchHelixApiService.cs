@@ -17,6 +17,9 @@ namespace CatCore.Services.Twitch
 	{
 		private const string TWITCH_HELIX_BASEURL = "https://api.twitch.tv/helix/";
 
+		// I can't believe that I actually have to do this...
+		private static readonly HttpMethod HttpMethodPatch = new("PATCH");
+
 		private readonly ILogger _logger;
 		private readonly ITwitchAuthService _twitchAuthService;
 
@@ -65,7 +68,7 @@ namespace CatCore.Services.Twitch
 			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy);
 		}
 
-		private async Task<TResponse?> GetAsyncS<TResponse>(string url, CancellationToken? cancellationToken = null) where TResponse : struct
+		private async Task<TResponse?> GetAsync<TResponse>(string url, CancellationToken? cancellationToken = null) where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -96,7 +99,18 @@ namespace CatCore.Services.Twitch
 			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
-		private async Task<TResponse?> PostAsyncS<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct
+		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct =>
+			CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod.Post, url, body, cancellationToken);
+
+		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
+
+		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct =>
+			CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethodPatch, url, body, cancellationToken);
+
+		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
+
+		private async Task<TResponse?> CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
+			where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -125,7 +139,7 @@ namespace CatCore.Services.Twitch
 			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
 			{
 				var jsonContent = JsonContent.Create(body);
-				var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) {Content = jsonContent};
+				var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
 				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
 			}).ConfigureAwait(false);
 			if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
@@ -134,6 +148,41 @@ namespace CatCore.Services.Twitch
 			}
 
 			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
+		}
+
+		private async Task<bool> CallEndpointWithBodyNoBody<TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
+		{
+#if DEBUG
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				throw new ArgumentNullException(nameof(url));
+			}
+
+			if (body == null)
+			{
+				throw new ArgumentNullException(nameof(body));
+			}
+
+			_logger.Verbose("Invoking Helix endpoint POST {Url}", url);
+#endif
+			if (!_twitchAuthService.HasTokens)
+			{
+				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
+				return false;
+			}
+
+			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
+			{
+				return false;
+			}
+
+			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+			{
+				var jsonContent = JsonContent.Create(body);
+				var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
+				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
+			}).ConfigureAwait(false);
+			return httpResponseMessage?.IsSuccessStatusCode ?? false;
 		}
 	}
 }
