@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
@@ -152,6 +153,11 @@ namespace CatCore.Services.Twitch
 		// ReSharper disable once CyclomaticComplexity
 		private void MessageReceivedHandler(string receivedMessage)
 		{
+#if DEBUG
+			var stopWatch = new Stopwatch();
+			stopWatch.Start();
+#endif
+
 			try
 			{
 				var jsonDocument = JsonDocument.Parse(receivedMessage);
@@ -337,6 +343,11 @@ namespace CatCore.Services.Twitch
 			{
 				_logger.Error(e, "An error occurred while trying to parse a PubSub message");
 			}
+
+#if DEBUG
+			stopWatch.Stop();
+			_logger.Information("Handling of PubSub message took {ElapsedTime} ticks", stopWatch.ElapsedTicks);
+#endif
 		}
 	}
 }
