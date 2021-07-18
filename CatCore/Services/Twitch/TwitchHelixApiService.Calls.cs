@@ -62,7 +62,7 @@ namespace CatCore.Services.Twitch
 
 			if (liveOnly != null)
 			{
-				urlBuilder.Append($"live_only={liveOnly}");
+				urlBuilder.Append($"&live_only={liveOnly}");
 			}
 
 			if (continuationCursor != null)
@@ -72,7 +72,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
 				}
 
-				urlBuilder.Append($"after={continuationCursor}");
+				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
 			return GetAsyncS<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
