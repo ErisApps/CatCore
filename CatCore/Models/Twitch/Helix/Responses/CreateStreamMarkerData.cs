@@ -12,13 +12,13 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public string? Description { get; }
 
 		[JsonPropertyName("position_seconds")]
-		public int PositionSeconds { get; }
+		public uint PositionSeconds { get; }
 
 		[JsonPropertyName("created_at")]
 		public DateTimeOffset CreatedAt { get; }
 
 		[JsonConstructor]
-		public CreateStreamMarkerData(string id, string? description, int positionSeconds, DateTimeOffset createdAt)
+		public CreateStreamMarkerData(string id, string? description, uint positionSeconds, DateTimeOffset createdAt)
 		{
 			Id = id;
 			Description = description;
