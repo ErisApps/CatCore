@@ -6,10 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
+using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Helix.Shared;
+using Outcome = CatCore.Models.Twitch.Helix.Requests.Predictions.Outcome;
 using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 
 namespace CatCore.Services.Twitch
@@ -271,6 +273,50 @@ namespace CatCore.Services.Twitch
 			}
 
 			return GetAsync<ResponseBaseWithPagination<PredictionData>>(urlBuilder.ToString(), cancellationToken);
+		}
+
+		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, int duration, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var userId = loggedInUser.Value.UserId;
+
+			if (string.IsNullOrWhiteSpace(title) || title.Length > 45)
+			{
+				throw new ArgumentException("The title argument is enforced to be 45 characters tops by Helix. Please use a shorter one.", nameof(title));
+			}
+
+			if (outcomes.Count != 2)
+			{
+				throw new ArgumentException("The outcomes argument is enforced to 2 entries by Helix. Please ensure that 2 outcomes are provided", nameof(outcomes));
+			}
+
+			var predictionOutcomes = new List<Outcome>();
+			foreach (var outcome in outcomes)
+			{
+				if (string.IsNullOrWhiteSpace(outcome) || outcome.Length > 25)
+				{
+					throw new ArgumentException(
+						"The outcomes argument is enforced to have all its entries be 25 characters tops by Helix. Please make sure that all entries are 25 characters long or shorter.",
+						nameof(outcomes));
+				}
+
+				predictionOutcomes.Add(new Outcome(outcome));
+			}
+
+			if (duration is < 15 or > 1800)
+			{
+				throw new ArgumentException(
+					"The duration argument is enforced to last at least 15 seconds and 1800 seconds tops by Helix. Please make sure that all entries are 25 characters long or shorter.",
+					nameof(duration));
+			}
+
+			var body = new CreatePredictionsRequestDto(userId, title, predictionOutcomes, duration);
+			return PostAsync<ResponseBase<PredictionData>, CreatePredictionsRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
 		}
 	}
 }
