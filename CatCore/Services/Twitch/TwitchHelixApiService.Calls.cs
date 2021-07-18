@@ -10,7 +10,7 @@ using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
-using CatCore.Models.Twitch.Helix.Shared;
+using CatCore.Models.Twitch.Shared;
 using Outcome = CatCore.Models.Twitch.Helix.Requests.Predictions.Outcome;
 using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 

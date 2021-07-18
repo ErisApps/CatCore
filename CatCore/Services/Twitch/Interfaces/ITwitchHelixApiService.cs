@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
-using CatCore.Models.Twitch.Helix.Shared;
+using CatCore.Models.Twitch.Shared;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
