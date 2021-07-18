@@ -100,7 +100,7 @@ namespace CatCore
 			_container.Use(_version);
 			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
 			_container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
-			_container.Register(Made.Of(r => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
+			_container.Register(Made.Of(_ => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
 
 			// Default logger
 			_container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));
@@ -116,14 +116,14 @@ namespace CatCore
 			_container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
 			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
 			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
-			_container.RegisterInitializer<IKittenSettingsService>((service, context) => service.Initialize());
+			_container.RegisterInitializer<IKittenSettingsService>((service, _) => service.Initialize());
 			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
-			_container.RegisterInitializer<IKittenApiService>((service, context) => service.Initialize());
+			_container.RegisterInitializer<IKittenApiService>((service, _) => service.Initialize());
 
 			// Register Twitch-specific services
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 			// .GetAwaiter().GetResult() is being used on the Initialize method to ensure the user is actually logged in when credentials are present
-			_container.RegisterInitializer<ITwitchAuthService>((service, context) => service.Initialize().GetAwaiter().GetResult());
+			_container.RegisterInitializer<ITwitchAuthService>((service, _) => service.Initialize().GetAwaiter().GetResult());
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);

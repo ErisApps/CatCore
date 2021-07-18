@@ -37,7 +37,7 @@ namespace CatCore.Services.Twitch
 
 			var reAuthPolicy = Policy
 				.HandleResult<HttpResponseMessage>(resp => resp.StatusCode == HttpStatusCode.Unauthorized)
-				.RetryAsync(1, async (response, retryAttempt, context) =>
+				.RetryAsync(1, async (_, _, _) =>
 				{
 					_logger.Information("Attempting re-auth");
 					await twitchAuthService.RefreshTokens().ConfigureAwait(false);
@@ -57,7 +57,7 @@ namespace CatCore.Services.Twitch
 
 						return TimeSpan.FromSeconds(Math.Pow(10, retryAttempt));
 					},
-					((_, timeSpan, __, ___) =>
+					((_, timeSpan, _, _) =>
 					{
 						_logger.Information("Hit Helix rate limit. Retrying in {TimeTillReset}", timeSpan.ToString("g"));
 						return Task.CompletedTask;
