@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using CatCore.Helpers.Converters;
 using CatCore.Models.Twitch.Helix.Shared;
 
 namespace CatCore.Models.Twitch.Helix.Responses.Polls
@@ -23,7 +24,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 		public string Title { get; }
 
 		[JsonPropertyName("choices")]
-		public List<PollChoice> Choices { get; }
+		public IReadOnlyList<PollChoice> Choices { get; }
 
 		[JsonPropertyName("bits_voting_enabled")]
 		public bool BitsVotingEnabled { get; }
@@ -38,10 +39,8 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 		public uint ChannelPointsPerVote { get; }
 
 		[JsonPropertyName("status")]
-		public string StatusRaw { get; }
-
-		[JsonIgnore]
-		public PollStatus Status => Enum.TryParse(StatusRaw, true, out PollStatus pollStatus) ? pollStatus : PollStatus.Invalid;
+		[JsonConverter(typeof(JsonStringEnumConverter<PollStatus>))]
+		public PollStatus Status { get; }
 
 		[JsonPropertyName("duration")]
 		public uint Duration { get; }
@@ -53,8 +52,8 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 		public DateTimeOffset StartedAt => DateTimeOffset.Parse(StartedAtRaw);
 
 		[JsonConstructor]
-		public PollData(string id, string broadcasterId, string broadcasterName, string broadcasterLogin, string title, List<PollChoice> choices, bool bitsVotingEnabled, uint bitsPerVote,
-			bool channelPointsVotingEnabled, uint channelPointsPerVote, string statusRaw, uint duration, string startedAtRaw)
+		public PollData(string id, string broadcasterId, string broadcasterName, string broadcasterLogin, string title, IReadOnlyList<PollChoice> choices, bool bitsVotingEnabled, uint bitsPerVote,
+			bool channelPointsVotingEnabled, uint channelPointsPerVote, PollStatus status, uint duration, string startedAtRaw)
 		{
 			Id = id;
 			BroadcasterId = broadcasterId;
@@ -66,7 +65,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 			BitsPerVote = bitsPerVote;
 			ChannelPointsVotingEnabled = channelPointsVotingEnabled;
 			ChannelPointsPerVote = channelPointsPerVote;
-			StatusRaw = statusRaw;
+			Status = status;
 			Duration = duration;
 			StartedAtRaw = startedAtRaw;
 		}
