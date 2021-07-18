@@ -67,7 +67,7 @@ namespace CatCore.Services.Twitch
 
 			if (continuationCursor != null)
 			{
-				if (string.IsNullOrWhiteSpace(query))
+				if (string.IsNullOrWhiteSpace(continuationCursor))
 				{
 					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
 				}
