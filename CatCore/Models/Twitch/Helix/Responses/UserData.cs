@@ -35,7 +35,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public DateTimeOffset CreatedAt { get; }
 
 		[JsonPropertyName("view_count")]
-		public int ViewCount { get; }
+		public uint ViewCount { get; }
 
 		/// <remark>
 		/// Returned if the request includes the user:read:email scope.
@@ -45,7 +45,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 
 		[JsonConstructor]
 		public UserData(string userId, string loginName, string displayName, string description, string profileImageUrl, string offlineImageUrl, string type, string broadcasterType,
-			DateTimeOffset createdAt, int viewCount, string email)
+			DateTimeOffset createdAt, uint viewCount, string email)
 		{
 			UserId = userId;
 			LoginName = loginName;

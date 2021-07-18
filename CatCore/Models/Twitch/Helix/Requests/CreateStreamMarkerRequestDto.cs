@@ -6,6 +6,7 @@ namespace CatCore.Models.Twitch.Helix.Requests
 	{
 		[JsonPropertyName("user_id")]
 		public string UserId { get; }
+
 		[JsonPropertyName("description")]
 		public string? Description { get; }
 
