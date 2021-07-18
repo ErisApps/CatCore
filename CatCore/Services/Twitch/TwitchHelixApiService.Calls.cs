@@ -217,7 +217,7 @@ namespace CatCore.Services.Twitch
 
 			if (string.IsNullOrWhiteSpace(pollId))
 			{
-				throw new ArgumentException("The query parameter should not be null, empty or whitespace.", nameof(pollId));
+				throw new ArgumentException("The pollId parameter should not be null, empty or whitespace.", nameof(pollId));
 			}
 
 			if (pollStatus is not (PollStatus.Archived or PollStatus.Terminated))
