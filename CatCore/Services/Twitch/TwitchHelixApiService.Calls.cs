@@ -8,6 +8,7 @@ using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
+using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Helix.Shared;
 using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 
@@ -224,6 +225,52 @@ namespace CatCore.Services.Twitch
 
 			var body = new EndPollRequestDto(userId, pollId, pollStatus);
 			return PatchAsync<ResponseBase<PollData>, EndPollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
+		}
+
+		// ReSharper disable once CognitiveComplexity
+		public Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}predictions?broadcaster_id={loggedInUser.Value.UserId}");
+			if (predictionIds != null && predictionIds.Any())
+			{
+				if (predictionIds.Count > 100)
+				{
+					throw new ArgumentException("The predictionIds parameter has an upper-limit of 100.", nameof(predictionIds));
+				}
+
+				foreach (var predictionId in predictionIds)
+				{
+					urlBuilder.Append($"&id={predictionId}");
+				}
+			}
+
+			if (limit != null)
+			{
+				if (limit.Value > 20)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 20.", nameof(limit));
+				}
+
+				urlBuilder.Append($"&first={limit}");
+			}
+
+			if (continuationCursor != null)
+			{
+				if (string.IsNullOrWhiteSpace(continuationCursor))
+				{
+					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
+				}
+
+				urlBuilder.Append($"&after={continuationCursor}");
+			}
+
+			return GetAsync<ResponseBaseWithPagination<PredictionData>>(urlBuilder.ToString(), cancellationToken);
 		}
 	}
 }
