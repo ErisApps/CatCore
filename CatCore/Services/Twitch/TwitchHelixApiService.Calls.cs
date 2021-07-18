@@ -82,6 +82,14 @@ namespace CatCore.Services.Twitch
 		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null)
 		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var userId = loggedInUser.Value.UserId;
+
 			if (string.IsNullOrWhiteSpace(title) || title.Length > 60)
 			{
 				throw new ArgumentException("The title argument is enforced to be 60 characters tops by Helix. Please use a shorter one.", nameof(title));
@@ -143,8 +151,7 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref bitsVotingEnabled, ref bitsPerVote, 10000);
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
-			var body = new CreatePollRequestDto(_twitchAuthService.LoggedInUser.GetValueOrDefault().UserId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled,
-				channelPointsPerVote);
+			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
 			return PostAsyncS<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
 		}
 	}
