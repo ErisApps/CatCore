@@ -179,7 +179,7 @@ namespace CatCore.Services.Twitch
 					{
 						if (costPerVote == null)
 						{
-							costPerVote = 0;
+							costPerVote = 1;
 						}
 						else if (costPerVote > costThreshold)
 						{
