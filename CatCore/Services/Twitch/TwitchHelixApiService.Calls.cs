@@ -8,6 +8,7 @@ using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
+using CatCore.Models.Twitch.Helix.Shared;
 using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 
 namespace CatCore.Services.Twitch
@@ -199,6 +200,30 @@ namespace CatCore.Services.Twitch
 
 			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
 			return PostAsync<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
+		}
+
+		public Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var userId = loggedInUser.Value.UserId;
+
+			if (string.IsNullOrWhiteSpace(pollId))
+			{
+				throw new ArgumentException("The query parameter should not be null, empty or whitespace.", nameof(pollId));
+			}
+
+			if (pollStatus is not (PollStatus.Archived or PollStatus.Terminated))
+			{
+				throw new ArgumentException("The pollStatus parameter may only be set to Archived or Terminated.", nameof(pollStatus));
+			}
+
+			var body = new EndPollRequestDto(userId, pollId, pollStatus);
+			return PatchAsync<ResponseBase<PollData>, EndPollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
 		}
 	}
 }
