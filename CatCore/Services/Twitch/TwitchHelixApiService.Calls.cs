@@ -318,5 +318,34 @@ namespace CatCore.Services.Twitch
 			var body = new CreatePredictionsRequestDto(userId, title, predictionOutcomes, duration);
 			return PostAsync<ResponseBase<PredictionData>, CreatePredictionsRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
 		}
+
+		public Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var userId = loggedInUser.Value.UserId;
+
+			if (string.IsNullOrWhiteSpace(predictionId))
+			{
+				throw new ArgumentException("The predictionId parameter should not be null, empty or whitespace.", nameof(predictionId));
+			}
+
+			if (predictionStatus is not (PredictionStatus.Cancelled or PredictionStatus.Locked or PredictionStatus.Resolved))
+			{
+				throw new ArgumentException("The predictionStatus parameter may only be set to Cancelled, Locked or Resolved.", nameof(predictionStatus));
+			}
+
+			if (predictionStatus == PredictionStatus.Resolved && string.IsNullOrWhiteSpace(winningOutcomeId))
+			{
+				throw new ArgumentException("The winningOutcomeId parameter is required when the predictionStatus parameter is set to Resolved.", nameof(winningOutcomeId));
+			}
+
+			var body = new EndPredictionRequestDto(userId, predictionId, predictionStatus, winningOutcomeId);
+			return PatchAsync<ResponseBase<PredictionData>, EndPredictionRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
+		}
 	}
 }
