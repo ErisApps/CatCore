@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
+using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Helix.Shared;
 
 namespace CatCore.Services.Twitch.Interfaces
@@ -21,5 +22,6 @@ namespace CatCore.Services.Twitch.Interfaces
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null);
 
 		Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken? cancellationToken = null);
+		Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
 	}
 }
