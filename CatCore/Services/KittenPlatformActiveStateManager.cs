@@ -22,7 +22,7 @@ namespace CatCore.Services
 		{
 			if (active)
 			{
-				_platformActiveStates.AddOrUpdate(platformType, active, (_, __) => active);
+				_platformActiveStates.AddOrUpdate(platformType, active, (_, _) => active);
 			}
 			else
 			{
