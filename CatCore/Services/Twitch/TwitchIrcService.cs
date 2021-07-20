@@ -439,25 +439,26 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
-			List<IChatEmote>? emotes = null;
-			if (!(isActionMessage || isPing) && messageMeta != null)
+			List<IChatEmote>? emotes;
+			if (messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
 			{
-				if (messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
+				var emoteGroup = emotesString.Split('/');
+				emotes = new List<IChatEmote>(emoteGroup.Length);
+				for (var i = 0; i < emotes.Count; i++)
 				{
-					var emoteGroup = emotesString.Split('/');
-					emotes = new List<IChatEmote>(emoteGroup.Length);
-					for (var i = 0; i < emotes.Count; i++)
-					{
-						var emoteString = emoteGroup[i];
-						var emoteSet = emoteString.Split(':');
-						var emoteId = emoteSet[0];
-						var emoteMeta = emoteSet[1].Split('-');
-						var emoteStart = int.Parse(emoteMeta[0]);
-						var emoteEnd = int.Parse(emoteMeta[1]);
+					var emoteString = emoteGroup[i];
+					var emoteSet = emoteString.Split(':');
+					var emoteId = emoteSet[0];
+					var emoteMeta = emoteSet[1].Split('-');
+					var emoteStart = int.Parse(emoteMeta[0]);
+					var emoteEnd = int.Parse(emoteMeta[1]);
 
-						emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
-					}
+					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
 				}
+			}
+			else
+			{
+				emotes = new List<IChatEmote>(0);
 			}
 
 			// TODO: Implement emoji support
@@ -469,7 +470,7 @@ namespace CatCore.Services.Twitch
 				message,
 				twitchUser,
 				channel,
-				(emotes ?? new List<IChatEmote>()).AsReadOnly(),
+				emotes.AsReadOnly(),
 				messageMeta,
 				commandType,
 				bits
