@@ -450,12 +450,12 @@ namespace CatCore.Services.Twitch
 					{
 						var emoteString = emoteGroup[i];
 						var emoteSet = emoteString.Split(':');
-						var emoteID = emoteSet[0];
+						var emoteId = emoteSet[0];
 						var emoteMeta = emoteSet[1].Split('-');
 						var emoteStart = int.Parse(emoteMeta[0]);
 						var emoteEnd = int.Parse(emoteMeta[1]);
 
-						emotes[i] = new TwitchEmote(emoteID, message.Substring(emoteStart, emoteEnd - emoteStart));
+						emotes[i] = new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart));
 					}
 				}
 			}
