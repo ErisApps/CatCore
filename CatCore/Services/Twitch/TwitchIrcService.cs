@@ -311,7 +311,7 @@ namespace CatCore.Services.Twitch
 			prefix.ParsePrefix(out var isServer, out _, out var username, out var hostname);
 
 			// Determine channelId
-			string channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
+			var channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
 				? roomId
 				: _roomStateTrackerService.GetRoomState(channelName!)?.RoomId ?? string.Empty;
 
@@ -326,6 +326,7 @@ namespace CatCore.Services.Twitch
 			string messageId;
 			uint bits;
 			TwitchUser twitchUser;
+			IChatEmote[]? emotes = null;
 			if (wasSendByLibrary)
 			{
 
@@ -353,6 +354,7 @@ namespace CatCore.Services.Twitch
 				bool isSubscriber;
 				bool isTurbo;
 				bool isVip;
+
 
 				if (messageMeta != null)
 				{
@@ -438,6 +440,26 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
+			if (!(isActionMessage || isPing) && messageMeta != null)
+			{
+				if (messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
+				{
+					var emoteGroup = emotesString.Split('/');
+					emotes = new IChatEmote[emoteGroup.Length];
+					for (var i = 0; i < emotes.Length; i++)
+					{
+						var emoteString = emoteGroup[i];
+						var emoteSet = emoteString.Split(':');
+						var emoteID = emoteSet[0];
+						var emoteMeta = emoteSet[1].Split('-');
+						var emoteStart = int.Parse(emoteMeta[0]);
+						var emoteEnd = int.Parse(emoteMeta[1]);
+
+						emotes[i] = new TwitchEmote(emoteID, message.Substring(emoteStart, emoteEnd - emoteStart));
+					}
+				}
+			}
+
 			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
 				messageId,
@@ -447,6 +469,7 @@ namespace CatCore.Services.Twitch
 				message,
 				twitchUser,
 				channel,
+				emotes ?? Array.Empty<IChatEmote>(),
 				messageMeta,
 				commandType,
 				bits

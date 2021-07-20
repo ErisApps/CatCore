@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace CatCore.Models.Shared
 {
@@ -38,6 +39,11 @@ namespace CatCore.Models.Shared
 		/// The channel this message was sent in
 		/// </summary>
 		IChatChannel Channel { get; }
+
+		/// <summary>
+		/// The emotes that are contained in this message.
+		/// </summary>
+		IEnumerable<IChatEmote> Emotes { get; }
 
 		/// <summary>
 		/// All the raw metadata associated with this message. This contains platform-specific data for devs who want to access any extra data that may not have been parsed.
