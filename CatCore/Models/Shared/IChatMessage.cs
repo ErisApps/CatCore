@@ -43,7 +43,7 @@ namespace CatCore.Models.Shared
 		/// <summary>
 		/// The emotes that are contained in this message.
 		/// </summary>
-		IEnumerable<IChatEmote> Emotes { get; }
+		ReadOnlyCollection<IChatEmote> Emotes { get; }
 
 		/// <summary>
 		/// All the raw metadata associated with this message. This contains platform-specific data for devs who want to access any extra data that may not have been parsed.
