@@ -326,7 +326,6 @@ namespace CatCore.Services.Twitch
 			string messageId;
 			uint bits;
 			TwitchUser twitchUser;
-			IChatEmote[]? emotes = null;
 			if (wasSendByLibrary)
 			{
 
@@ -440,13 +439,14 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
+			List<IChatEmote>? emotes = null;
 			if (!(isActionMessage || isPing) && messageMeta != null)
 			{
 				if (messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
 				{
 					var emoteGroup = emotesString.Split('/');
-					emotes = new IChatEmote[emoteGroup.Length];
-					for (var i = 0; i < emotes.Length; i++)
+					emotes = new List<IChatEmote>(emoteGroup.Length);
+					for (var i = 0; i < emotes.Count; i++)
 					{
 						var emoteString = emoteGroup[i];
 						var emoteSet = emoteString.Split(':');
@@ -455,7 +455,7 @@ namespace CatCore.Services.Twitch
 						var emoteStart = int.Parse(emoteMeta[0]);
 						var emoteEnd = int.Parse(emoteMeta[1]);
 
-						emotes[i] = new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart));
+						emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
 					}
 				}
 			}
@@ -469,7 +469,7 @@ namespace CatCore.Services.Twitch
 				message,
 				twitchUser,
 				channel,
-				emotes ?? Array.Empty<IChatEmote>(),
+				(emotes ?? new List<IChatEmote>()).AsReadOnly(),
 				messageMeta,
 				commandType,
 				bits

@@ -37,7 +37,7 @@ namespace CatCore.Models.Twitch.IRC
 
 		/// <inheritdoc cref="IChatMessage.Emotes"/>
 		[PublicAPI]
-		public IEnumerable<IChatEmote> Emotes { get; internal set; }
+		public ReadOnlyCollection<IChatEmote> Emotes { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Metadata"/>
 		[PublicAPI]
@@ -55,7 +55,7 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public uint Bits { get; internal set; }
 
-		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel, IEnumerable<IChatEmote> emotes,
+		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel, ReadOnlyCollection<IChatEmote> emotes,
 			ReadOnlyDictionary<string, string>? metadata, string type, uint bits)
 		{
 			Id = id;
