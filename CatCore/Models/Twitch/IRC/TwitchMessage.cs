@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using CatCore.Models.Shared;
 using JetBrains.Annotations;
 
@@ -34,6 +35,10 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public IChatChannel Channel { get; internal set; }
 
+		/// <inheritdoc cref="IChatMessage.Emotes"/>
+		[PublicAPI]
+		public IEnumerable<IChatEmote> Emotes { get; internal set; }
+
 		/// <inheritdoc cref="IChatMessage.Metadata"/>
 		[PublicAPI]
 		public ReadOnlyDictionary<string, string>? Metadata { get; internal set; }
@@ -50,7 +55,7 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public uint Bits { get; internal set; }
 
-		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel,
+		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isPing, string message, IChatUser sender, IChatChannel channel, IEnumerable<IChatEmote> emotes,
 			ReadOnlyDictionary<string, string>? metadata, string type, uint bits)
 		{
 			Id = id;
@@ -61,6 +66,7 @@ namespace CatCore.Models.Twitch.IRC
 			Sender = sender;
 			Channel = channel;
 			Metadata = metadata;
+			Emotes = emotes;
 			Type = type;
 			Bits = bits;
 		}
