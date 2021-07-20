@@ -420,7 +420,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var isActionMessage = false;
-			var isPing = false;
+			var isMentioned = false;
 			if (message != null)
 			{
 				if (message.StartsWith("ACTION ", StringComparison.Ordinal))
@@ -431,7 +431,7 @@ namespace CatCore.Services.Twitch
 
 				if (selfDisplayName != null)
 				{
-					isPing = message.Contains($"@{selfDisplayName}");
+					isMentioned = message.Contains($"@{selfDisplayName}");
 				}
 			}
 			else
@@ -466,7 +466,7 @@ namespace CatCore.Services.Twitch
 				messageId,
 				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
 				isActionMessage,
-				isPing,
+				isMentioned,
 				message,
 				twitchUser,
 				channel,

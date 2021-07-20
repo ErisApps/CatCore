@@ -21,9 +21,9 @@ namespace CatCore.Models.Shared
 		bool IsActionMessage { get; }
 
 		/// <summary>
-		/// True if the logged in user was tagged/pinged in this message.
+		/// True if the logged in user was mentioned/tagged/pinged in this message.
 		/// </summary>
-		bool IsPing { get; }
+		bool IsMentioned { get; }
 
 		/// <summary>
 		/// The exact message the user sent into the chat, *with* any custom formatting applied by the chat service.
