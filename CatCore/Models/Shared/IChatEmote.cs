@@ -2,7 +2,7 @@ namespace CatCore.Models.Shared
 {
 	public interface IChatEmote
 	{
-		string ID { get; }
+		string Id { get; }
 		string Name { get; }
 	}
 }
