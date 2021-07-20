@@ -6,13 +6,13 @@ namespace CatCore.Models.Twitch.IRC
 	public class TwitchEmote : IChatEmote
 	{
 		[PublicAPI]
-		public string ID { get; internal set; }
+		public string Id { get; internal set; }
 
 		public string Name { get; internal set; }
 
 		public TwitchEmote(string id, string name)
 		{
-			ID = id;
+			Id = id;
 			Name = name;
 		}
 	}
