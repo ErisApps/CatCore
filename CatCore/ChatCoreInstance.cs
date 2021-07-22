@@ -140,7 +140,13 @@ namespace CatCore
 			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
 			// Spin up internal web api service
-			Task.Run(() => _container.Resolve<IKittenApiService>());
+			Task.Run(() =>
+			{
+				if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchInternalApiOnStartup)
+				{
+					_container.Resolve<IKittenApiService>();
+				}
+			});
 		}
 
 		/// <summary>
