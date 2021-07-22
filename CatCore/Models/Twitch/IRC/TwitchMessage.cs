@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CatCore.Models.Shared;
 using JetBrains.Annotations;
