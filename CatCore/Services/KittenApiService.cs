@@ -19,7 +19,6 @@ namespace CatCore.Services
 	{
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;
-		private readonly IKittenBrowserLauncherService _browserLauncherService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly ITwitchHelixApiService _helixApiService;
@@ -28,12 +27,11 @@ namespace CatCore.Services
 		private HttpListener? _listener;
 		private string? _webSitePage;
 
-		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, IKittenBrowserLauncherService browserLauncherService, ITwitchAuthService twitchAuthService,
-			ITwitchChannelManagementService twitchChannelManagementService, ITwitchHelixApiService helixApiService, Version libraryVersion)
+		public KittenApiService(ILogger logger, IKittenSettingsService settingsService, ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService,
+			ITwitchHelixApiService helixApiService, Version libraryVersion)
 		{
 			_logger = logger;
 			_settingsService = settingsService;
-			_browserLauncherService = browserLauncherService;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_helixApiService = helixApiService;
@@ -249,7 +247,8 @@ namespace CatCore.Services
 					using (_settingsService.ChangeTransaction())
 					{
 						var globalConfig = _settingsService.Config.GlobalConfig;
-						globalConfig.LaunchWebAppOnStartup = globalStateRequestDto.LaunchWebAppOnStart;
+						globalConfig.LaunchInternalApiOnStartup = globalStateRequestDto.LaunchInternalApiOnStartup;
+						globalConfig.LaunchWebPortalOnStartup = globalStateRequestDto.LaunchWebPortalOnStartup;
 						globalConfig.HandleEmojis = globalStateRequestDto.ParseEmojis;
 					}
 

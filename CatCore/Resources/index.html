@@ -202,9 +202,18 @@
 					<div class="row">
 						<div class="switch">
 							<label>
-								<input id="LaunchWebAppOnStart" type="checkbox">
+								<input id="LaunchInternalApiOnStartup" type="checkbox" onchange="OnInternalApiStateChanged(event)">
 								<span class="lever"></span>
-								Launch Web App On Startup
+								Launch internal API on startup
+							</label>
+						</div>
+					</div>
+					<div class="row">
+						<div class="switch disabled">
+							<label>
+								<input id="LaunchWebPortalOnStartup" type="checkbox">
+								<span class="lever"></span>
+								Launch Web Portal on startup
 							</label>
 						</div>
 					</div>
@@ -238,6 +247,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
+	const launchInternalApiOnStartupSwitch = document.getElementById("LaunchInternalApiOnStartup");
+	const launchWebPortalOnStartupSwitch = document.getElementById("LaunchWebPortalOnStartup");
 	const saveButtonElement = document.getElementById("SaveButton");
 
 	let twitchChannelData;
@@ -305,6 +316,15 @@
 
 		// Removes from DOM
 		document.getElementById(`TwitchChannel-${channelId}`).remove();
+	}
+
+	function OnInternalApiStateChanged(event) {
+		if (launchInternalApiOnStartupSwitch.checked) {
+			launchWebPortalOnStartupSwitch.removeAttribute("disabled")
+		} else {
+			launchWebPortalOnStartupSwitch.checked = false;
+			launchWebPortalOnStartupSwitch.setAttribute("disabled", "disabled");
+		}
 	}
 
 	// Loading state
@@ -398,6 +418,9 @@
 			const body = await response.json();
 
 			HandleStateResponse(body);
+
+			// Ensure that LaunchWebPortalOnStartup appears as disabled when needed
+			OnInternalApiStateChanged();
 		} catch (ex) {
 			M.toast({html: "Something went wrong while trying to load the global settings."});
 			console.error(ex);
@@ -474,7 +497,8 @@
 			await fetch('/api/global/state', {
 				method: 'POST',
 				body: JSON.stringify({
-					LaunchWebAppOnStart: LookupCurrentValue("LaunchWebAppOnStart"),
+					LaunchInternalApiOnStartup: LookupCurrentValue("LaunchInternalApiOnStartup"),
+					LaunchWebPortalOnStartup: LookupCurrentValue("LaunchWebPortalOnStartup"),
 					ParseEmojis: LookupCurrentValue("ParseEmojis")
 				})
 			})
