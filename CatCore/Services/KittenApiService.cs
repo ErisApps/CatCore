@@ -77,12 +77,6 @@ namespace CatCore.Services
 				});
 
 				_logger.Information("Internal webserver has been purred up");
-
-				if (_settingsService.Config.GlobalConfig.LaunchWebAppOnStartup)
-				{
-					_logger.Debug("Launching web portal");
-					_browserLauncherService.LaunchWebPortal();
-				}
 			}
 			catch (Exception e)
 			{
