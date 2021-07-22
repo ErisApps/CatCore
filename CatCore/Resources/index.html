@@ -202,7 +202,7 @@
 					<div class="row">
 						<div class="switch">
 							<label>
-								<input id="LaunchInternalApiOnStartup" type="checkbox" onchange="OnInternalApiStateChanged(event)">
+								<input id="LaunchInternalApiOnStartup" type="checkbox" onchange="OnInternalApiStateChanged()">
 								<span class="lever"></span>
 								Launch internal API on startup
 							</label>
@@ -318,7 +318,7 @@
 		document.getElementById(`TwitchChannel-${channelId}`).remove();
 	}
 
-	function OnInternalApiStateChanged(event) {
+	function OnInternalApiStateChanged() {
 		if (launchInternalApiOnStartupSwitch.checked) {
 			launchWebPortalOnStartupSwitch.removeAttribute("disabled")
 		} else {
