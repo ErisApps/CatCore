@@ -4,13 +4,15 @@ namespace CatCore.Models.Api.Requests
 {
 	internal readonly struct GlobalStateRequestDto
 	{
-		public bool LaunchWebAppOnStart { get; }
+		public bool LaunchInternalApiOnStartup { get; }
+		public bool LaunchWebPortalOnStartup { get; }
 		public bool ParseEmojis { get; }
 
 		[JsonConstructor]
-		public GlobalStateRequestDto(bool launchWebAppOnStart, bool parseEmojis)
+		public GlobalStateRequestDto(bool launchInternalApiOnStartup, bool launchWebPortalOnStartup, bool parseEmojis)
 		{
-			LaunchWebAppOnStart = launchWebAppOnStart;
+			LaunchInternalApiOnStartup = launchInternalApiOnStartup;
+			LaunchWebPortalOnStartup = launchWebPortalOnStartup;
 			ParseEmojis = parseEmojis;
 		}
 	}

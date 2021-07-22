@@ -145,7 +145,7 @@ namespace CatCore
 				var globalConfig = _container.Resolve<IKittenSettingsService>().Config.GlobalConfig;
 				if (globalConfig.LaunchInternalApiOnStartup)
 				{
-					LaunchApiAndPortal(globalConfig.LaunchWebAppOnStartup);
+					LaunchApiAndPortal(globalConfig.LaunchWebPortalOnStartup);
 				}
 			});
 		}
