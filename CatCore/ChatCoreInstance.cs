@@ -142,9 +142,10 @@ namespace CatCore
 			// Spin up internal web api service
 			Task.Run(() =>
 			{
-				if (_container.Resolve<IKittenSettingsService>().Config.GlobalConfig.LaunchInternalApiOnStartup)
+				var globalConfig = _container.Resolve<IKittenSettingsService>().Config.GlobalConfig;
+				if (globalConfig.LaunchInternalApiOnStartup)
 				{
-					_container.Resolve<IKittenApiService>();
+					LaunchApiAndPortal(globalConfig.LaunchWebAppOnStartup);
 				}
 			});
 		}
@@ -209,8 +210,17 @@ namespace CatCore
 
 		public void LaunchWebPortal()
 		{
-			// TODO: Make sure this works nicely with the deferred loading
-			_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
+			_ = Task.Run(() => LaunchApiAndPortal(true));
+		}
+
+		private void LaunchApiAndPortal(bool shouldLaunchPortal)
+		{
+			_container.Resolve<IKittenApiService>();
+			if (shouldLaunchPortal)
+			{
+				_container.Resolve<ILogger>().ForContext<ChatCoreInstance>().Debug("Launching web portal");
+				_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
+			}
 		}
 
 #if DEBUG
