@@ -26,7 +26,8 @@ namespace CatCore.Services.Twitch
 		/// <param name="loginNames">List of login names of the users for which you want to request data</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing userdata</returns>
-		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-users">Check out the Twitch API Reference docs</a></remarks>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-users">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)
 		{
 			var uriBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}users");
