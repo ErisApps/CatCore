@@ -18,17 +18,55 @@ namespace CatCore.Services.Twitch
 {
 	public partial class TwitchHelixApiService
 	{
-		public Task<ResponseBase<UserData>?> FetchUserInfo(CancellationToken? cancellationToken = null, params string[] loginNames)
+		/// <summary>
+		/// Gets information about one or more specified Twitch users.
+		/// Users are identified by optional user IDs and/or login name. If neither a user ID nor a login name is specified, the user is looked up by Bearer token.
+		/// </summary>
+		/// <param name="userIds">List of ids of the users for which you want to request data</param>
+		/// <param name="loginNames">List of login names of the users for which you want to request data</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing userdata</returns>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-users">Check out the Twitch API Reference docs</a></remarks>
+		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)
 		{
 			var uriBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}users");
-			if (loginNames.Any())
+
+			var totalParamCount = 0;
+			void CheckCount(ref string[]? array, out bool hasBool)
 			{
-				uriBuilder.Append($"?login={loginNames.First()}");
-				for (var i = 1; i < loginNames.Length; i++)
+				if (array != null)
 				{
-					var loginName = loginNames[i];
-					uriBuilder.Append($"&login={loginName}");
+					totalParamCount += array.Length;
+					hasBool = array.Length > 0;
 				}
+				else
+				{
+					hasBool = false;
+				}
+			}
+
+			CheckCount(ref userIds, out var hasUserIds);
+			CheckCount(ref loginNames, out var hasLoginNames);
+
+			if (totalParamCount > 100)
+			{
+				throw new ArgumentException("The userIds and loginNames arguments may have no more than 100 entries combined by Helix. Please ensure that you're requesting 100 tops.",
+					$"{nameof(userIds)} | {nameof(loginNames)}");
+			}
+
+			if (hasUserIds || hasLoginNames)
+			{
+				uriBuilder.Append("?");
+			}
+
+			if (hasUserIds)
+			{
+				uriBuilder.Append("id=").Append(string.Join("&id=", userIds!));
+			}
+
+			if (hasLoginNames)
+			{
+				uriBuilder.Append("login=").Append(string.Join("&login=", loginNames!));
 			}
 
 			return GetAsync<ResponseBase<UserData>>(uriBuilder.ToString(), cancellationToken);
