@@ -13,6 +13,7 @@ using CatCore.Services.Multiplexer;
 using CatCore.Services.Twitch;
 using CatCore.Services.Twitch.Interfaces;
 using DryIoc;
+using JetBrains.Annotations;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Display;
@@ -41,6 +42,7 @@ namespace CatCore
 
 		public event Action<CustomLogLevel, string, string>? OnLogReceived;
 
+		[PublicAPI]
 		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
 			using var _ = Synchronization.Lock(CreationLocker);
@@ -154,6 +156,7 @@ namespace CatCore
 		/// Starts all services if they haven't been already.
 		/// </summary>
 		/// <returns>A reference to the generic chat multiplexer</returns>
+		[PublicAPI]
 		public ChatServiceMultiplexer RunAllServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
@@ -173,6 +176,7 @@ namespace CatCore
 		/// <remarks>
 		/// Make sure to unregister any callbacks first!
 		/// </remarks>
+		[PublicAPI]
 		public void StopAllServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
@@ -183,6 +187,7 @@ namespace CatCore
 		/// Starts the Twitch services if they haven't been already.
 		/// </summary>
 		/// <returns>A reference to the Twitch service</returns>
+		[PublicAPI]
 		public ITwitchService RunTwitchServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
@@ -202,12 +207,17 @@ namespace CatCore
 		/// <remarks>
 		/// Make sure to unregister any callbacks first!
 		/// </remarks>
+		[PublicAPI]
 		public void StopTwitchServices()
 		{
 			using var _ = Synchronization.Lock(RunLocker);
 			_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
+		/// <summary>
+		/// Initializes the internal API (if that hasn't been done yet before) and launches the web portal.
+		/// </summary>
+		[PublicAPI]
 		public void LaunchWebPortal()
 		{
 			_ = Task.Run(() => LaunchApiAndPortal(true));
