@@ -65,7 +65,7 @@ namespace CatCoreTester
 			await CheckTokenValidity().ConfigureAwait(false);
 
 			Console.WriteLine("Requesting some data through Helix");
-			var userInfoResponse = await twitchHelixApiService.FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
+			var userInfoResponse = await twitchHelixApiService.FetchUserInfo(loginNames: new[] {"realeris"}).ConfigureAwait(false);
 
 			Console.WriteLine("Search channels through Helix");
 			var channelData = await twitchHelixApiService.SearchChannels("realeris").ConfigureAwait(false);

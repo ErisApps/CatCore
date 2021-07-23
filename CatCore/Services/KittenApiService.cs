@@ -204,7 +204,7 @@ namespace CatCore.Services
 					return true;
 				case "channels" when request.HttpMethod == "GET":
 					var query = request.QueryString["query"];
-					var directChannelNameSearch = await _helixApiService.FetchUserInfo(loginNames: query);
+					var directChannelNameSearch = await _helixApiService.FetchUserInfo(loginNames: new []{query});
 					var searchQueryChannels = await _helixApiService.SearchChannels(query).ConfigureAwait(false);
 
 					var channelQueryData = new List<TwitchChannelQueryData>();
