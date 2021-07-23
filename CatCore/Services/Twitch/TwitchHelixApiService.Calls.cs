@@ -72,6 +72,18 @@ namespace CatCore.Services.Twitch
 			return GetAsync<ResponseBase<UserData>>(uriBuilder.ToString(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Creates a marker in the stream of a user specified by user ID.
+		/// A marker is an arbitrary point in a stream that the broadcaster wants to mark; e.g., to easily return to later.
+		/// The marker is created at the current timestamp in the live broadcast when the request is processed.
+		/// Markers can be created by the stream owner or editors.
+		/// </summary>
+		/// <param name="userId">ID of the broadcaster in whose live stream the marker is created.</param>
+		/// <param name="description">Description of or comments on the marker. Max length is 140 characters.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data regarding the created stream marker.</returns>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-stream-marker">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken? cancellationToken = null)
 		{
 			if (!string.IsNullOrWhiteSpace(description) && description!.Length > 140)
