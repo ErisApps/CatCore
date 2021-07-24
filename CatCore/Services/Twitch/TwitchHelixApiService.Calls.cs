@@ -333,8 +333,21 @@ namespace CatCore.Services.Twitch
 			return PatchAsync<ResponseBase<PollData>, EndPollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
 		}
 
+		/// <summary>
+		/// Get information about all Channel Points Predictions or specific Channel Points Predictions for a Twitch channel.
+		/// Results are ordered by most recent, so it can be assumed that the currently active or locked Prediction will be the first item.
+		/// </summary>
+		/// <param name="predictionIds">Filters results to one or more specific predictions. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
+		/// <param name="limit">Maximum number of results to return. Maximum: 20 Default: 20</param>
+		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of 0, 1 or more more predictions</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-predictions">Check out the Twitch API Reference docs.</a></remarks>
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
+			CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -379,6 +392,21 @@ namespace CatCore.Services.Twitch
 			return GetAsync<ResponseBaseWithPagination<PredictionData>>(urlBuilder.ToString(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Create a Channel Points Prediction for a specific Twitch channel.
+		/// </summary>
+		/// <param name="title">Title for the Prediction.</param>
+		/// <param name="outcomes">
+		/// Array of outcome objects with titles for the Prediction. Array size must be 2.
+		/// The first outcome object is the “blue” outcome and the second outcome object is the “pink” outcome when viewing the Prediction on Twitch.
+		/// Outcome entries may not exceed a length of 25 characters.
+		/// </param>
+		/// <param name="duration">Total duration for the Prediction (in seconds). Minimum: 1. Maximum: 1800.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of the newly created prediction</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-prediction">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, int duration, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
@@ -423,6 +451,24 @@ namespace CatCore.Services.Twitch
 			return PostAsync<ResponseBase<PredictionData>, CreatePredictionsRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
 		}
 
+		/// <summary>
+		/// Lock, resolve, or cancel a Channel Points Prediction. Active Predictions can be updated to be <see cref="PredictionStatus.Locked"/>, <see cref="PredictionStatus.Resolved"/>,
+		/// or <see cref="PredictionStatus.Cancelled"/>. Locked Predictions can be updated to be <see cref="PredictionStatus.Resolved"/> or <see cref="PredictionStatus.Cancelled"/>.
+		/// </summary>
+		/// <param name="predictionId">Id of the Prediction.</param>
+		/// <param name="predictionStatus">The Prediction status to be set. Valid values:
+		/// <list type="bullet">
+		/// <item><description><see cref="PredictionStatus.Resolved"/>: A winning outcome has been chosen and the Channel Points have been distributed to the users who predicted the correct outcome.</description></item>
+		/// <item><description><see cref="PredictionStatus.Cancelled"/>: The Prediction has been canceled and the Channel Points have been refunded to participants.</description></item>
+		/// <item><description><see cref="PredictionStatus.Locked"/>: The Prediction has been locked and viewers can no longer make predictions.</description></item>
+		/// </list>
+		/// </param>
+		/// <param name="winningOutcomeId">Id of the winning outcome for the Prediction. This parameter is required if <paramref name="predictionStatus" /> is being set to <see cref="PredictionStatus.Resolved"/>.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of the ended prediction</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-prediction">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
