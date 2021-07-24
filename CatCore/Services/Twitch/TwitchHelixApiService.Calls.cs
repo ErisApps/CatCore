@@ -96,6 +96,18 @@ namespace CatCore.Services.Twitch
 			return PostAsync<ResponseBase<CreateStreamMarkerData>, CreateStreamMarkerRequestDto>($"{TWITCH_HELIX_BASEURL}streams/markers", body, cancellationToken);
 		}
 
+		/// <summary>
+		/// Returns a list of channels (users who have streamed within the past 6 months) that match the query via channel name or description either entirely or partially.
+		/// Results include both live and offline channels. Online channels will have additional metadata (e.g. StartedAt, TagIds).
+		/// </summary>
+		/// <param name="query">Query used to search channels</param>
+		/// <param name="limit">Maximum number of results to return. Maximum: 100 Default: 20</param>
+		/// <param name="liveOnly">Filter results for live streams only</param>
+		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing channels matching the provided query</returns>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#search-channels">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
 			CancellationToken? cancellationToken = null)
 		{
