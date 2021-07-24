@@ -145,6 +145,17 @@ namespace CatCore.Services.Twitch
 			return GetAsync<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
+		/// </summary>
+		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
+		/// <param name="limit">Maximum number of results to return. Maximum: 20 Default: 20</param>
+		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of 0, 1 or more more polls</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-polls">Check out the Twitch API Reference docs.</a></remarks>
 		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
 		{
@@ -191,6 +202,21 @@ namespace CatCore.Services.Twitch
 			return GetAsync<ResponseBaseWithPagination<PollData>>(urlBuilder.ToString(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Create a poll for a specific Twitch channel.
+		/// </summary>
+		/// <param name="title">Question displayed for the poll. Maximum: 60 characters.</param>
+		/// <param name="choices">Array of possible poll choices. Minimum: 2 choices. Maximum: 5 choices.</param>
+		/// <param name="duration">Total duration for the poll (in seconds). Minimum: 15. Maximum: 1800.</param>
+		/// <param name="bitsVotingEnabled">Indicates if Bits can be used for voting.</param>
+		/// <param name="bitsPerVote">Number of Bits required to vote once with Bits. Minimum: 1. Maximum: 10000.</param>
+		/// <param name="channelPointsVotingEnabled">Indicates if Channel Points can be used for voting.</param>
+		/// <param name="channelPointsPerVote">Number of Channel Points required to vote once with Channel Points. Minimum: 1. Maximum: 1000000.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of the newly created poll</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
 		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null)
@@ -268,6 +294,21 @@ namespace CatCore.Services.Twitch
 			return PostAsync<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
 		}
 
+		/// <summary>
+		/// End a poll that is currently active.
+		/// </summary>
+		/// <param name="pollId">Id of the poll.</param>
+		/// <param name="pollStatus">The poll status to be set. Valid values:
+		/// <list type="bullet">
+		/// <item><description><see cref="PollStatus.Terminated"/>: End the poll manually, but allow it to be viewed publicly.</description></item>
+		/// <item><description><see cref="PollStatus.Archived"/>: End the poll manually and do not allow it to be viewed publicly.</description></item>
+		/// </list>
+		/// </param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of the ended poll</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-poll">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
