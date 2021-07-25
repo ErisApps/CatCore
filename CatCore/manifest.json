@@ -10,7 +10,7 @@
 		"Libs/CatCore.dll"
 	],
 	"links": {
-		"project-home": "https://github.com/ErisApps/ChatCore"
+		"project-source": "https://github.com/ErisApps/CatCore"
 	},
 	"conflictsWith": {
 		"ChatCore": "*"
