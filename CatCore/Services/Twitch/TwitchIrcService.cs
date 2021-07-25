@@ -77,7 +77,7 @@ namespace CatCore.Services.Twitch
 		public void SendMessage(IChatChannel channel, string message)
 		{
 			_workerCanSleepSemaphoreSlim.Wait();
-			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Id} :{message}"));
+			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Name} :{message}"));
 			_workerCanSleepSemaphoreSlim.Release();
 
 			// Trigger re-activation of worker thread
