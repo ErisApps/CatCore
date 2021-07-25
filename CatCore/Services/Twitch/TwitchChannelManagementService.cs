@@ -61,8 +61,8 @@ namespace CatCore.Services.Twitch
 
 		public async Task<List<UserData>> GetAllChannelsEnriched()
 		{
-			var allLoginNames = GetAllActiveLoginNames(true);
-			var userInfos = await _twitchHelixApiService.FetchUserInfo(loginNames: allLoginNames.ToArray()).ConfigureAwait(false);
+			var allActiveChannelIds = GetAllActiveChannelIds(true);
+			var userInfos = await _twitchHelixApiService.FetchUserInfo(allActiveChannelIds.ToArray()).ConfigureAwait(false);
 			return userInfos?.Data ?? new List<UserData>();
 		}
 
