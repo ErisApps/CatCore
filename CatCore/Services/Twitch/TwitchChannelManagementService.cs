@@ -28,7 +28,7 @@ namespace CatCore.Services.Twitch
 		public TwitchChannel? GetOwnChannel()
 		{
 			var self = _twitchAuthService.LoggedInUser;
-			return self != null && !_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(self.Value.UserId, self.Value.LoginName) : null;
+			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(self.Value.UserId, self.Value.LoginName) : null;
 		}
 
 		public List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false)
