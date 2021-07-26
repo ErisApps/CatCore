@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFrameworks>net472;net5.0</TargetFrameworks>
 		<LangVersion>8</LangVersion>
-		<Configurations>Debug;Release;Develop</Configurations>
+		<Configurations>Release</Configurations>
 		<Platforms>AnyCPU</Platforms>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -12,6 +12,6 @@
 	<ItemGroup>
 	  <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
 	</ItemGroup>
-	
+
 </Project>
 

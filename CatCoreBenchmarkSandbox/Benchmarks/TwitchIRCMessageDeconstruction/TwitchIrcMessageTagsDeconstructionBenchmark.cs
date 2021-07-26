@@ -3,16 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Mathematics;
-using BenchmarkDotNet.Order;
 
 namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 {
-	[MediumRunJob(RuntimeMoniker.Net472, Jit.LegacyJit, Platform.X64)]
-	[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-	[RankColumn(NumeralSystem.Stars)]
 	[MemoryDiagnoser]
 	[CategoriesColumn, AllStatisticsColumn, BaselineColumn, MinColumn, Q1Column, MeanColumn, Q3Column, MaxColumn, MedianColumn]
 	public class TwitchIrcMessageTagsDeconstructionBenchmark
