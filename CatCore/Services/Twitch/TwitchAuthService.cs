@@ -68,10 +68,20 @@ namespace CatCore.Services.Twitch
 
 			var userAgent = $"{nameof(CatCore)}/{libraryVersion.ToString(3)}";
 
-			_twitchAuthClient = new HttpClient {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
+			_twitchAuthClient = new HttpClient(new HttpClientHandler
+			{
+#if !RELEASE
+				Proxy = SharedProxyProvider.PROXY
+#endif
+			}) {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
 			_twitchAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 
-			_catCoreAuthClient = new HttpClient {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
+			_catCoreAuthClient = new HttpClient(new HttpClientHandler
+			{
+#if !RELEASE
+				Proxy = SharedProxyProvider.PROXY
+#endif
+			}) {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
 			_catCoreAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 		}
 
