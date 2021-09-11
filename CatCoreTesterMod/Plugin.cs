@@ -4,7 +4,6 @@ using CatCoreTesterMod.Installers;
 using IPA;
 using IPA.Logging;
 using SiraUtil.Zenject;
-using Zenject;
 
 namespace CatCoreTesterMod
 {
@@ -14,16 +13,18 @@ namespace CatCoreTesterMod
 		[Init]
 		public Plugin(Logger logger, Zenjector zenjector)
 		{
-			zenjector.OnApp<CatCoreInstaller>().WithParameters(logger, ChatCoreInstance.CreateInstance((level, context, message) => logger.GetChildLogger("CatCore").Log(level switch
-			{
-				CustomLogLevel.Trace => Logger.Level.Trace,
-				CustomLogLevel.Debug => Logger.Level.Debug,
-				CustomLogLevel.Information => Logger.Level.Info,
-				CustomLogLevel.Warning => Logger.Level.Warning,
-				CustomLogLevel.Error => Logger.Level.Error,
-				CustomLogLevel.Critical => Logger.Level.Critical,
-				_ => Logger.Level.Debug
-			}, $"{context} | {message}")));
+			zenjector.OnApp<CatCoreInstaller>().WithParameters(logger, ChatCoreInstance.CreateInstance((level, context, message) => logger
+				.GetChildLogger("CatCore")
+				.Log(level switch
+				{
+					CustomLogLevel.Trace => Logger.Level.Trace,
+					CustomLogLevel.Debug => Logger.Level.Debug,
+					CustomLogLevel.Information => Logger.Level.Info,
+					CustomLogLevel.Warning => Logger.Level.Warning,
+					CustomLogLevel.Error => Logger.Level.Error,
+					CustomLogLevel.Critical => Logger.Level.Critical,
+					_ => Logger.Level.Debug
+				}, $"{context} | {message}")));
 		}
 
 		[OnEnable, OnDisable]

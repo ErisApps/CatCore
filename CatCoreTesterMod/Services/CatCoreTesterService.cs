@@ -19,7 +19,7 @@ namespace CatCoreTesterMod.Services
 
 		public async void Initialize()
 		{
-			var userInfo = await _chatCoreInstance.RunTwitchServices().GetHelixApiService().FetchUserInfo(loginNames: "realeris").ConfigureAwait(false);
+			var userInfo = await _chatCoreInstance.RunTwitchServices().GetHelixApiService().FetchUserInfo(loginNames: new[] { "realeris" }).ConfigureAwait(false);
 			if (userInfo != null)
 			{
 				var erisProfileData = userInfo.Value.Data.First();
@@ -29,7 +29,6 @@ namespace CatCoreTesterMod.Services
 			{
 				_logger.Warning("Something went wrong while trying to fetch the info of the requested user.");
 			}
-
 		}
 	}
 }
