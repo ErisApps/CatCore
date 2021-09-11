@@ -48,7 +48,7 @@ namespace CatCore.Services
 				{
 					KeepAliveInterval = TimeSpan.Zero,
 #if !RELEASE
-					// Placeholder for proxy configuration
+					Proxy = SharedProxyProvider.PROXY
 #endif
 				}
 			})

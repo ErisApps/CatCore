@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Helpers;
 using CatCore.Services.Twitch.Interfaces;
 
 namespace CatCore.Services.Twitch
@@ -15,7 +16,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService = twitchAuthService;
 
 #if !RELEASE
-			// Placeholder for proxy configuration
+			Proxy = SharedProxyProvider.PROXY;
 #endif
 		}
 
