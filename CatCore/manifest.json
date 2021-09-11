@@ -5,14 +5,17 @@
 	"author": "Eris",
 	"version": "0.0.1-alpha",
 	"description": "A shared chat client library written in .NET Standard 2.0",
-	"gameVersion": "1.16.1",
+	"gameVersion": "1.17.1",
 	"files": [
 		"Libs/CatCore.dll"
 	],
-	"links": {
-		"project-source": "https://github.com/ErisApps/CatCore"
-	},
 	"conflictsWith": {
 		"ChatCore": "*"
+	},
+	"loadBefore": [
+		"ChatCore"
+	],
+	"links": {
+		"project-source": "https://github.com/ErisApps/CatCore"
 	}
 }
