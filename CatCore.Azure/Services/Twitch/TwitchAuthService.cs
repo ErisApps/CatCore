@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using CatCore.Shared.Models.Twitch.OAuth;
-using Microsoft.Extensions.Logging;
 
 namespace CatCore.Azure.Services.Twitch
 {
@@ -12,13 +11,10 @@ namespace CatCore.Azure.Services.Twitch
 	{
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
 
-		private readonly ILogger<TwitchAuthService> _logger;
 		private readonly HttpClient _authClient;
 
-		public TwitchAuthService(ILogger<TwitchAuthService> logger, IHttpClientFactory httpClientFactory)
+		public TwitchAuthService(IHttpClientFactory httpClientFactory)
 		{
-			_logger = logger;
-
 			_authClient = httpClientFactory.CreateClient();
 			_authClient.DefaultRequestVersion = HttpVersion.Version20;
 			_authClient.BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute);
