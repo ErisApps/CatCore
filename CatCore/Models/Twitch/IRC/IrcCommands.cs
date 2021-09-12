@@ -1,6 +1,6 @@
 ﻿namespace CatCore.Models.Twitch.IRC
 {
-	public class IrcCommands
+	public static class IrcCommands
 	{
 		public const string RPL_ENDOFMOTD = "376";
 		public const string PING = nameof(PING);
@@ -11,7 +11,7 @@
 		public const string PRIVMSG = nameof(PRIVMSG);
 	}
 
-	public sealed class TwitchIrcCommands : IrcCommands
+	public static class TwitchIrcCommands
 	{
 		public const string CLEARCHAT = nameof(CLEARCHAT);
 		public const string CLEARMSG = nameof(CLEARMSG);

@@ -4,7 +4,7 @@
 	/// All IRC message tag keys that are publicly described by Twitch documentation
 	/// </summary>
 	/// <remarks>See also: https://dev.twitch.tv/docs/irc/tags</remarks>
-	public class IrcMessageTags
+	public static class IrcMessageTags
 	{
 		public const string BAN_DURATION = "ban-duration";
 		public const string LOGIN = "login";
