@@ -7,7 +7,7 @@ using CatCore.Services.Twitch.Interfaces;
 
 namespace CatCore.Services.Twitch
 {
-	public class TwitchRoomStateTrackerService : ITwitchRoomStateTrackerService
+	public sealed class TwitchRoomStateTrackerService : ITwitchRoomStateTrackerService
 	{
 		private readonly ConcurrentDictionary<string, TwitchRoomState> _roomStates;
 

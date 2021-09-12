@@ -4,7 +4,7 @@ using CatCore.Services.Interfaces;
 
 namespace CatCore.Services
 {
-	internal class KittenPlatformActiveStateManager : IKittenPlatformActiveStateManager
+	internal sealed class KittenPlatformActiveStateManager : IKittenPlatformActiveStateManager
 	{
 		private readonly ConcurrentDictionary<PlatformType, bool> _platformActiveStates;
 

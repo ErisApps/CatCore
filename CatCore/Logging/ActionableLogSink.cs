@@ -4,7 +4,7 @@ using Serilog.Events;
 
 namespace CatCore.Logging
 {
-	public class ActionableLogSink : ILogEventSink
+	internal sealed class ActionableLogSink : ILogEventSink
 	{
 		private readonly Action<LogEvent> _logEventHandler;
 

@@ -14,7 +14,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchAuthService : KittenCredentialsProvider<TwitchCredentials>, ITwitchAuthService
+	internal sealed class TwitchAuthService : KittenCredentialsProvider<TwitchCredentials>, ITwitchAuthService
 	{
 		private const string SERVICE_TYPE = nameof(Twitch);
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";

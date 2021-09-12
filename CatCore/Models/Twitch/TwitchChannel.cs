@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch
 {
-	public class TwitchChannel : IChatChannel
+	public sealed class TwitchChannel : IChatChannel
 	{
 		[PublicAPI]
 		public string Id { get; }

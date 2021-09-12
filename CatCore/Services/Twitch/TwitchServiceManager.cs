@@ -5,7 +5,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchServiceManager : KittenPlatformServiceManagerBase<ITwitchService>
+	internal sealed class TwitchServiceManager : KittenPlatformServiceManagerBase<ITwitchService>
 	{
 		public TwitchServiceManager(ILogger logger, ITwitchService twitchService, IKittenPlatformActiveStateManager activeStateManager)
 			: base(logger, twitchService, activeStateManager, PlatformType.Twitch)

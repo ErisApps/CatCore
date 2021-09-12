@@ -22,7 +22,7 @@ using Serilog.Formatting.Display;
 [assembly: InternalsVisibleTo("CatCoreTests")]
 namespace CatCore
 {
-	public class ChatCoreInstance
+	public sealed class ChatCoreInstance
 	{
 		private static readonly SemaphoreSlim CreationLocker = new SemaphoreSlim(1, 1);
 		private static readonly SemaphoreSlim RunLocker = new SemaphoreSlim(1, 1);

@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Credentials
 {
-	internal class TwitchCredentials : ICredentials
+	internal sealed class TwitchCredentials : ICredentials
 	{
 		public string? AccessToken { get; set; }
 		public string? RefreshToken { get; set; }

@@ -4,7 +4,7 @@ using CatCore.Services.Interfaces;
 
 namespace CatCore.Services
 {
-	internal class KittenBrowserLauncherService : IKittenBrowserLauncherService
+	internal sealed class KittenBrowserLauncherService : IKittenBrowserLauncherService
 	{
 		public void LaunchWebPortal()
 		{

@@ -16,7 +16,7 @@ using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 
 namespace CatCore.Services.Twitch
 {
-	public partial class TwitchHelixApiService
+	public sealed partial class TwitchHelixApiService
 	{
 		/// <inheritdoc />
 		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)

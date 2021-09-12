@@ -9,7 +9,7 @@ namespace CatCore.Helpers
     /// <remarks>
     /// Adapted from https://codeblog.jonskeet.uk/2009/11/04/revisiting-randomness/
     /// </remarks>
-    internal class ThreadSafeRandomFactory
+    internal sealed class ThreadSafeRandomFactory
     {
         /// <summary>
         /// Random number generator used to generate seeds,

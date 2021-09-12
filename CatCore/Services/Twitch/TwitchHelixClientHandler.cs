@@ -7,7 +7,7 @@ using CatCore.Services.Twitch.Interfaces;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchHelixClientHandler : HttpClientHandler
+	internal sealed class TwitchHelixClientHandler : HttpClientHandler
 	{
 		private readonly ITwitchAuthService _twitchAuthService;
 

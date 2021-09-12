@@ -4,7 +4,7 @@ using CatCore.Services.Interfaces;
 
 namespace CatCore.Services
 {
-	internal class KittenPathProvider : IKittenPathProvider
+	internal sealed class KittenPathProvider : IKittenPathProvider
 	{
 		private string? _dataPath;
 

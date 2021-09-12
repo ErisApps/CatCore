@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Config
 {
-	internal class TwitchConfig
+	internal sealed class TwitchConfig
 	{
 		public bool OwnChannelEnabled { get; set; } = true;
 

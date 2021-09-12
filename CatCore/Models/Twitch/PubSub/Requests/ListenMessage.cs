@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace CatCore.Models.Twitch.PubSub.Requests
 {
-	internal class ListenMessage : MessageBase
+	internal sealed class ListenMessage : MessageBase
 	{
 		[JsonConstructor]
 		public ListenMessage(string nonce, ListenMessageData listenMessageData) : base("LISTEN")
@@ -17,7 +17,7 @@ namespace CatCore.Models.Twitch.PubSub.Requests
 		[JsonPropertyName("data")]
 		public ListenMessageData Data { get; }
 
-		internal class ListenMessageData
+		internal sealed class ListenMessageData
 		{
 			[JsonPropertyName("auth_token")]
 			public string Token { get; }

@@ -1,6 +1,6 @@
 ﻿namespace CatCore
 {
-	internal partial class Constants : ConstantsBase
+	internal sealed partial class Constants : ConstantsBase
 	{
 	}
 

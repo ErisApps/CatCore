@@ -6,7 +6,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	public class TwitchService : ITwitchService
+	public sealed class TwitchService : ITwitchService
 	{
 		private readonly ILogger _logger;
 		private readonly ITwitchIrcService _twitchIrcService;

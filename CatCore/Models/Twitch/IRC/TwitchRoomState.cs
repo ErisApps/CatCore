@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.IRC
 {
-	public class TwitchRoomState
+	public sealed class TwitchRoomState
 	{
 		/// <summary>
 		/// The id of the channel to which the room state belongs.
