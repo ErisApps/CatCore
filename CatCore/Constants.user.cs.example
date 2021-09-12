@@ -1,6 +1,6 @@
 ﻿namespace CatCore
 {
-	internal partial class Constants
+	internal sealed partial class Constants
 	{
 		// Implement/Add the missing properties in this file.
 		private const string CATCORE_AUTH_SERVER_URI = " {{ CATCORE_AUTH_SERVER_URI }} ";

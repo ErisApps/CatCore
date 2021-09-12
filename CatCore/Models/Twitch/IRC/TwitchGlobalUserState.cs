@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
 {
-	public class TwitchGlobalUserState
+	public sealed class TwitchGlobalUserState
 	{
 		// TODO: Look into converting into a dictionary
 		[PublicAPI]

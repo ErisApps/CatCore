@@ -9,7 +9,7 @@ using Serilog;
 
 namespace CatCore.Services
 {
-	internal class KittenSettingsService : IKittenSettingsService
+	internal sealed class KittenSettingsService : IKittenSettingsService
 	{
 		private const string CONFIG_FILENAME = nameof(CatCore) + "Settings.json";
 

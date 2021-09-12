@@ -1,6 +1,6 @@
 ﻿namespace CatCore.Models.Config
 {
-	internal class ConfigRoot
+	internal sealed class ConfigRoot
 	{
 		public GlobalConfig GlobalConfig { get; set; }
 		public TwitchConfig TwitchConfig { get; set; }

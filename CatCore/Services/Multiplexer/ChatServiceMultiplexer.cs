@@ -9,7 +9,7 @@ using Serilog;
 
 namespace CatCore.Services.Multiplexer
 {
-	public class ChatServiceMultiplexer : IChatService
+	public sealed class ChatServiceMultiplexer : IChatService
 	{
 		private readonly ILogger _logger;
 		private readonly ITwitchService _twitchPlatformService;

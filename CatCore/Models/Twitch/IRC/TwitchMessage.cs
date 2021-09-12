@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
 {
-	public class TwitchMessage : IChatMessage
+	public sealed class TwitchMessage : IChatMessage
 	{
 		/// <inheritdoc cref="IChatMessage.Id"/>
 		[PublicAPI]

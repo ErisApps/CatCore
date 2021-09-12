@@ -15,7 +15,7 @@ using Serilog;
 
 namespace CatCore.Services
 {
-	internal class KittenApiService : IKittenApiService
+	internal sealed class KittenApiService : IKittenApiService
 	{
 		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _settingsService;

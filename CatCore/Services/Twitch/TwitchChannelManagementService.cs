@@ -10,7 +10,7 @@ using CatCore.Services.Twitch.Interfaces;
 
 namespace CatCore.Services.Twitch
 {
-	public class TwitchChannelManagementService : ITwitchChannelManagementService
+	public sealed class TwitchChannelManagementService : ITwitchChannelManagementService
 	{
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;

@@ -12,7 +12,7 @@ using Websocket.Client.Models;
 
 namespace CatCore.Services
 {
-	internal class KittenWebSocketProvider : IKittenWebSocketProvider
+	internal sealed class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
 		private readonly ILogger _logger;
 		private readonly SemaphoreSlim _connectionLocker = new SemaphoreSlim(1,1 );

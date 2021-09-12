@@ -13,7 +13,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchPubSubServiceAgent : IAsyncDisposable
+	internal sealed class TwitchPubSubServiceAgent : IAsyncDisposable
 	{
 		private const string TWITCH_PUBSUB_ENDPOINT = "wss://pubsub-edge.twitch.tv";
 		private const string TWITCH_PUBSUB_PING_MESSAGE = @"{""type"": ""PING""}";

@@ -5,7 +5,7 @@ using Serilog;
 
 namespace CatCore.Services.Multiplexer
 {
-	internal class ChatServiceMultiplexerManager : IKittenPlatformServiceManagerBase
+	internal sealed class ChatServiceMultiplexerManager : IKittenPlatformServiceManagerBase
 	{
 		private readonly ILogger _logger;
 		private readonly ChatServiceMultiplexer _chatServiceMultiplexer;

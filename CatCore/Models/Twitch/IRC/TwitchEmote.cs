@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
 {
-	public class TwitchEmote : IChatEmote
+	public sealed class TwitchEmote : IChatEmote
 	{
 		[PublicAPI]
 		public string Id { get; internal set; }

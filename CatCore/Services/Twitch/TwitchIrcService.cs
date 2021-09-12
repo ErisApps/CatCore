@@ -16,7 +16,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal class TwitchIrcService : ITwitchIrcService
+	internal sealed class TwitchIrcService : ITwitchIrcService
 	{
 		private const string TWITCH_IRC_ENDPOINT = "wss://irc-ws.chat.twitch.tv:443";
 
