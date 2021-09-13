@@ -11,11 +11,13 @@ namespace CatCore.Services.Twitch.Interfaces
 	{
 		event EventHandler<TwitchChannelsUpdatedEventArgs>? ChannelsUpdated;
 
-		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
+		TwitchChannel? GetOwnChannel();
+
 		List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false);
+		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
+		List<TwitchChannel> GetActiveChannels(bool includeSelfRegardlessOfState = false);
 		Task<List<UserData>> GetAllChannelsEnriched();
 
 		internal void UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData);
-		TwitchChannel? GetOwnChannel();
 	}
 }
