@@ -21,6 +21,8 @@ namespace CatCore.Services.Twitch
 		private const int TWITCH_PUBSUB_PING_TIMER_DEFAULT_INTERVAL = 120 * 1000;
 		private const int TWITCH_PUBSUB_PONG_TIMER_INTERVAL = 15 * 1000;
 
+		private const string VALID_NONCE_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+
 		private readonly ILogger _logger;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 		private readonly Random _random;
@@ -122,6 +124,17 @@ namespace CatCore.Services.Twitch
 		public void SendListenTopicPubSubMessage(string topic)
 		{
 			_kittenWebSocketProvider.SendMessage(JsonSerializer.Serialize(new ListenMessage(topic, new ListenMessage.ListenMessageData(_twitchAuthService.AccessToken!, topic))));
+		}
+
+		private string GenerateNonce()
+		{
+			var stringChars = new char[16];
+			for (var i = 0; i < stringChars.Length; i++)
+			{
+				stringChars[i] = VALID_NONCE_CHARS[_random.Next(VALID_NONCE_CHARS.Length)];
+			}
+
+			return new string(stringChars);
 		}
 
 		private void ConnectHappenedHandler()
