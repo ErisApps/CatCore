@@ -9,7 +9,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	internal sealed class TwitchPubSubServiceManager : ITwitchPubSubServiceManager
+	internal sealed partial class TwitchPubSubServiceManager : ITwitchPubSubServiceManager
 	{
 		private readonly ILogger _logger;
 		private readonly ThreadSafeRandomFactory _randomFactory;
