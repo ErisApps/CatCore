@@ -104,7 +104,7 @@ namespace CatCore.Services
 		{
 			DisconnectHappened?.Invoke();
 
-			_logger.Warning("Closed connection to the server - Url: {Url} - Type: {Type}", _wss!.Url.ToString(), info.Type);
+			_logger.Warning("Closed connection to the server - Url: {Url} - Type: {Type}", _wss?.Url.ToString(), info.Type);
 		}
 
 		private void MessageReceivedHandler(ResponseMessage responseMessage)
