@@ -24,13 +24,14 @@ namespace CatCore.Azure.Services.Twitch
 
 		public async Task<Stream?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
-			var responseMessage = await _authClient
-				.PostAsync($"{TWITCH_AUTH_BASEURL}token" +
-				           $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
-				           $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
-				           $"&code={authorizationCode}" +
-				           "&grant_type=authorization_code" +
-				           $"&redirect_uri={redirectUrl}", null!)
+			var request = new HttpRequestMessage(HttpMethod.Post, $"{TWITCH_AUTH_BASEURL}token" +
+			                                                      $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
+			                                                      $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
+			                                                      $"&code={authorizationCode}" +
+			                                                      "&grant_type=authorization_code" +
+			                                                      $"&redirect_uri={redirectUrl}");
+			using var responseMessage = await _authClient
+				.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
@@ -48,12 +49,14 @@ namespace CatCore.Azure.Services.Twitch
 				return null;
 			}
 
-			var responseMessage = await _authClient
-				.PostAsync($"{TWITCH_AUTH_BASEURL}token" +
-				           $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
-				           $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
-				           "&grant_type=refresh_token" +
-				           $"&refresh_token={refreshToken}", null!)
+			var request = new HttpRequestMessage(HttpMethod.Post, $"{TWITCH_AUTH_BASEURL}token" +
+			                                                      $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
+			                                                      $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
+			                                                      "&grant_type=refresh_token" +
+			                                                      $"&refresh_token={refreshToken}");
+
+			using var responseMessage = await _authClient
+				.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
 				.ConfigureAwait(false);
 
 			if (!responseMessage.IsSuccessStatusCode)
