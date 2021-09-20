@@ -27,13 +27,13 @@ namespace CatCore.Azure.Functions.Twitch
 			}
 
 			var twitchAuthService = executionContext.InstanceServices.GetService<TwitchAuthService>()!;
-			var authorizationResponse = await twitchAuthService.RefreshTokens(refreshToken).ConfigureAwait(false);
+			var authorizationResponseStream = await twitchAuthService.RefreshTokens(refreshToken).ConfigureAwait(false);
 
 			HttpResponseData response;
-			if (authorizationResponse != null)
+			if (authorizationResponseStream != null)
 			{
 				response = req.CreateResponse(HttpStatusCode.OK);
-				await response.WriteAsJsonAsync(authorizationResponse).ConfigureAwait(false);
+				await authorizationResponseStream.CopyToAsync(response.Body).ConfigureAwait(false);
 			}
 			else
 			{
