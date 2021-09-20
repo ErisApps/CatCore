@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -21,7 +22,7 @@ namespace CatCore.Azure.Services.Twitch
 			_authClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/1.0.0");
 		}
 
-		public async Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
+		public async Task<Stream?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
 			var responseMessage = await _authClient
 				.PostAsync($"{TWITCH_AUTH_BASEURL}token" +
@@ -37,10 +38,10 @@ namespace CatCore.Azure.Services.Twitch
 				return null;
 			}
 
-			return await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
+			return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
 		}
 
-		public async Task<AuthorizationResponse?> RefreshTokens(string refreshToken)
+		public async Task<Stream?> RefreshTokens(string refreshToken)
 		{
 			if (string.IsNullOrWhiteSpace(refreshToken))
 			{
@@ -60,7 +61,7 @@ namespace CatCore.Azure.Services.Twitch
 				return null;
 			}
 
-			return await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
+			return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
 		}
 	}
 }
