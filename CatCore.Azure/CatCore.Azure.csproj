@@ -25,7 +25,7 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<ProjectReference Include="..\CatCore.Shared\CatCore.Shared.csproj" />
 	</ItemGroup>
 
