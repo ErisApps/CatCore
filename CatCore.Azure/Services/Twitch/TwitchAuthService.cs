@@ -20,39 +20,33 @@ namespace CatCore.Azure.Services.Twitch
 			_authClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/1.0.0");
 		}
 
-		public async Task<Stream?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
+		public Task<Stream?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
-			var request = new HttpRequestMessage(HttpMethod.Post, $"{TWITCH_AUTH_BASEURL}token" +
-			                                                      $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
-			                                                      $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
-			                                                      $"&code={authorizationCode}" +
-			                                                      "&grant_type=authorization_code" +
-			                                                      $"&redirect_uri={redirectUrl}");
-			using var responseMessage = await _authClient
-				.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
-				.ConfigureAwait(false);
-
-			if (!responseMessage.IsSuccessStatusCode)
-			{
-				return null;
-			}
-
-			return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			return PostWithoutBodyExpectStreamInternal($"{TWITCH_AUTH_BASEURL}token" +
+			                                           $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
+			                                           $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
+			                                           $"&code={authorizationCode}" +
+			                                           "&grant_type=authorization_code" +
+			                                           $"&redirect_uri={redirectUrl}");
 		}
 
-		public async Task<Stream?> RefreshTokens(string refreshToken)
+		public Task<Stream?> RefreshTokens(string refreshToken)
 		{
 			if (string.IsNullOrWhiteSpace(refreshToken))
 			{
-				return null;
+				return Task.FromResult<Stream?>(null);
 			}
 
-			var request = new HttpRequestMessage(HttpMethod.Post, $"{TWITCH_AUTH_BASEURL}token" +
-			                                                      $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
-			                                                      $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
-			                                                      "&grant_type=refresh_token" +
-			                                                      $"&refresh_token={refreshToken}");
+			return PostWithoutBodyExpectStreamInternal($"{TWITCH_AUTH_BASEURL}token" +
+			                                           $"?client_id={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientId")}" +
+			                                           $"&client_secret={Environment.GetEnvironmentVariable("Twitch_CatCore_ClientSecret")}" +
+			                                           "&grant_type=refresh_token" +
+			                                           $"&refresh_token={refreshToken}");
+		}
 
+		private async Task<Stream?> PostWithoutBodyExpectStreamInternal(string requestUri)
+		{
+			using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
 			using var responseMessage = await _authClient
 				.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
 				.ConfigureAwait(false);
@@ -62,7 +56,11 @@ namespace CatCore.Azure.Services.Twitch
 				return null;
 			}
 
-			return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			var memoryStream = new MemoryStream();
+			await responseMessage.Content.CopyToAsync(memoryStream).ConfigureAwait(false);
+			memoryStream.Seek(0, SeekOrigin.Begin);
+
+			return memoryStream;
 		}
 	}
 }

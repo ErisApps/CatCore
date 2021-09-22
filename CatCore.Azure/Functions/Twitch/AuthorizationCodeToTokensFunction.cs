@@ -28,7 +28,7 @@ namespace CatCore.Azure.Functions.Twitch
 			}
 
 			var twitchAuthService = executionContext.InstanceServices.GetService<TwitchAuthService>()!;
-			var authorizationResponseStream = await twitchAuthService.GetTokensByAuthorizationCode(authorizationCode, redirectUrl).ConfigureAwait(false);
+			await using var authorizationResponseStream = await twitchAuthService.GetTokensByAuthorizationCode(authorizationCode, redirectUrl).ConfigureAwait(false);
 
 			HttpResponseData response;
 			if (authorizationResponseStream != null)
