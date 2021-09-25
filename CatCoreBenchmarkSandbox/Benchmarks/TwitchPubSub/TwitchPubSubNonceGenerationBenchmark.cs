@@ -10,6 +10,8 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 	public class TwitchPubSubNonceGenerationBenchmark
 	{
 		private const string VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		private const int VALID_CHARS_LENGTH = 36;
+
 		private readonly char[] _validCharsArray = VALID_CHARS.ToCharArray();
 
 		[Params(8, 12, 16, 24, 32)]
@@ -32,7 +34,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 		[Benchmark]
 		public string StringLinqBenchmark()
 		{
-			return new string(Enumerable.Repeat(VALID_CHARS, Length).Select(s => s[Random.Next(s.Length)]).ToArray());
+			return new string(Enumerable.Repeat(VALID_CHARS, Length).Select(s => s[Random.Next(VALID_CHARS_LENGTH)]).ToArray());
 		}
 
 		[Benchmark]
@@ -41,7 +43,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 			var stringChars = new char[Length];
 			for (var i = 0; i < stringChars.Length; i++)
 			{
-				stringChars[i] = VALID_CHARS[Random.Next(VALID_CHARS.Length)];
+				stringChars[i] = VALID_CHARS[Random.Next(VALID_CHARS_LENGTH)];
 			}
 
 			return new string(stringChars);
@@ -53,7 +55,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 			var stringChars = new char[Length];
 			for (var i = 0; i < stringChars.Length; i++)
 			{
-				stringChars[i] = _validCharsArray[Random.Next(_validCharsArray.Length)];
+				stringChars[i] = _validCharsArray[Random.Next(VALID_CHARS_LENGTH)];
 			}
 
 			return new string(stringChars);
@@ -63,10 +65,10 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 		public string StringBuilderSpanBenchmark()
 		{
 			var charsAsSpan = VALID_CHARS.AsSpan();
-			var sb = new StringBuilder();
+			var sb = new StringBuilder(Length);
 			for (var i = 0; i < Length; i++)
 			{
-				sb.Append(charsAsSpan[Random.Next(charsAsSpan.Length)]);
+				sb.Append(charsAsSpan[Random.Next(VALID_CHARS_LENGTH)]);
 			}
 
 			return sb.ToString();
@@ -81,7 +83,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 			var resultSpan = result.AsSpan();
 			for (var i = 0; i < result.Length; i++)
 			{
-				charsAsSpan.Slice(Random.Next(charsAsSpan.Length), 1).CopyTo(resultSpan.Slice(i));
+				charsAsSpan.Slice(Random.Next(VALID_CHARS_LENGTH), 1).CopyTo(resultSpan.Slice(i));
 			}
 
 			return new string(result);
