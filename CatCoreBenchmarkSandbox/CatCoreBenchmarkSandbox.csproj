@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFrameworks>net472;net5.0</TargetFrameworks>
-		<LangVersion>8</LangVersion>
+		<TargetFrameworks>net472;net6.0</TargetFrameworks>
+		<LangVersion>preview</LangVersion>
 		<Configurations>Release</Configurations>
 		<Platforms>AnyCPU</Platforms>
 		<Nullable>enable</Nullable>
