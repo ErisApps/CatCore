@@ -10,7 +10,7 @@ namespace CatCore.Helpers.Converters
 	/// <remarks>
 	/// Based upon https://github.com/dotnet/runtime/issues/31081#issuecomment-848697673
 	/// </remarks>
-	internal class JsonStringEnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
+	internal sealed class JsonStringEnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
 	{
 		private readonly Dictionary<TEnum, string> _enumToString = new();
 		private readonly Dictionary<string, TEnum> _stringToEnum = new();
