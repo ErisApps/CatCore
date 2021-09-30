@@ -175,7 +175,7 @@ namespace CatCore.Services.Twitch
 		// TODO: Remove debug stopwatches when said optimisation has been done
 		private void MessageReceivedHandlerInternal(string rawMessage, bool sendBySelf = false)
 		{
-#if DEBUG
+#if !RELEASE
 			var stopwatch = new System.Diagnostics.Stopwatch();
 			stopwatch.Start();
 #endif
@@ -199,7 +199,7 @@ namespace CatCore.Services.Twitch
 				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
 			}
 
-#if DEBUG
+#if !RELEASE
 			stopwatch.Stop();
 			_logger.Information("Handling of {MessageCount} took {ElapsedTime} ticks", messages.Length, stopwatch.ElapsedTicks);
 #endif
