@@ -184,7 +184,7 @@ namespace CatCore.Services.Twitch
 			foreach (var messageInternal in messages)
 			{
 				// Handle IRC messages here
-				IrcExtensions.ParseIrcMessage(messageInternal, out var tags, out var prefix, out string commandType, out var channelName, out var message);
+				IrcExtensions.ParseIrcMessage(messageInternal, out var tags, out var prefix, out var commandType, out var channelName, out var message);
 #if DEBUG
 				_logger.Verbose("{MessageTemplate}", messageInternal);
 
