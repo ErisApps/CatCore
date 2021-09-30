@@ -444,7 +444,7 @@ namespace CatCore.Services.Twitch
 			{
 				var emoteGroup = emotesString.Split('/');
 				emotes = new List<IChatEmote>(emoteGroup.Length);
-				for (var i = 0; i < emotes.Count; i++)
+				for (var i = 0; i < emoteGroup.Length; i++)
 				{
 					var emoteString = emoteGroup[i];
 					var emoteSet = emoteString.Split(':');
