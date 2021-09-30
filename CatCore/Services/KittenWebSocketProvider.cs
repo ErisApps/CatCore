@@ -15,7 +15,7 @@ namespace CatCore.Services
 	internal sealed class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
 		private readonly ILogger _logger;
-		private readonly SemaphoreSlim _connectionLocker = new SemaphoreSlim(1,1 );
+		private readonly SemaphoreSlim _connectionLocker = new(1,1 );
 
 		private WebsocketClient? _wss;
 
