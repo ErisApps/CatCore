@@ -19,7 +19,7 @@ namespace CatCore.Services.Twitch
 		private const string SERVICE_TYPE = nameof(Twitch);
 		private const string TWITCH_AUTH_BASEURL = "https://id.twitch.tv/oauth2/";
 
-		private readonly SemaphoreSlim _refreshLocker = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim _refreshLocker = new(1, 1);
 
 		private readonly string[] _twitchAuthorizationScope =
 		{
