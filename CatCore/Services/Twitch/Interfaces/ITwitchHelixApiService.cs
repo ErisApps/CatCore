@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
+using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Shared;
@@ -151,5 +152,16 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-prediction">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken? cancellationToken = null);
+
+		/// <summary>
+		/// Retrieves the list of available Cheermotes, animated emotes to which viewers can assign Bits, to cheer in chat.
+		/// Cheermotes returned are available throughout Twitch, in all Bits-enabled channels.
+		/// </summary>
+		/// <param name="userId">Id of the channel for which to retrieve Cheermotes. When no userId is passed or null, it will return all globally available Cheermotes.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of cheermotes</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-cheermotes">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null);
 	}
 }
