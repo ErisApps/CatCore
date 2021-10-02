@@ -22,7 +22,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)
 		{
-			var uriBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}users");
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}users");
 
 			var totalParamCount = 0;
 			void CheckCount(ref string[]? array, out bool hasBool)
@@ -49,20 +49,20 @@ namespace CatCore.Services.Twitch
 
 			if (hasUserIds || hasLoginNames)
 			{
-				uriBuilder.Append("?");
+				urlBuilder.Append("?");
 			}
 
 			if (hasUserIds)
 			{
-				uriBuilder.Append("id=").Append(string.Join("&id=", userIds!));
+				urlBuilder.Append("id=").Append(string.Join("&id=", userIds!));
 			}
 
 			if (hasLoginNames)
 			{
-				uriBuilder.Append("login=").Append(string.Join("&login=", loginNames!));
+				urlBuilder.Append("login=").Append(string.Join("&login=", loginNames!));
 			}
 
-			return GetAsync<ResponseBase<UserData>>(uriBuilder.ToString(), cancellationToken);
+			return GetAsync<ResponseBase<UserData>>(urlBuilder.ToString(), cancellationToken);
 		}
 
 		/// <inheritdoc />
