@@ -8,6 +8,7 @@ using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
+using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Shared;
@@ -385,6 +386,18 @@ namespace CatCore.Services.Twitch
 
 			var body = new EndPredictionRequestDto(userId, predictionId, predictionStatus, winningOutcomeId);
 			return PatchAsync<ResponseBase<PredictionData>, EndPredictionRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null)
+		{
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}bits/cheermotes");
+			if (!string.IsNullOrWhiteSpace(userId))
+			{
+				urlBuilder.Append("?broadcaster_id=").Append(userId);
+			}
+
+			return GetAsync<ResponseBase<CheermoteGroupData>>(urlBuilder.ToString(), cancellationToken);
 		}
 	}
 }
