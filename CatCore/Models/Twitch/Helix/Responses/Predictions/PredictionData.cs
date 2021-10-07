@@ -37,7 +37,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 		public PredictionStatus Status { get; }
 
 		[JsonPropertyName("created_at")]
-		public string CreatedAt { get; }
+		public DateTimeOffset CreatedAt { get; }
 
 		[JsonPropertyName("ended_at")]
 		public string EndedAtRaw { get; }
@@ -53,7 +53,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 
 		[JsonConstructor]
 		public PredictionData(string id, string broadcasterId, string broadcasterName, string broadcasterLogin, string title, string winningOutcomeId, IReadOnlyList<Outcome> outcomes, uint duration,
-			PredictionStatus status, string createdAt, string endedAtRaw, string lockedAtRaw)
+			PredictionStatus status, DateTimeOffset createdAt, string endedAtRaw, string lockedAtRaw)
 		{
 			Id = id;
 			BroadcasterId = broadcasterId;
