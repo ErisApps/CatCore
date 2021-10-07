@@ -3,8 +3,10 @@
 	internal static class PubSubTopics
 	{
 		public const string VIDEO_PLAYBACK = "video-playback-by-id";
+		public const string FOLLOWING = "following";
 
 		public static string FormatVideoPlaybackTopic(string channelId) => VIDEO_PLAYBACK + "." + channelId;
+		public static string FormatFollowingTopic(string channelId) => FOLLOWING + "." + channelId;
 
 		// TODO: Check feasibility implementing all topics below
 		// == Globally available ================
