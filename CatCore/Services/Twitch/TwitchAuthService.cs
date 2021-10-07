@@ -208,6 +208,7 @@ namespace CatCore.Services.Twitch
 
 			if (!responseMessage.IsSuccessStatusCode)
 			{
+				_logger.Warning("Refreshing tokens resulted in non-success status code");
 				return false;
 			}
 
