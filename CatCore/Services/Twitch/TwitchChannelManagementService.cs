@@ -82,8 +82,8 @@ namespace CatCore.Services.Twitch
 
 		void ITwitchChannelManagementService.UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData)
 		{
-			Dictionary<string, string> enabledChannels = new Dictionary<string, string>();
-			Dictionary<string, string> disabledChannels = new Dictionary<string, string>();
+			var enabledChannels = new Dictionary<string, string>();
+			var disabledChannels = new Dictionary<string, string>();
 
 			if (_twitchAuthService.LoggedInUser != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled != ownChannelActive)
 			{
