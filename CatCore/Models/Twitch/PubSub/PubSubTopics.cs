@@ -8,6 +8,14 @@
 		public static string FormatVideoPlaybackTopic(string channelId) => VIDEO_PLAYBACK + "." + channelId;
 		public static string FormatFollowingTopic(string channelId) => FOLLOWING + "." + channelId;
 
+		internal static class VideoPlaybackSubTopics
+		{
+			public const string VIEW_COUNT = "viewcount";
+			public const string STREAM_UP = "stream-up";
+			public const string STREAM_DOWN = "stream-down";
+			public const string COMMERCIAL = "commercial";
+		}
+
 		// TODO: Check feasibility implementing all topics below
 		// == Globally available ================
 		// video-playback-by-id.{_channelId}
