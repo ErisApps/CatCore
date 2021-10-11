@@ -446,14 +446,17 @@ namespace CatCore.Services.Twitch
 				emotes = new List<IChatEmote>(emoteGroup.Length);
 				for (var i = 0; i < emoteGroup.Length; i++)
 				{
-					var emoteString = emoteGroup[i];
+					// TODO: Breaks on messages that contains the same emote multiple times
+					// Eg: 1035663:0-3,52-55,87-90,130-133
+
+					/*var emoteString = emoteGroup[i];
 					var emoteSet = emoteString.Split(':');
 					var emoteId = emoteSet[0];
 					var emoteMeta = emoteSet[1].Split('-');
 					var emoteStart = int.Parse(emoteMeta[0]);
 					var emoteEnd = int.Parse(emoteMeta[1]);
 
-					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
+					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));*/
 				}
 			}
 			else
