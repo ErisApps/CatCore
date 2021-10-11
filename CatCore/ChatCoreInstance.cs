@@ -24,8 +24,8 @@ namespace CatCore
 {
 	public sealed class ChatCoreInstance
 	{
-		private static readonly SemaphoreSlim CreationLocker = new SemaphoreSlim(1, 1);
-		private static readonly SemaphoreSlim RunLocker = new SemaphoreSlim(1, 1);
+		private static readonly SemaphoreSlim CreationLocker = new(1, 1);
+		private static readonly SemaphoreSlim RunLocker = new(1, 1);
 
 		private static ChatCoreInstance? _instance;
 
@@ -40,6 +40,7 @@ namespace CatCore
 			_version = typeof(ChatCoreInstance).Assembly.GetName().Version;
 		}
 
+		[PublicAPI]
 		public event Action<CustomLogLevel, string, string>? OnLogReceived;
 
 		[PublicAPI]
