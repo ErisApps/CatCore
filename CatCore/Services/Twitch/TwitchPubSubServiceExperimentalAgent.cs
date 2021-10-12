@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using CatCore.Helpers;
+using CatCore.Models.Shared;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Services.Interfaces;
@@ -65,6 +66,8 @@ namespace CatCore.Services.Twitch
 			_activeStateManager = activeStateManager;
 			_channelId = channelId;
 
+			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
+
 			// TODO: Find a better way for this to ensure testability in the long run
 			_kittenWebSocketProvider = new KittenWebSocketProvider(_logger); // manual resolution
 
@@ -73,6 +76,21 @@ namespace CatCore.Services.Twitch
 
 			_pongTimer = new Timer { Interval = TWITCH_PUBSUB_PONG_TIMER_INTERVAL, AutoReset = false };
 			_pongTimer.Elapsed += PongTimerOnElapsed;
+		}
+
+		private async void TwitchAuthServiceOnOnCredentialsChanged()
+		{
+			if (_twitchAuthService.HasTokens)
+			{
+				if (_activeStateManager.GetState(PlatformType.Twitch))
+				{
+					await Start().ConfigureAwait(false);
+				}
+			}
+			else
+			{
+				await Stop().ConfigureAwait(false);
+			}
 		}
 
 		// TODO: mark method as internal
