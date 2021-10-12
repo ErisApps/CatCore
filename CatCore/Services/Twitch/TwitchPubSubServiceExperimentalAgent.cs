@@ -1,12 +1,17 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using CatCore.Helpers;
 using CatCore.Models.Twitch.PubSub;
+using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
+using Timer = System.Timers.Timer;
 
 namespace CatCore.Services.Twitch
 {
@@ -33,6 +38,14 @@ namespace CatCore.Services.Twitch
 		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly string _channelId;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
+
+		private readonly HashSet<string> _acceptedTopics = new();
+		private readonly ConcurrentDictionary<string, string> _inProgressTopicNegotiations = new();
+		private readonly ConcurrentQueue<(string mode, string topic)> _topicNegotiationQueue = new();
+
+		private readonly SemaphoreSlim _workerSemaphoreSlim = new(0, 1);
+
+		private CancellationTokenSource? _topicNegotiationQueueProcessorCancellationTokenSource;
 
 		private readonly Timer _pingTimer;
 		private readonly Timer _pongTimer;
@@ -75,8 +88,6 @@ namespace CatCore.Services.Twitch
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 			_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
 
-			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
-			_kittenWebSocketProvider.DisconnectHappened += DisconnectHappenedHandler;
 
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 			_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
@@ -89,27 +100,26 @@ namespace CatCore.Services.Twitch
 			await _kittenWebSocketProvider.Disconnect().ConfigureAwait(false);
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
-			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 		}
 
 		public async ValueTask DisposeAsync()
 		{
+			await Stop("Forced to go close").ConfigureAwait(false);
+
 			_pingTimer.Dispose();
 			_pongTimer.Dispose();
-
-			await _kittenWebSocketProvider.Disconnect("Forced to go close").ConfigureAwait(false);
 		}
 
 		private void ConnectHappenedHandler()
 		{
 			_pingTimer.Start();
-		}
 
-		private void DisconnectHappenedHandler()
-		{
-			_pingTimer.Stop();
-			_pongTimer.Stop();
+			_topicNegotiationQueueProcessorCancellationTokenSource?.Cancel();
+			_topicNegotiationQueueProcessorCancellationTokenSource = new CancellationTokenSource();
+
+			_ = Task.Run(() => ProcessQueuedTopicNegotiationMessage(_topicNegotiationQueueProcessorCancellationTokenSource.Token), _topicNegotiationQueueProcessorCancellationTokenSource.Token)
+				.ConfigureAwait(false);
 		}
 
 		// ReSharper disable once CognitiveComplexity
@@ -117,7 +127,7 @@ namespace CatCore.Services.Twitch
 		private void MessageReceivedHandler(string receivedMessage)
 		{
 #if DEBUG
-			var stopWatch = new Stopwatch();
+			var stopWatch = new System.Diagnostics.Stopwatch();
 			stopWatch.Start();
 #endif
 
@@ -162,26 +172,99 @@ namespace CatCore.Services.Twitch
 
 		internal void RequestTopicListening(string topic)
 		{
-			var fullTopic = ConvertTopic(topic);
+			Start().ConfigureAwait(false);
 
-			_logger.Information("Topic registration requested for (full) topic {FullTopic}", fullTopic);
+			QueueTopicNegotiation(TopicNegotiationMessage.LISTEN, topic);
 
-			// TODO: Check if already started internally (and start when needed)
-			// TODO: Check if already registered (both accepted and in-progress queues)
-			// TODO: Send LISTEN request to wss
-			// TODO: Keep track of in-progress LISTEN negotiations
+			// TODO: 1) Check if already started internally (and start when needed)
+			// TODO: 2) Check if already registered (both accepted and in-progress queues)
+			// TODO: 3) Send LISTEN request to wss
+			// TODO: 4) Keep track of in-progress LISTEN negotiations
+			// Possible conflicts:
+			// LISTEN and UNLISTEN requests could theoretically be send concurrently due to (un)subscribing from the higher-level event handlers
+			// This could possibly lead to race conditions as topic negotiations (both LISTEN and UNLISTEN) need to be ACK'd
+
+			_logger.Information("Topic registration requested for (full) topic {FullTopic}", ConvertTopic(topic));
 		}
 
 		internal void RequestTopicUnlistening(string topic)
 		{
-			var fullTopic = ConvertTopic(topic);
+			QueueTopicNegotiation(TopicNegotiationMessage.UNLISTEN, topic);
 
-			_logger.Information("Topic de-registration requested for (full) topic {FullTopic}", fullTopic);
+			// TODO: 1) Check if topic was registered/accepted
+			// TODO: 2) Check if topic is already in-progress of being UNLISTEN-ed
+			// TODO: 3) Send UNLISTEN request to wss
+			// TODO: 4) Check if agent can be stopped internally
+			// Possible conflicts:
+			// LISTEN and UNLISTEN requests could theoretically be send concurrently due to (un)subscribing from the higher-level event handlers
+			// This could possibly lead to race conditions as topic negotiations (both LISTEN and UNLISTEN) need to be ACK'd
 
-			// TODO: Check if topic was registered
-			// TODO: Check if topic is already in-progress of being UNLISTEN-ed
-			// TODO: Send UNLISTEN request to wss
-			// TODO: Check if agent can be stopped internally
+			_logger.Information("Topic de-registration requested for (full) topic {FullTopic}", ConvertTopic(topic));
+		}
+
+		private void QueueTopicNegotiation(string mode, string topic)
+		{
+			_topicNegotiationQueue.Enqueue((mode, topic));
+
+			// Trigger re-activation of worker thread
+			if (_workerSemaphoreSlim.CurrentCount == 0)
+			{
+				_workerSemaphoreSlim.Release();
+			}
+		}
+
+		// ReSharper disable once CognitiveComplexity
+		private async Task ProcessQueuedTopicNegotiationMessage(CancellationToken cts)
+		{
+			bool CheckIfConsumable()
+			{
+				return !_topicNegotiationQueue.IsEmpty;
+			}
+
+			async Task HandleQueue()
+			{
+				while (!cts.IsCancellationRequested && _topicNegotiationQueue.TryPeek(out var msg))
+				{
+					if (_inProgressTopicNegotiations.Values.Contains(msg.topic))
+					{
+						break;
+					}
+
+					_topicNegotiationQueue.TryDequeue(out msg);
+
+					var mode = msg.mode;
+					var fullTopic = ConvertTopic(msg.topic);
+					var nonce = GenerateNonce();
+
+					var jsonMessage = JsonSerializer.Serialize(new TopicNegotiationMessage(mode, new TopicNegotiationMessageData(new[] { fullTopic }), nonce));
+
+					_inProgressTopicNegotiations.TryAdd(nonce, msg.topic);
+
+					_logger.Information("Sending {Mode} request for topic {Topic} with nonce {Nonce}", mode, msg.topic, nonce);
+
+					// Send message
+					await _kittenWebSocketProvider.SendMessageInstant(jsonMessage).ConfigureAwait(false);
+				}
+			}
+
+			while (!cts.IsCancellationRequested)
+			{
+				await HandleQueue().ConfigureAwait(false);
+
+				do
+				{
+					_logger.Verbose("Hibernating worker queue");
+
+					await Task.WhenAny(
+							Task.Delay(-1, cts),
+							_workerSemaphoreSlim.WaitAsync(cts))
+						.ConfigureAwait(false);
+
+					_logger.Verbose("Waking up worker queue");
+				} while (!CheckIfConsumable() && !cts.IsCancellationRequested);
+			}
+
+			_logger.Warning("Stopped worker queue");
 		}
 
 		private string ConvertTopic(string topic)
