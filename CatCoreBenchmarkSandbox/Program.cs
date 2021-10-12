@@ -27,7 +27,7 @@ namespace CatCoreBenchmarkSandbox
 					.WithRuntime(ClrRuntime.Net472)
 					.AsBaseline())
 				.AddJob(Job.Default
-					.WithRuntime(CoreRuntime.Core50))
+					.WithRuntime(CoreRuntime.Core60))
 				.AddJob(MonoRuntimes
 					.Select(runtimeEntry => Job.Default.WithRuntime(runtimeEntry))
 					.ToArray())
@@ -37,7 +37,7 @@ namespace CatCoreBenchmarkSandbox
 				.AddLogger(ConsoleLogger.Default)
 				.AddExporter(BenchmarkReportExporter.Default, HtmlExporter.Default, MarkdownExporter.Console);
 
-			BenchmarkRunner.Run<Benchmarks.TwitchIRCMessageDeconstruction.TwitchIrcMessageCompoundDeconstructionBenchmark>(benchmarkConfiguration);
+			BenchmarkRunner.Run<Benchmarks.TwitchPubSub.TwitchPubSubNonceGenerationBenchmark>(benchmarkConfiguration);
 		}
 	}
 }

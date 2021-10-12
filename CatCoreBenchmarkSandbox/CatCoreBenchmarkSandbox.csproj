@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFrameworks>net472;net6.0</TargetFrameworks>
-		<LangVersion>preview</LangVersion>
+		<LangVersion>9</LangVersion>
 		<Configurations>Release</Configurations>
 		<Platforms>AnyCPU</Platforms>
 		<Nullable>enable</Nullable>
