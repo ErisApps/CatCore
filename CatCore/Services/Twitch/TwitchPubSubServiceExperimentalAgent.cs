@@ -23,6 +23,10 @@ namespace CatCore.Services.Twitch
 		// => Adding an additional 5 second buffer to the pong timer in case the connection is a bit slower though
 		private const int TWITCH_PUBSUB_PONG_TIMER_INTERVAL = 15 * 1000;
 
+		private const string VALID_NONCE_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+		private const int VALID_NONCE_CHARS_LENGTH = 36;
+		private const int GENERATED_NONCE_LENGTH = 16;
+
 		private readonly ILogger _logger;
 		private readonly Random _random;
 		private readonly ITwitchAuthService _twitchAuthService;
@@ -187,6 +191,17 @@ namespace CatCore.Services.Twitch
 				PubSubTopics.VIDEO_PLAYBACK => PubSubTopics.FormatVideoPlaybackTopic(_channelId),
 				_ => throw new NotSupportedException()
 			};
+		}
+
+		private string GenerateNonce()
+		{
+			var stringChars = new char[GENERATED_NONCE_LENGTH];
+			for (var i = 0; i < GENERATED_NONCE_LENGTH; i++)
+			{
+				stringChars[i] = VALID_NONCE_CHARS[_random.Next(VALID_NONCE_CHARS_LENGTH)];
+			}
+
+			return new string(stringChars);
 		}
 
 		private void PingTimerOnElapsed(object sender, ElapsedEventArgs _)
