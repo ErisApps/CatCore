@@ -9,6 +9,7 @@ using CatCore.Helpers;
 using CatCore.Models.Shared;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
+using CatCore.Models.Twitch.PubSub.Responses;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -77,6 +78,8 @@ namespace CatCore.Services.Twitch
 			_pongTimer = new Timer { Interval = TWITCH_PUBSUB_PONG_TIMER_INTERVAL, AutoReset = false };
 			_pongTimer.Elapsed += PongTimerOnElapsed;
 		}
+
+		internal event Action<string, Follow>? OnFollow;
 
 		private async void TwitchAuthServiceOnOnCredentialsChanged()
 		{
@@ -276,6 +279,7 @@ namespace CatCore.Services.Twitch
 						break;
 					case PubSubMessageTypes.MESSAGE:
 						// TODO: Message handling code comes here
+						HandleMessageTypeInternal(rootElement);
 						break;
 				}
 			}
@@ -392,6 +396,7 @@ namespace CatCore.Services.Twitch
 			return topic switch
 			{
 				PubSubTopics.VIDEO_PLAYBACK => PubSubTopics.FormatVideoPlaybackTopic(_channelId),
+				PubSubTopics.FOLLOWING => PubSubTopics.FormatFollowingTopic(_channelId),
 				_ => throw new NotSupportedException()
 			};
 		}
@@ -429,6 +434,33 @@ namespace CatCore.Services.Twitch
 
 				_pingTimer.Interval = TWITCH_PUBSUB_PING_TIMER_DEFAULT_INTERVAL + _random.Next(30) * 1000;
 				_pingTimer.Start();
+			}
+		}
+
+		private void HandleMessageTypeInternal(JsonElement rootElement)
+		{
+			var data = rootElement.GetProperty("data");
+
+			var topicSpan = data.GetProperty("topic").GetString()!.AsSpan();
+			var firstDotSeparator = topicSpan.IndexOf('.');
+			var topic = topicSpan.Slice(0, firstDotSeparator).ToString();
+			var message = data.GetProperty("message").GetString()!;
+
+			switch (topic)
+			{
+				case PubSubTopics.FOLLOWING:
+				{
+					var followingDocument = JsonDocument.Parse(message).RootElement;
+					var displayName = followingDocument.GetProperty("display_name").GetString()!;
+					var username = followingDocument.GetProperty("username").GetString()!;
+					var userId = followingDocument.GetProperty("user_id").GetString()!;
+
+					_logger.Debug("Main event type: {MainType} - {DisplayName} now follows channel {TargetChannelId}", topic, displayName, _channelId);
+
+					OnFollow?.Invoke(_channelId, new Follow(userId, username, displayName));
+
+					break;
+				}
 			}
 		}
 	}
