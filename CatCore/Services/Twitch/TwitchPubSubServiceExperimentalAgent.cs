@@ -39,6 +39,9 @@ namespace CatCore.Services.Twitch
 		private readonly string _channelId;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 
+		private readonly SemaphoreSlim _wsStateChangeSemaphoreSlim = new(1, 1);
+		private readonly SemaphoreSlim _initSemaphoreSlim = new(1, 1);
+
 		private readonly HashSet<string> _acceptedTopics = new();
 		private readonly ConcurrentDictionary<string, string> _inProgressTopicNegotiations = new();
 		private readonly ConcurrentQueue<(string mode, string topic)> _topicNegotiationQueue = new();
@@ -75,32 +78,103 @@ namespace CatCore.Services.Twitch
 		// TODO: mark method as internal
 		private async Task Start(bool force = false)
 		{
-			if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
+			if (!force && (_initSemaphoreSlim.CurrentCount == 0 || _kittenWebSocketProvider.IsConnected))
 			{
 				return;
 			}
 
-			if (!_twitchAuthService.TokenIsValid)
+			var lockAcquired = false;
+
+			try
 			{
-				await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
+				if (!(lockAcquired = await _initSemaphoreSlim.WaitAsync(force ? -1 : 0).ConfigureAwait(false)))
+				{
+					return;
+				}
+
+				using var _ = await Synchronization.LockAsync(_wsStateChangeSemaphoreSlim).ConfigureAwait(false);
+
+				if (!force && _kittenWebSocketProvider.IsConnected)
+				{
+					return;
+				}
+
+				if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
+				{
+					return;
+				}
+
+				if (!_twitchAuthService.TokenIsValid)
+				{
+					await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
+				}
+
+				_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
+				_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
+
+				_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
+				_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
+
+				await _kittenWebSocketProvider.Connect(TWITCH_PUBSUB_ENDPOINT).ConfigureAwait(false);
 			}
-
-			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
-			_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
-
-
-			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
-			_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
-
-			await _kittenWebSocketProvider.Connect(TWITCH_PUBSUB_ENDPOINT).ConfigureAwait(false);
+			finally
+			{
+				if (lockAcquired)
+				{
+					_initSemaphoreSlim.Release();
+				}
+			}
 		}
 
 		private async Task Stop(string? disconnectReason = null)
 		{
-			await _kittenWebSocketProvider.Disconnect().ConfigureAwait(false);
+			using var _ = await Synchronization.LockAsync(_wsStateChangeSemaphoreSlim).ConfigureAwait(false);
+
+			_topicNegotiationQueueProcessorCancellationTokenSource?.Cancel();
+			_topicNegotiationQueueProcessorCancellationTokenSource = null;
+
+			_pingTimer.Stop();
+			_pongTimer.Stop();
+
+			await _kittenWebSocketProvider.Disconnect(disconnectReason).ConfigureAwait(false);
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
+
+			// Prepare and reorder topic negotiation queue
+			var existingTopicNegotiationQueueCount = _topicNegotiationQueue.Count;
+
+			foreach (var topic in _acceptedTopics)
+			{
+				_logger.Debug("Re-queued topic LISTEN registration for topic {Topic}", topic);
+				QueueTopicNegotiation("LISTEN", topic);
+			}
+
+			foreach (var inProgressTopicNegotiation in _inProgressTopicNegotiations)
+			{
+				var topic = inProgressTopicNegotiation.Value;
+				if (_acceptedTopics.Contains(topic))
+				{
+					QueueTopicNegotiation("UNLISTEN", topic);
+					_logger.Debug("Re-queued in-progress topic LISTEN negotiation for topic {Topic}", topic);
+				}
+				else
+				{
+					QueueTopicNegotiation("LISTEN", topic);
+					_logger.Debug("Re-queued in-progress topic UNLISTEN negotiation for topic {Topic}", topic);
+				}
+			}
+
+			_acceptedTopics.Clear();
+
+			_logger.Debug("Correcting topic negotiation queue order");
+			for (var i = 0; i < existingTopicNegotiationQueueCount; i++)
+			{
+				if (_topicNegotiationQueue.TryDequeue(out var existingTopicNegotiationQueueItem))
+				{
+					_topicNegotiationQueue.Enqueue(existingTopicNegotiationQueueItem);
+				}
+			}
 		}
 
 		public async ValueTask DisposeAsync()
