@@ -17,7 +17,7 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 
-		private readonly Dictionary<string, TwitchPubSubServiceAgent> _activePubSubConnections;
+		private readonly Dictionary<string, TwitchPubSubServiceExperimentalAgent> _activePubSubConnections;
 
 		public TwitchPubSubServiceManager(ILogger logger, ThreadSafeRandomFactory randomFactory, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
 			ITwitchChannelManagementService twitchChannelManagementService)
@@ -31,44 +31,39 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
-			_activePubSubConnections = new Dictionary<string, TwitchPubSubServiceAgent>();
+			_activePubSubConnections = new Dictionary<string, TwitchPubSubServiceExperimentalAgent>();
 		}
 
 		async Task ITwitchPubSubServiceManager.Start()
 		{
 			foreach (var channelId in _twitchChannelManagementService.GetAllActiveChannelIds())
 			{
-				await CreatePubSubAgent(channelId).ConfigureAwait(false);
+				CreatePubSubAgent(channelId);
 			}
+
+			await Task.CompletedTask;
 		}
 
 		async Task ITwitchPubSubServiceManager.Stop()
 		{
-			foreach (var twitchPubSubServiceAgent in _activePubSubConnections)
+			foreach (var twitchPubSubServiceExperimentalAgent in _activePubSubConnections)
 			{
-				await twitchPubSubServiceAgent.Value.Stop().ConfigureAwait(false);
+				await DestroyPubSubAgent(twitchPubSubServiceExperimentalAgent.Key, twitchPubSubServiceExperimentalAgent.Value).ConfigureAwait(false);
 			}
-
-			_activePubSubConnections.Clear();
 		}
 
-		private async void TwitchAuthServiceOnOnCredentialsChanged()
+		private void TwitchAuthServiceOnOnCredentialsChanged()
 		{
-			if (_twitchAuthService.HasTokens)
+			if (!_twitchAuthService.HasTokens || !_activeStateManager.GetState(PlatformType.Twitch))
 			{
-				if (_activeStateManager.GetState(PlatformType.Twitch))
-				{
-					foreach (var twitchPubSubServiceAgent in _activePubSubConnections)
-					{
-						await twitchPubSubServiceAgent.Value.Start().ConfigureAwait(false);
-					}
-				}
+				return;
 			}
-			else
+
+			foreach (var channelId in _twitchChannelManagementService.GetAllActiveChannelIds())
 			{
-				foreach (var twitchPubSubServiceAgent in _activePubSubConnections)
+				if (_activePubSubConnections.ContainsKey(channelId))
 				{
-					await twitchPubSubServiceAgent.Value.Stop().ConfigureAwait(false);
+					continue;
 				}
 			}
 		}
@@ -81,24 +76,29 @@ namespace CatCore.Services.Twitch
 				{
 					if (_activePubSubConnections.TryGetValue(disabledChannel.Key, out var twitchPubSubServiceAgent))
 					{
-						await twitchPubSubServiceAgent.Stop().ConfigureAwait(false);
-						_activePubSubConnections.Remove(disabledChannel.Key);
+						await DestroyPubSubAgent(disabledChannel.Key, twitchPubSubServiceAgent).ConfigureAwait(false);
 					}
 				}
 
 				foreach (var enabledChannel in args.EnabledChannels)
 				{
-					await CreatePubSubAgent(enabledChannel.Key).ConfigureAwait(false);
+					CreatePubSubAgent(enabledChannel.Key);
 				}
 			}
 		}
 
-		private async Task CreatePubSubAgent(string channelId)
+		private TwitchPubSubServiceExperimentalAgent CreatePubSubAgent(string channelId)
 		{
-			var agent = new TwitchPubSubServiceAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, channelId);
-			await agent.Start().ConfigureAwait(false);
+			var agent = new TwitchPubSubServiceExperimentalAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, _activeStateManager, channelId);
 
-			_activePubSubConnections[channelId] = agent;
+			return _activePubSubConnections[channelId] = agent;
+		}
+
+		private async Task DestroyPubSubAgent(string channelId, TwitchPubSubServiceExperimentalAgent twitchPubSubServiceAgent)
+		{
+			await twitchPubSubServiceAgent.DisposeAsync().ConfigureAwait(false);
+
+			_activePubSubConnections.Remove(channelId);
 		}
 	}
 }

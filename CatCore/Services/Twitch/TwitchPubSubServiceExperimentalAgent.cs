@@ -26,6 +26,7 @@ namespace CatCore.Services.Twitch
 		private readonly ILogger _logger;
 		private readonly Random _random;
 		private readonly ITwitchAuthService _twitchAuthService;
+		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly string _channelId;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 
@@ -34,12 +35,14 @@ namespace CatCore.Services.Twitch
 
 		private bool _hasPongBeenReceived;
 
-		public TwitchPubSubServiceExperimentalAgent(ILogger logger, Random random, ITwitchAuthService twitchAuthService, string channelId)
+		public TwitchPubSubServiceExperimentalAgent(ILogger logger, Random random, ITwitchAuthService twitchAuthService, IKittenPlatformActiveStateManager activeStateManager,
+			string channelId)
 		{
 			_logger = logger.ForContext(Serilog.Core.Constants.SourceContextPropertyName, $"{(typeof(TwitchPubSubServiceExperimentalAgent)).FullName} ({channelId})");
 
 			_random = random;
 			_twitchAuthService = twitchAuthService;
+			_activeStateManager = activeStateManager;
 			_channelId = channelId;
 
 			// TODO: Find a better way for this to ensure testability in the long run
@@ -53,7 +56,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		// TODO: mark method as internal
-		public async Task Start()
+		private async Task Start(bool force = false)
 		{
 			if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
 			{
@@ -77,7 +80,7 @@ namespace CatCore.Services.Twitch
 			await _kittenWebSocketProvider.Connect(TWITCH_PUBSUB_ENDPOINT).ConfigureAwait(false);
 		}
 
-		public async Task Stop()
+		private async Task Stop(string? disconnectReason = null)
 		{
 			await _kittenWebSocketProvider.Disconnect().ConfigureAwait(false);
 
