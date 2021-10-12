@@ -143,7 +143,35 @@ namespace CatCore.Services.Twitch
 				switch (type)
 				{
 					case PubSubMessageTypes.RESPONSE:
-						// TODO: Handle topic (de)registration responses.
+						var error = rootElement.GetProperty("error").GetString()!;
+						var nonce = rootElement.GetProperty("nonce").GetString()!;
+
+						_inProgressTopicNegotiations.TryGetValue(nonce, out var topicSubscription);
+
+						if (string.IsNullOrWhiteSpace(error))
+						{
+							if (_acceptedTopics.Contains(topicSubscription))
+							{
+								_acceptedTopics.Remove(topicSubscription);
+								_logger.Verbose("UNLISTEN request with nonce {Nonce} for topic {Topic} got ACK'ed", nonce, topicSubscription);
+							}
+							else
+							{
+								_acceptedTopics.Add(topicSubscription);
+								_logger.Verbose("LISTEN request with nonce {Nonce} for topic {Topic} got ACK'ed", nonce, topicSubscription);
+							}
+						}
+						else
+						{
+							_logger.Warning("Topic (de)registration failed. Nonce: {Nonce}, error: {Error}", nonce, error);
+						}
+
+						_inProgressTopicNegotiations.TryRemove(nonce, out _);
+
+						if (_workerSemaphoreSlim.CurrentCount == 0)
+						{
+							_workerSemaphoreSlim.Release();
+						}
 
 						break;
 					case PubSubMessageTypes.PONG:
