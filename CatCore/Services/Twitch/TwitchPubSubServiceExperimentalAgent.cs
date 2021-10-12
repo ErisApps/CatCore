@@ -451,6 +451,7 @@ namespace CatCore.Services.Twitch
 				case PubSubTopics.FOLLOWING:
 				{
 					var followingDocument = JsonDocument.Parse(message).RootElement;
+
 					var displayName = followingDocument.GetProperty("display_name").GetString()!;
 					var username = followingDocument.GetProperty("username").GetString()!;
 					var userId = followingDocument.GetProperty("user_id").GetString()!;

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using CatCore.Helpers;
 using CatCore.Models.Twitch.PubSub;
+using CatCore.Models.Twitch.PubSub.Responses;
 
 namespace CatCore.Services.Twitch
 {
@@ -101,6 +103,42 @@ namespace CatCore.Services.Twitch
 			{
 				_ => true
 			};
+		}
+
+		#endregion
+
+		#region following
+
+		private readonly ConcurrentDictionary<Action<string, Follow>, bool> _followingCallbackRegistrations = new();
+
+		private void NotifyOnFollow(string channelId, Follow followData)
+		{
+			foreach (var action in _followingCallbackRegistrations.Keys)
+			{
+				action(channelId, followData);
+			}
+		}
+
+		public event Action<string, Follow> OnFollow
+		{
+			add
+			{
+				if (_followingCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.FOLLOWING);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_followingCallbackRegistrations.TryRemove(value, out _) && _followingCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.FOLLOWING);
+				}
+			}
 		}
 
 		#endregion
