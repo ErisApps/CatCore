@@ -41,7 +41,11 @@ namespace CatCore.Services.Twitch
 				CreatePubSubAgent(channelId);
 			}
 
-			await Task.CompletedTask;
+			using var _ = await Synchronization.LockAsync(_topicRegistrationLocker);
+			foreach (var topic in _topicsWithRegisteredCallbacks)
+			{
+				SendListenRequestToAgentsInternal(topic);
+			}
 		}
 
 		async Task ITwitchPubSubServiceManager.Stop()
@@ -65,6 +69,8 @@ namespace CatCore.Services.Twitch
 				{
 					continue;
 				}
+
+				SendAllCurrentTopicsToAgentInternal(channelId, CreatePubSubAgent(channelId));
 			}
 		}
 
@@ -82,7 +88,7 @@ namespace CatCore.Services.Twitch
 
 				foreach (var enabledChannel in args.EnabledChannels)
 				{
-					CreatePubSubAgent(enabledChannel.Key);
+					SendAllCurrentTopicsToAgentInternal(enabledChannel.Key, CreatePubSubAgent(enabledChannel.Key));
 				}
 			}
 		}
