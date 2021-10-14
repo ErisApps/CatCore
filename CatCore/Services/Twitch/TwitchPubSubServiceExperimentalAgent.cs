@@ -274,7 +274,7 @@ namespace CatCore.Services.Twitch
 
 						break;
 					case PubSubMessageTypes.RECONNECT:
-						Start().ConfigureAwait(false);
+						Start(true).ConfigureAwait(false);
 
 						break;
 					case PubSubMessageTypes.MESSAGE:
