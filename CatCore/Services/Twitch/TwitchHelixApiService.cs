@@ -143,8 +143,8 @@ namespace CatCore.Services.Twitch
 
 			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
 			{
-				var jsonContent = JsonContent.Create(body);
-				var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
+				using var jsonContent = JsonContent.Create(body);
+				using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
 				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
 			}).ConfigureAwait(false);
 			if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
@@ -183,8 +183,8 @@ namespace CatCore.Services.Twitch
 
 			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
 			{
-				var jsonContent = JsonContent.Create(body);
-				var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
+				using var jsonContent = JsonContent.Create(body);
+				using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
 				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
 			}).ConfigureAwait(false);
 			return httpResponseMessage?.IsSuccessStatusCode ?? false;
