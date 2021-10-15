@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using CatCore.Helpers;
+using CatCore.Helpers.JSON;
 using CatCore.Models.Shared;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
@@ -360,7 +361,9 @@ namespace CatCore.Services.Twitch
 					var fullTopic = ConvertTopic(msg.topic);
 					var nonce = GenerateNonce();
 
-					var jsonMessage = JsonSerializer.Serialize(new TopicNegotiationMessage(mode, new TopicNegotiationMessageData(new[] { fullTopic }), nonce));
+					var jsonMessage = JsonSerializer.Serialize(
+						new TopicNegotiationMessage(mode, new TopicNegotiationMessageData(new[] { fullTopic }), nonce),
+						TwitchPubSubSerializerContext.Default.TopicNegotiationMessage);
 
 					_inProgressTopicNegotiations.TryAdd(nonce, msg.topic);
 
@@ -450,6 +453,7 @@ namespace CatCore.Services.Twitch
 			{
 				case PubSubTopics.FOLLOWING:
 				{
+					/* TODO: Remove commented code if source-generated deserializing proves to be faster
 					var followingDocument = JsonDocument.Parse(message).RootElement;
 
 					var displayName = followingDocument.GetProperty("display_name").GetString()!;
@@ -457,8 +461,10 @@ namespace CatCore.Services.Twitch
 					var userId = followingDocument.GetProperty("user_id").GetString()!;
 
 					_logger.Debug("Main event type: {MainType} - {DisplayName} now follows channel {TargetChannelId}", topic, displayName, _channelId);
+					new Follow(userId, username, displayName)*/
 
-					OnFollow?.Invoke(_channelId, new Follow(userId, username, displayName));
+					var follow = JsonSerializer.Deserialize(message, TwitchPubSubSerializerContext.Default.Follow);
+					OnFollow?.Invoke(_channelId, follow);
 
 					break;
 				}
