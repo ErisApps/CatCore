@@ -5,7 +5,7 @@ using CatCore.Helpers.Converters;
 
 namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 {
-	public class CheermoteGroupData
+	public readonly struct CheermoteGroupData
 	{
 		[JsonPropertyName("prefix")]
 		public string Prefix { get; }
