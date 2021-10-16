@@ -65,9 +65,13 @@ namespace CatCore.Services.Twitch
 						return Task.CompletedTask;
 					}));
 
+			var exceptionRetryPolicy = Policy<HttpResponseMessage>
+				.Handle<HttpRequestException>()
+				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(2 ^ (retryAttempt - 1) * 500));
+
 			var bulkheadPolicy = Policy.BulkheadAsync<HttpResponseMessage>(1, 1000);
 
-			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy);
+			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy, exceptionRetryPolicy);
 		}
 
 		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null) where TResponse : struct
@@ -91,14 +95,22 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			using var httpResponseMessage = await _combinedHelixPolicy
-				.ExecuteAsync(() => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? CancellationToken.None)).ConfigureAwait(false);
-			if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+			try
 			{
+				using var httpResponseMessage = await _combinedHelixPolicy
+					.ExecuteAsync(() => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? CancellationToken.None)).ConfigureAwait(false);
+				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				{
+					return null;
+				}
+
+				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to execute the GET call to {Uri}", url);
 				return null;
 			}
-
-			return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,18 +154,26 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+			try
 			{
-				using var jsonContent = JsonContent.Create(body);
-				using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
-				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
-			}).ConfigureAwait(false);
-			if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+				{
+					using var jsonContent = JsonContent.Create(body);
+					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
+					return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
+				}).ConfigureAwait(false);
+				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				{
+					return null;
+				}
+
+				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
+			}
+			catch (Exception ex)
 			{
+				_logger.Warning(ex, "Something went wrong while trying to execute the {HttpVerb} call to {Uri}", httpMethod, url);
 				return null;
 			}
-
-			return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
 		private async Task<bool> CallEndpointWithBodyNoBody<TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
@@ -182,13 +202,21 @@ namespace CatCore.Services.Twitch
 				return false;
 			}
 
-			using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+			try
 			{
-				using var jsonContent = JsonContent.Create(body);
-				using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
-				return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
-			}).ConfigureAwait(false);
-			return httpResponseMessage?.IsSuccessStatusCode ?? false;
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+				{
+					using var jsonContent = JsonContent.Create(body);
+					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
+					return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
+				}).ConfigureAwait(false);
+				return httpResponseMessage?.IsSuccessStatusCode ?? false;
+			}
+			catch (Exception ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to execute the {HttpVerb} call to {Uri}", httpMethod, url);
+				return false;
+			}
 		}
 	}
 }
