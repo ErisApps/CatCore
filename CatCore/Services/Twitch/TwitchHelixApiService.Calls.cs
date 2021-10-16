@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Helpers.JSON;
 using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Requests.Predictions;
@@ -62,7 +63,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append("login=").Append(string.Join("&login=", loginNames!));
 			}
 
-			return GetAsync<ResponseBase<UserData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseUserData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -74,7 +75,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreateStreamMarkerRequestDto(userId, description);
-			return PostAsync<ResponseBase<CreateStreamMarkerData>, CreateStreamMarkerRequestDto>($"{TWITCH_HELIX_BASEURL}streams/markers", body, cancellationToken);
+			return PostAsync($"{TWITCH_HELIX_BASEURL}streams/markers", body, TwitchHelixSerializerContext.Default.ResponseBaseCreateStreamMarkerData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -112,7 +113,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsync<ResponseBaseWithPagination<ChannelData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationChannelData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -159,7 +160,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsync<ResponseBaseWithPagination<PollData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPollData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -237,7 +238,7 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
 			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
-			return PostAsync<ResponseBase<PollData>, CreatePollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
+			return PostAsync($"{TWITCH_HELIX_BASEURL}polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -262,7 +263,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPollRequestDto(userId, pollId, pollStatus);
-			return PatchAsync<ResponseBase<PollData>, EndPollRequestDto>($"{TWITCH_HELIX_BASEURL}polls", body, cancellationToken);
+			return PatchAsync($"{TWITCH_HELIX_BASEURL}polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -310,7 +311,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsync<ResponseBaseWithPagination<PredictionData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPredictionData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -355,7 +356,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreatePredictionsRequestDto(userId, title, predictionOutcomes, duration);
-			return PostAsync<ResponseBase<PredictionData>, CreatePredictionsRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
+			return PostAsync($"{TWITCH_HELIX_BASEURL}predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -385,7 +386,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPredictionRequestDto(userId, predictionId, predictionStatus, winningOutcomeId);
-			return PatchAsync<ResponseBase<PredictionData>, EndPredictionRequestDto>($"{TWITCH_HELIX_BASEURL}predictions", body, cancellationToken);
+			return PatchAsync($"{TWITCH_HELIX_BASEURL}predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -397,7 +398,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append("?broadcaster_id=").Append(userId);
 			}
 
-			return GetAsync<ResponseBase<CheermoteGroupData>>(urlBuilder.ToString(), cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseCheermoteGroupData, cancellationToken);
 		}
 	}
 }
