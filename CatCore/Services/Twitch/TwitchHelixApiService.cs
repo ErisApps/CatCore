@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers;
@@ -69,7 +70,7 @@ namespace CatCore.Services.Twitch
 			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy);
 		}
 
-		private async Task<TResponse?> GetAsync<TResponse>(string url, CancellationToken? cancellationToken = null) where TResponse : struct
+		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null) where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -97,25 +98,25 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
+			return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct =>
-			CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod.Post, url, body, cancellationToken);
+		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null)
+			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethod.Post, url, body, jsonResponseTypeInfo, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, CancellationToken? cancellationToken = null) where TResponse : struct =>
-			CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethodPatch, url, body, cancellationToken);
+		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null)
+			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethodPatch, url, body, jsonResponseTypeInfo, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
 
-		private async Task<TResponse?> CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
-			where TResponse : struct
+		private async Task<TResponse?> CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod httpMethod, string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo,
+			CancellationToken? cancellationToken = null) where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -152,7 +153,7 @@ namespace CatCore.Services.Twitch
 				return null;
 			}
 
-			return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>(options: null, cancellationToken ?? default).ConfigureAwait(false);
+			return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
 		}
 
 		private async Task<bool> CallEndpointWithBodyNoBody<TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
