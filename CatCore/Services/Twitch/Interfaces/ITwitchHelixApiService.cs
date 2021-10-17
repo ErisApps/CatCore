@@ -166,10 +166,10 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null);
 
 		/// <summary>
-		/// Retrieves the list of globally available badges.
+		/// Gets a list of chat badges that can be used in chat for any channel.
 		/// </summary>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
-		/// <returns>Response containing data of global badges</returns>
+		/// <returns>Response containing data of globally available custom chat badges</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null);
 
