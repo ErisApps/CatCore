@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
+using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
@@ -163,5 +164,13 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-cheermotes">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null);
+
+		/// <summary>
+		/// Retrieves the list of globally available badges.
+		/// </summary>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of global badges</returns>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null);
 	}
 }
