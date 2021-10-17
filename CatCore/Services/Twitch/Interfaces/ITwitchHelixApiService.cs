@@ -172,5 +172,15 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <returns>Response containing data of global badges</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null);
+
+		/// <summary>
+		/// Gets a list of custom chat badges that can be used in chat for the specified channel. This includes <a href="https://help.twitch.tv/s/article/subscriber-badge-guide">subscriber badges</a>
+		/// and <a href="https://help.twitch.tv/s/article/custom-bit-badges-guide">Bit badges</a>.
+		/// </summary>
+		/// <param name="userId">Id of the channel for which to retrieve the custom chat badges.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of custom chat badges</returns>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null);
 	}
 }

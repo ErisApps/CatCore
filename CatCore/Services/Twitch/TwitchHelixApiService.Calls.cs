@@ -407,5 +407,16 @@ namespace CatCore.Services.Twitch
 		{
 			return GetAsync($"{TWITCH_HELIX_BASEURL}chat/badges/global", TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
+
+		/// <inheritdoc />
+		public Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null)
+		{
+			if (string.IsNullOrWhiteSpace(userId))
+			{
+				throw new ArgumentException("The userId parameter should not be null, empty or whitespace.", nameof(userId));
+			}
+
+			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges?broadcaster_id=" + userId , TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
+		}
 	}
 }
