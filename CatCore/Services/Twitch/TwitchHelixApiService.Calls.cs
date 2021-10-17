@@ -9,6 +9,7 @@ using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
+using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
@@ -399,6 +400,12 @@ namespace CatCore.Services.Twitch
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseCheermoteGroupData, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null)
+		{
+			return GetAsync($"{TWITCH_HELIX_BASEURL}chat/badges/global", TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
 	}
 }
