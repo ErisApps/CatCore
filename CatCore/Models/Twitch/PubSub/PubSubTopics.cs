@@ -4,9 +4,11 @@
 	{
 		public const string VIDEO_PLAYBACK = "video-playback-by-id";
 		public const string FOLLOWING = "following";
+		public const string POLLS = "polls";
 
 		public static string FormatVideoPlaybackTopic(string channelId) => VIDEO_PLAYBACK + "." + channelId;
 		public static string FormatFollowingTopic(string channelId) => FOLLOWING + "." + channelId;
+		public static string FormatPollsTopic(string channelId) => POLLS + "." + channelId;
 
 		internal static class VideoPlaybackSubTopics
 		{

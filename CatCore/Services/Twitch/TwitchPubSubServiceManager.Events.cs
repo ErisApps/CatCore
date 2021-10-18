@@ -6,6 +6,7 @@ using System.Threading;
 using CatCore.Helpers;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Responses;
+using CatCore.Models.Twitch.PubSub.Responses.Polls;
 
 namespace CatCore.Services.Twitch
 {
@@ -137,6 +138,42 @@ namespace CatCore.Services.Twitch
 				if (_followingCallbackRegistrations.TryRemove(value, out _) && _followingCallbackRegistrations.IsEmpty)
 				{
 					UnregisterTopicWhenNeeded(PubSubTopics.FOLLOWING);
+				}
+			}
+		}
+
+		#endregion
+
+		#region polls
+
+		private readonly ConcurrentDictionary<Action<string, PollData>, bool> _pollCallbackRegistrations = new();
+
+		private void NotifyOnPoll(string channelId, PollData followData)
+		{
+			foreach (var action in _pollCallbackRegistrations.Keys)
+			{
+				action(channelId, followData);
+			}
+		}
+
+		public event Action<string, PollData> OnPoll
+		{
+			add
+			{
+				if (_pollCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.POLLS);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_pollCallbackRegistrations.TryRemove(value, out _) && _pollCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.POLLS);
 				}
 			}
 		}
