@@ -53,19 +53,19 @@ namespace CatCore.Models.Twitch.PubSub.Responses.Polls
 		[JsonPropertyName("remaining_duration_milliseconds")]
 		public uint RemainingDurationMilliseconds { get; }
 
-		/*[JsonPropertyName("top_contributor")]
-		public object TopContributor { get; }
+		[JsonPropertyName("top_contributor")]
+		public TopBitsContributor? TopContributor { get; }
 
 		[JsonPropertyName("top_bits_contributor")]
-		public object TopBitsContributor { get; }
+		public TopBitsContributor? TopBitsContributor { get; }
 
 		[JsonPropertyName("top_channel_points_contributor")]
-		public object TopChannelPointsContributor { get; }*/
+		public TopChannelPointsContributor? TopChannelPointsContributor { get; }
 
 		[JsonConstructor]
 		public PollData(string pollId, string ownedBy, string createdBy, string title, string startedAtRaw, string endedAtRaw, object endedByRaw, uint durationSeconds, PollSettings settings,
-			PollStatus status, IReadOnlyList<PollChoice> choices, Votes votes, Tokens tokens, uint totalVoters, uint remainingDurationMilliseconds/*, object topContributor, object topBitsContributor,
-			object topChannelPointsContributor*/)
+			PollStatus status, IReadOnlyList<PollChoice> choices, Votes votes, Tokens tokens, uint totalVoters, uint remainingDurationMilliseconds, TopBitsContributor? topContributor,
+			TopBitsContributor? topBitsContributor, TopChannelPointsContributor? topChannelPointsContributor)
 		{
 			PollId = pollId;
 			OwnedBy = ownedBy;
@@ -82,9 +82,9 @@ namespace CatCore.Models.Twitch.PubSub.Responses.Polls
 			Tokens = tokens;
 			TotalVoters = totalVoters;
 			RemainingDurationMilliseconds = remainingDurationMilliseconds;
-			/*TopContributor = topContributor;
+			TopContributor = topContributor;
 			TopBitsContributor = topBitsContributor;
-			TopChannelPointsContributor = topChannelPointsContributor;*/
+			TopChannelPointsContributor = topChannelPointsContributor;
 		}
 	}
 }
