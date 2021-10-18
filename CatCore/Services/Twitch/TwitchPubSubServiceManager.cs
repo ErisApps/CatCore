@@ -98,6 +98,7 @@ namespace CatCore.Services.Twitch
 			var agent = new TwitchPubSubServiceExperimentalAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, _activeStateManager, channelId);
 
 			agent.OnFollow += NotifyOnFollow;
+			agent.OnPoll += NotifyOnPoll;
 
 			return _activePubSubConnections[channelId] = agent;
 		}
@@ -105,6 +106,7 @@ namespace CatCore.Services.Twitch
 		private async Task DestroyPubSubAgent(string channelId, TwitchPubSubServiceExperimentalAgent twitchPubSubServiceAgent)
 		{
 			twitchPubSubServiceAgent.OnFollow -= NotifyOnFollow;
+			twitchPubSubServiceAgent.OnPoll -= NotifyOnPoll;
 
 			await twitchPubSubServiceAgent.DisposeAsync().ConfigureAwait(false);
 

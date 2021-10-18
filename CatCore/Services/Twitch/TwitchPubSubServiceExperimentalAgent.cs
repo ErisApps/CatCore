@@ -11,6 +11,7 @@ using CatCore.Models.Shared;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Models.Twitch.PubSub.Responses;
+using CatCore.Models.Twitch.PubSub.Responses.Polls;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -81,6 +82,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		internal event Action<string, Follow>? OnFollow;
+		internal event Action<string, PollData>? OnPoll;
 
 		private async void TwitchAuthServiceOnOnCredentialsChanged()
 		{
@@ -400,6 +402,7 @@ namespace CatCore.Services.Twitch
 			{
 				PubSubTopics.VIDEO_PLAYBACK => PubSubTopics.FormatVideoPlaybackTopic(_channelId),
 				PubSubTopics.FOLLOWING => PubSubTopics.FormatFollowingTopic(_channelId),
+				PubSubTopics.POLLS => PubSubTopics.FormatPollsTopic(_channelId),
 				_ => throw new NotSupportedException()
 			};
 		}
@@ -465,6 +468,16 @@ namespace CatCore.Services.Twitch
 
 					var follow = JsonSerializer.Deserialize(message, TwitchPubSubSerializerContext.Default.Follow);
 					OnFollow?.Invoke(_channelId, follow);
+
+					break;
+				}
+				case PubSubTopics.POLLS:
+				{
+					var pollsDocument = JsonDocument.Parse(message).RootElement;
+					// var internalType = pollsDocument.GetProperty("type").GetString()!;
+					var pollData = pollsDocument.GetProperty("data").GetProperty("poll").Deserialize(TwitchPubSubSerializerContext.Default.PollData);
+
+					OnPoll?.Invoke(_channelId, pollData);
 
 					break;
 				}
