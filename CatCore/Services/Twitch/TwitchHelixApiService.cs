@@ -156,11 +156,11 @@ namespace CatCore.Services.Twitch
 
 			try
 			{
-				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async () =>
 				{
 					using var jsonContent = JsonContent.Create(body);
 					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
-					return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
+					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default).ConfigureAwait(false);
 				}).ConfigureAwait(false);
 				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
 				{
@@ -204,11 +204,11 @@ namespace CatCore.Services.Twitch
 
 			try
 			{
-				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(() =>
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async () =>
 				{
 					using var jsonContent = JsonContent.Create(body);
 					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
-					return _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default);
+					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default).ConfigureAwait(false);
 				}).ConfigureAwait(false);
 				return httpResponseMessage?.IsSuccessStatusCode ?? false;
 			}
