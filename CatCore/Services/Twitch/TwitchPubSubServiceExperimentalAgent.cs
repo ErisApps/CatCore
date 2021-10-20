@@ -459,16 +459,6 @@ namespace CatCore.Services.Twitch
 			{
 				case PubSubTopics.FOLLOWING:
 				{
-					/* TODO: Remove commented code if source-generated deserializing proves to be faster
-					var followingDocument = JsonDocument.Parse(message).RootElement;
-
-					var displayName = followingDocument.GetProperty("display_name").GetString()!;
-					var username = followingDocument.GetProperty("username").GetString()!;
-					var userId = followingDocument.GetProperty("user_id").GetString()!;
-
-					_logger.Debug("Main event type: {MainType} - {DisplayName} now follows channel {TargetChannelId}", topic, displayName, _channelId);
-					new Follow(userId, username, displayName)*/
-
 					var follow = JsonSerializer.Deserialize(message, TwitchPubSubSerializerContext.Default.Follow);
 					OnFollow?.Invoke(_channelId, follow);
 
