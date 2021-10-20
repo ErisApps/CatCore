@@ -6,6 +6,7 @@ using System.Threading;
 using CatCore.Helpers;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Responses;
+using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
 
 namespace CatCore.Services.Twitch
@@ -102,6 +103,7 @@ namespace CatCore.Services.Twitch
 		{
 			return topic switch
 			{
+				PubSubTopics.CHANNEL_POINTS_CHANNEL_V1 => false,
 				_ => true
 			};
 		}
@@ -174,6 +176,42 @@ namespace CatCore.Services.Twitch
 				if (_pollCallbackRegistrations.TryRemove(value, out _) && _pollCallbackRegistrations.IsEmpty)
 				{
 					UnregisterTopicWhenNeeded(PubSubTopics.POLLS);
+				}
+			}
+		}
+
+		#endregion
+
+		#region channel-points-channel-v1
+
+		private readonly ConcurrentDictionary<Action<string, RewardRedeemedData>, bool> _rewardRedeemedCallbackRegistrations = new();
+
+		private void NotifyOnRewardRedeemed(string channelId, RewardRedeemedData rewardRedeemedData)
+		{
+			foreach (var action in _rewardRedeemedCallbackRegistrations.Keys)
+			{
+				action(channelId, rewardRedeemedData);
+			}
+		}
+
+		public event Action<string, RewardRedeemedData> OnRewardRedeemed
+		{
+			add
+			{
+				if (_rewardRedeemedCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.CHANNEL_POINTS_CHANNEL_V1);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_rewardRedeemedCallbackRegistrations.TryRemove(value, out _) && _rewardRedeemedCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.CHANNEL_POINTS_CHANNEL_V1);
 				}
 			}
 		}

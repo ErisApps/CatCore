@@ -11,6 +11,7 @@ using CatCore.Models.Shared;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Models.Twitch.PubSub.Responses;
+using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -83,6 +84,7 @@ namespace CatCore.Services.Twitch
 
 		internal event Action<string, Follow>? OnFollow;
 		internal event Action<string, PollData>? OnPoll;
+		internal event Action<string, RewardRedeemedData>? OnRewardRedeemed;
 
 		private async void TwitchAuthServiceOnOnCredentialsChanged()
 		{
@@ -364,7 +366,7 @@ namespace CatCore.Services.Twitch
 					var nonce = GenerateNonce();
 
 					var jsonMessage = JsonSerializer.Serialize(
-						new TopicNegotiationMessage(mode, new TopicNegotiationMessageData(new[] { fullTopic }), nonce),
+						new TopicNegotiationMessage(mode, new TopicNegotiationMessageData(new[] { fullTopic }, _twitchAuthService.AccessToken), nonce),
 						TwitchPubSubSerializerContext.Default.TopicNegotiationMessage);
 
 					_inProgressTopicNegotiations.TryAdd(nonce, msg.topic);
@@ -403,6 +405,7 @@ namespace CatCore.Services.Twitch
 				PubSubTopics.VIDEO_PLAYBACK => PubSubTopics.FormatVideoPlaybackTopic(_channelId),
 				PubSubTopics.FOLLOWING => PubSubTopics.FormatFollowingTopic(_channelId),
 				PubSubTopics.POLLS => PubSubTopics.FormatPollsTopic(_channelId),
+				PubSubTopics.CHANNEL_POINTS_CHANNEL_V1 => PubSubTopics.FormatChannelPointsChannelV1Topic(_channelId),
 				_ => throw new NotSupportedException()
 			};
 		}
@@ -478,6 +481,22 @@ namespace CatCore.Services.Twitch
 					var pollData = pollsDocument.GetProperty("data").GetProperty("poll").Deserialize(TwitchPubSubSerializerContext.Default.PollData);
 
 					OnPoll?.Invoke(_channelId, pollData);
+
+					break;
+				}
+				case PubSubTopics.CHANNEL_POINTS_CHANNEL_V1:
+				{
+					var channelPointsChannelDocument = JsonDocument.Parse(message).RootElement;
+					var internalType = channelPointsChannelDocument.GetProperty("type").GetString()!;
+					switch (internalType)
+					{
+						case PubSubTopics.ChannelPointsChannelV1SubTopics.REWARD_REDEEMED:
+							OnRewardRedeemed?.Invoke(_channelId, channelPointsChannelDocument.GetProperty("data").GetProperty("redemption").Deserialize(TwitchPubSubSerializerContext.Default.RewardRedeemedData));
+							break;
+						default:
+							_logger.Warning("Unhandled subtopic {SubTopic} for PubSub topic {Topic}", internalType, topic);
+							break;
+					}
 
 					break;
 				}
