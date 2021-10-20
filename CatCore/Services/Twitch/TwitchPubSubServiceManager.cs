@@ -99,6 +99,7 @@ namespace CatCore.Services.Twitch
 
 			agent.OnFollow += NotifyOnFollow;
 			agent.OnPoll += NotifyOnPoll;
+			agent.OnRewardRedeemed += NotifyOnRewardRedeemed;
 
 			return _activePubSubConnections[channelId] = agent;
 		}
@@ -107,6 +108,7 @@ namespace CatCore.Services.Twitch
 		{
 			twitchPubSubServiceAgent.OnFollow -= NotifyOnFollow;
 			twitchPubSubServiceAgent.OnPoll -= NotifyOnPoll;
+			twitchPubSubServiceAgent.OnRewardRedeemed -= NotifyOnRewardRedeemed;
 
 			await twitchPubSubServiceAgent.DisposeAsync().ConfigureAwait(false);
 
