@@ -14,9 +14,9 @@ namespace CatCoreBenchmarkSandbox
 {
 	internal class Program
 	{
-		private static readonly List<MonoRuntime> MonoRuntimes = new List<MonoRuntime>
+		private static readonly List<MonoRuntime> MonoRuntimes = new()
 		{
-			new MonoRuntime("Mono Unity 2019.4.18f1", @"D:\Program Files\Unity\2019.4.18f1\Editor\Data\MonoBleedingEdge\bin\mono.exe"),
+			new MonoRuntime("Mono Unity 2019.4.28f1", @"D:\Program Files\Unity\2019.4.28f1\Editor\Data\MonoBleedingEdge\bin\mono.exe"),
 			new MonoRuntime("Mono Unity 2021.2.0b4", @"D:\Program Files\Unity\2021.2.0b4\Editor\Data\MonoBleedingEdge\bin\mono.exe")
 		};
 
