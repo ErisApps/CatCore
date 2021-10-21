@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.PubSub.Responses.Polls
 {
-	public class TopChannelPointsContributor : ContributorBase
+	public sealed class TopChannelPointsContributor : ContributorBase
 	{
 		[JsonPropertyName("channel_points_contributed")]
 		public uint ChannelPointsContributed { get; }
