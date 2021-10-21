@@ -30,6 +30,13 @@
 		public const string SLOW = "slow";
 		public const string SUBS_ONLY = "subs-only";
 		public const string SYSTEM_MSG = "system-msg";
+		public const string MSG_ID = "msg-id";
+
+		public const string REPLY_PARENT_MSG_ID = "reply-parent-msg-id";
+		public const string REPLY_PARENT_USER_ID = "reply-parent-user-id";
+		public const string REPLY_PARENT_USER_LOGIN = "reply-parent-user-login";
+		public const string REPLY_PARENT_DISPLAY_NAME = "reply-parent-display-name";
+		public const string REPLY_PARENT_MSG_BODY = "reply-parent-msg-body";
 
 		public const string MSG_PARAM_CUMULATIVE_MONTHS = "msg-param-cumulative-months";
 		public const string MSG_PARAM_DISPLAY_NAME = "msg-param-displayName";
