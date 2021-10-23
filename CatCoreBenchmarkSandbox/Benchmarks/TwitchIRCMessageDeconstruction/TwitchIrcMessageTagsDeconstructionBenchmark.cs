@@ -17,7 +17,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 			"badge-info=subscriber/1;badges=broadcaster/1,subscriber/0;client-nonce=1ef9899702c12a2081fa33899d7e8465;color=#FF69B4;display-name=RealEris;emotes=;flags=;id=b4595e1c-dd1b-4e45-b7df-a3403c945ad6;mod=0;room-id=405499635;subscriber=1;tmi-sent-ts=1614390981294;turbo=0;user-id=405499635;user-type=",
 			"badge-info=founder/13;badges=moderator/1,founder/0,bits/1000;client-nonce=05e5fe0b80aadc4c5035303b99d6762a;color=#DAA520;display-name=Scarapter;emotes=;flags=;id=7317d5aa-38ae-4191-88d7-d4d54a3c27bc;mod=1;room-id=62975335;subscriber=0;tmi-sent-ts=1617644034348;turbo=0;user-id=51591450;user-type=mod",
 			"badge-info=;badges=;color=;display-name=bonkeybob;emotes=;flags=;id=108b80a1-7829-4879-86cc-953c3a6b122b;mod=0;room-id=62975335;subscriber=0;tmi-sent-ts=1617644112658;turbo=0;user-id=549616012;user-type=")]
-		public string IrcTagsPart;
+		public string IrcTagsPart = null!;
 
 		[Benchmark(Baseline = true)]
 		public Dictionary<string, string> ChatCoreBaselineBenchmark()

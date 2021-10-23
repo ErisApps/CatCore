@@ -30,7 +30,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.Miscellaneous
 	public class StringEqualityBenchmark
 	{
 		[Params(IrcCommands.PING, IrcCommands.NOTICE, IrcCommands.PRIVMSG, TwitchIrcCommands.GLOBALUSERSTATE, TwitchIrcCommands.USERNOTICE)]
-		public string CommandType;
+		public string CommandType = null!;
 
 		[Benchmark(Baseline = true)]
 		public bool StringEqualityWithoutPattern() {
