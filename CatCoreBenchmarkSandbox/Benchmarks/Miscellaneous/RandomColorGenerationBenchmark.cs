@@ -15,7 +15,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.Miscellaneous
 		[Params(6)]
 		public int Length;
 
-		public Random Random;
+		public Random Random = null!;
 
 		[GlobalSetup]
 		public void GlobalSetup()

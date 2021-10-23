@@ -20,7 +20,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 
 		[Params("I 🧡 Twemoji! 🥳",
 			"I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜")]
-		public string Message;
+		public string Message = null!;
 
 		[Benchmark(Baseline = true)]
 		public List<Emoji> FrwTwemojiBaselineBenchmark()

@@ -17,7 +17,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchPubSub
 		[Params(8, 12, 16, 24, 32)]
 		public int Length;
 
-		public Random Random;
+		public Random Random = null!;
 
 		[GlobalSetup]
 		public void GlobalSetup()
