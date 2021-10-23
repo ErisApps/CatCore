@@ -95,7 +95,7 @@ namespace CatCore.Services.Twitch
 
 		private TwitchPubSubServiceExperimentalAgent CreatePubSubAgent(string channelId)
 		{
-			var agent = new TwitchPubSubServiceExperimentalAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, _activeStateManager, channelId);
+			var agent = new TwitchPubSubServiceExperimentalAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, _activeStateManager, channelId, _topicsWithRegisteredCallbacks);
 
 			agent.OnFollow += NotifyOnFollow;
 			agent.OnPoll += NotifyOnPoll;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,6 +43,8 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly IKittenPlatformActiveStateManager _activeStateManager;
 		private readonly string _channelId;
+		private readonly HashSet<string> _activeTopicsInManager;
+
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 
 		private readonly SemaphoreSlim _wsStateChangeSemaphoreSlim = new(1, 1);
@@ -61,7 +64,7 @@ namespace CatCore.Services.Twitch
 		private bool _hasPongBeenReceived;
 
 		public TwitchPubSubServiceExperimentalAgent(ILogger logger, Random random, ITwitchAuthService twitchAuthService, IKittenPlatformActiveStateManager activeStateManager,
-			string channelId)
+			string channelId, HashSet<string> activeTopicsInManager)
 		{
 			_logger = logger.ForContext(Serilog.Core.Constants.SourceContextPropertyName, $"{(typeof(TwitchPubSubServiceExperimentalAgent)).FullName} ({channelId})");
 
@@ -69,6 +72,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService = twitchAuthService;
 			_activeStateManager = activeStateManager;
 			_channelId = channelId;
+			_activeTopicsInManager = activeTopicsInManager;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 
@@ -138,6 +142,9 @@ namespace CatCore.Services.Twitch
 				_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 				_kittenWebSocketProvider.ConnectHappened += ConnectHappenedHandler;
 
+				_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
+				_kittenWebSocketProvider.DisconnectHappened += DisconnectHappenedHandler;
+
 				_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
 				_kittenWebSocketProvider.MessageReceived += MessageReceivedHandler;
 
@@ -165,42 +172,8 @@ namespace CatCore.Services.Twitch
 			await _kittenWebSocketProvider.Disconnect(disconnectReason).ConfigureAwait(false);
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
+			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
 			_kittenWebSocketProvider.MessageReceived -= MessageReceivedHandler;
-
-			// Prepare and reorder topic negotiation queue
-			var existingTopicNegotiationQueueCount = _topicNegotiationQueue.Count;
-
-			foreach (var topic in _acceptedTopics)
-			{
-				_logger.Debug("Re-queued topic LISTEN registration for topic {Topic}", topic);
-				QueueTopicNegotiation("LISTEN", topic);
-			}
-
-			foreach (var inProgressTopicNegotiation in _inProgressTopicNegotiations)
-			{
-				var topic = inProgressTopicNegotiation.Value;
-				if (_acceptedTopics.Contains(topic))
-				{
-					QueueTopicNegotiation("UNLISTEN", topic);
-					_logger.Debug("Re-queued in-progress topic LISTEN negotiation for topic {Topic}", topic);
-				}
-				else
-				{
-					QueueTopicNegotiation("LISTEN", topic);
-					_logger.Debug("Re-queued in-progress topic UNLISTEN negotiation for topic {Topic}", topic);
-				}
-			}
-
-			_acceptedTopics.Clear();
-
-			_logger.Debug("Correcting topic negotiation queue order");
-			for (var i = 0; i < existingTopicNegotiationQueueCount; i++)
-			{
-				if (_topicNegotiationQueue.TryDequeue(out var existingTopicNegotiationQueueItem))
-				{
-					_topicNegotiationQueue.Enqueue(existingTopicNegotiationQueueItem);
-				}
-			}
 		}
 
 		public async ValueTask DisposeAsync()
@@ -220,6 +193,31 @@ namespace CatCore.Services.Twitch
 
 			_ = Task.Run(() => ProcessQueuedTopicNegotiationMessage(_topicNegotiationQueueProcessorCancellationTokenSource.Token), _topicNegotiationQueueProcessorCancellationTokenSource.Token)
 				.ConfigureAwait(false);
+		}
+
+		private void DisconnectHappenedHandler()
+		{
+			using var wsStateChangeLock = Synchronization.Lock(_wsStateChangeSemaphoreSlim);
+
+			_topicNegotiationQueueProcessorCancellationTokenSource?.Cancel();
+			_topicNegotiationQueueProcessorCancellationTokenSource = null;
+
+			_pingTimer.Stop();
+			_pongTimer.Stop();
+
+			// Prepare and reorder topic negotiation queue
+			_acceptedTopics.Clear();
+
+			while (_topicNegotiationQueue.TryDequeue(out _))
+			{
+			}
+
+			var activeTopicsInManager = _activeTopicsInManager.ToList();
+			foreach (var activeTopic in activeTopicsInManager)
+			{
+				_logger.Debug("Re-queued topic LISTEN registration for topic {Topic}", activeTopic);
+				_topicNegotiationQueue.Enqueue((TopicNegotiationMessage.LISTEN, activeTopic));
+			}
 		}
 
 		// ReSharper disable once CognitiveComplexity
