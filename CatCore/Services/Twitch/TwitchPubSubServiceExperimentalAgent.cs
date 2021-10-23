@@ -224,7 +224,7 @@ namespace CatCore.Services.Twitch
 		// ReSharper disable once CyclomaticComplexity
 		private void MessageReceivedHandler(string receivedMessage)
 		{
-#if DEBUG
+#if !RELEASE
 			var stopWatch = new System.Diagnostics.Stopwatch();
 			stopWatch.Start();
 #endif
@@ -291,7 +291,7 @@ namespace CatCore.Services.Twitch
 				_logger.Error(e, "An error occurred while trying to parse a PubSub message");
 			}
 
-#if DEBUG
+#if !RELEASE
 			stopWatch.Stop();
 			_logger.Information("Handling of PubSub message took {ElapsedTime} ticks", stopWatch.ElapsedTicks);
 #endif
