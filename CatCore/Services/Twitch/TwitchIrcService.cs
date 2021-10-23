@@ -439,30 +439,7 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
-			List<IChatEmote>? emotes;
-			if (messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
-			{
-				var emoteGroup = emotesString.Split('/');
-				emotes = new List<IChatEmote>(emoteGroup.Length);
-				for (var i = 0; i < emoteGroup.Length; i++)
-				{
-					// TODO: Breaks on messages that contains the same emote multiple times
-					// Eg: 1035663:0-3,52-55,87-90,130-133
-
-					/*var emoteString = emoteGroup[i];
-					var emoteSet = emoteString.Split(':');
-					var emoteId = emoteSet[0];
-					var emoteMeta = emoteSet[1].Split('-');
-					var emoteStart = int.Parse(emoteMeta[0]);
-					var emoteEnd = int.Parse(emoteMeta[1]);
-
-					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));*/
-				}
-			}
-			else
-			{
-				emotes = new List<IChatEmote>(0);
-			}
+			var emotes = ExtractEmoteInfo(message, messageMeta);
 
 			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
@@ -478,6 +455,39 @@ namespace CatCore.Services.Twitch
 				commandType,
 				bits
 			));
+		}
+
+		private static List<IChatEmote> ExtractEmoteInfo(string message, IReadOnlyDictionary<string, string>? messageMeta)
+		{
+			if (messageMeta == null || !messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
+			{
+				return new List<IChatEmote>(0);
+			}
+
+			var emoteGroup = emotesString.Split('/');
+			var emotes = new List<IChatEmote>(emoteGroup.Length);
+			for (var i = 0; i < emoteGroup.Length; i++)
+			{
+				// TODO: Breaks on messages that contains the same emote multiple times
+				// Eg: 1035663:0-3,52-55,87-90,130-133
+				//	   160404:0-7,9-16/81274:18-23
+
+				var emoteSet = emoteGroup[i].Split(':');
+				var emoteId = emoteSet[0];
+
+				var emotePlaceholders = emoteSet[1].Split(',');
+
+				for (var j = 0; j < emotePlaceholders.Length; j++)
+				{
+					var emoteMeta = emotePlaceholders[j].Split('-');
+					var emoteStart = int.Parse(emoteMeta[0]);
+					var emoteEnd = int.Parse(emoteMeta[1]);
+
+					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
+				}
+			}
+
+			return emotes;
 		}
 
 		// ReSharper disable once CognitiveComplexity
