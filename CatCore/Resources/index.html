@@ -9,7 +9,24 @@
 	<!--Let browser know website is optimized for mobile-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	<meta charset="UTF-8">
-	<style type="text/css">
+	<style>
+		html, body {
+			height: 100%;
+		}
+
+		body {
+			display: flex;
+			flex-direction: column;
+		}
+
+		main, header {
+			flex: 1 0 auto;
+		}
+
+		.footer {
+			flex-shrink: 0;
+		}
+
 		.nav-wrapper {
 			padding-left: 16px;
 			padding-right: 16px;
@@ -57,190 +74,244 @@
 		}
 	</style>
 </head>
-<body class="grey lighten-3">
-<nav>
-	<div class="nav-wrapper">
-		<div class="brand-logo">CatCore 😺</div>
-		<ul id="nav-mobile" class="right hide-on-med-and-down">
-			<li>Version {libVersion}</li>
-		</ul>
-	</div>
-</nav>
+<body class="grey lighten-3" style="height: 100%; min-height: 100%">
+<header>
+	<nav>
+		<div class="nav-wrapper">
+			<div class="brand-logo">CatCore 😺</div>
+			<ul id="nav-mobile" class="right">
+				<li>Version {libVersion}</li>
+			</ul>
+		</div>
+	</nav>
+</header>
 
-<div class="container">
-	<div class="row" style="margin-top: 1rem">
-		<div class="col s4 m6">
-			<div class="card">
-				<div class="card-content twitch-header white-text">
-					<span class="card-title">Twitch Settings</span>
-				</div>
+<main>
+	<div class="container">
+		<div class="row" style="margin-top: 1rem">
+			<div class="col s4 m6">
+				<div class="card">
+					<div class="card-content twitch-header white-text">
+						<span class="card-title">Twitch Settings</span>
+					</div>
 
-				<div class="card-content" style="position:relative;">
-					<div id="twitch-loading-spinner" class="spinner-wrapper">
-						<div class="preloader-wrapper big active">
-							<div class="spinner-layer twitch-spinner-color">
-								<div class="circle-clipper left">
-									<div class="circle"></div>
-								</div>
-								<div class="gap-patch">
-									<div class="circle"></div>
-								</div>
-								<div class="circle-clipper right">
-									<div class="circle"></div>
+					<div class="card-content" style="position:relative;">
+						<div id="twitch-loading-spinner" class="spinner-wrapper">
+							<div class="preloader-wrapper big active">
+								<div class="spinner-layer twitch-spinner-color">
+									<div class="circle-clipper left">
+										<div class="circle"></div>
+									</div>
+									<div class="gap-patch">
+										<div class="circle"></div>
+									</div>
+									<div class="circle-clipper right">
+										<div class="circle"></div>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="row">
-						<p class="caption">Login</p>
-					</div>
-					<div class="row">
-						<a id="twitch-login-button" class="waves-effect waves-light btn twitch-button"
-						   href="/api/twitch/login">
-							Login on Twitch
-						</a>
-						<a id="twitch-logout-button" class="waves-effect waves-light btn red darken-1 hide"
-						   href="/api/twitch/logout">
-							Logout from Twitch
-						</a>
-					</div>
+						<div class="row">
+							<p class="caption">Login</p>
+						</div>
+						<div class="row">
+							<a id="twitch-login-button" class="waves-effect waves-light btn twitch-button"
+							   href="/api/twitch/login">
+								Login on Twitch
+							</a>
+							<a id="twitch-logout-button" class="waves-effect waves-light btn red darken-1 hide"
+							   href="/api/twitch/logout">
+								Logout from Twitch
+							</a>
+						</div>
 
-					<div class="row">
-						<p class="caption">Channels</p>
-					</div>
+						<div class="row">
+							<p class="caption">Channels</p>
+						</div>
 
-					<div id="twitch-channels-container-notloggedin" class="row valign-wrapper">
-						<span>You have to be logged in on Twitch first before you can manage the channels</span>
-					</div>
+						<div id="twitch-channels-container-notloggedin" class="row valign-wrapper">
+							<span>You have to be logged in on Twitch first before you can manage the channels</span>
+						</div>
 
-					<div id="twitch-channels-container" class="row hide">
-						<ul id="twitch-channels" class="collection">
-							<!-- Will be filled in with /api/twitch/state endpoint data -->
-						</ul>
+						<div id="twitch-channels-container" class="row hide">
+							<ul id="twitch-channels" class="collection">
+								<!-- Will be filled in with /api/twitch/state endpoint data -->
+							</ul>
 
-						<div class="input-field">
-							<i class="material-icons prefix">person_search</i>
-							<input type="text" id="additionalchannel-input" class="autocomplete">
-							<label id="additionalchannel-input-label" for="additionalchannel-input">Add additional channel by filling in the channel name</label>
-							<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
+							<div class="input-field">
+								<i class="material-icons prefix">person_search</i>
+								<input type="text" id="additionalchannel-input" class="autocomplete">
+								<label id="additionalchannel-input-label" for="additionalchannel-input">Add additional channel by filling in the channel name</label>
+								<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
+							</div>
+						</div>
+
+						<div class="row">
+							<p class="caption">Emote settings</p>
+						</div>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseBttvEmotes" type="checkbox">
+									<span class="lever"></span>
+									Parse BTTV Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseFfzEmotes" type="checkbox">
+									<span class="lever"></span>
+									Parse FFZ Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseTwitchEmotes" type="checkbox">
+									<span class="lever"></span>
+									Parse Twitch Emotes
+								</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseCheermotes" type="checkbox">
+									<span class="lever"></span>
+									Parse Cheermotes
+								</label>
+							</div>
 						</div>
 					</div>
+				</div>
+			</div>
 
-					<div class="row">
-						<p class="caption">Emote settings</p>
+			<div class="col s4 m6">
+				<div class="card">
+					<div class="card-content grey darken-1 white-text">
+						<span class="card-title">Global settings</span>
 					</div>
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="ParseBttvEmotes" type="checkbox">
-								<span class="lever"></span>
-								Parse BTTV Emotes
-							</label>
+
+					<div class="card-content" style="position: relative;">
+						<div id="global-loading-spinner" class="spinner-wrapper">
+							<div class="preloader-wrapper big active">
+								<div class="spinner-layer global-spinner-color">
+									<div class="circle-clipper left">
+										<div class="circle"></div>
+									</div>
+									<div class="gap-patch">
+										<div class="circle"></div>
+									</div>
+									<div class="circle-clipper right">
+										<div class="circle"></div>
+									</div>
+								</div>
+							</div>
 						</div>
-					</div>
 
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="ParseFfzEmotes" type="checkbox">
-								<span class="lever"></span>
-								Parse FFZ Emotes
-							</label>
+						<div class="row">
+							<p class="caption">Web app</p>
 						</div>
-					</div>
-
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="ParseTwitchEmotes" type="checkbox">
-								<span class="lever"></span>
-								Parse Twitch Emotes
-							</label>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="LaunchInternalApiOnStartup" type="checkbox" onchange="OnInternalApiStateChanged()">
+									<span class="lever"></span>
+									Launch internal API on startup
+								</label>
+							</div>
 						</div>
-					</div>
+						<div class="row">
+							<div class="switch disabled">
+								<label>
+									<input id="LaunchWebPortalOnStartup" type="checkbox">
+									<span class="lever"></span>
+									Launch Web Portal on startup
+								</label>
+							</div>
+						</div>
 
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="ParseCheermotes" type="checkbox">
-								<span class="lever"></span>
-								Parse Cheermotes
-							</label>
+						<div class="row">
+							<p class="caption">Global settings</p>
+						</div>
+						<div class="row">
+							<div class="switch">
+								<label>
+									<input id="ParseEmojis" type="checkbox">
+									<span class="lever"></span>
+									Parse Emojis
+								</label>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="col s4 m6">
-			<div class="card">
-				<div class="card-content grey darken-1 white-text">
-					<span class="card-title">Global settings</span>
-				</div>
+		<div class="row center-align">
+			<button id="SaveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
+				<i class="material-icons right">send</i>
+			</button>
+		</div>
+	</div>
+</main>
 
-				<div class="card-content" style="position: relative;">
-					<div id="global-loading-spinner" class="spinner-wrapper">
-						<div class="preloader-wrapper big active">
-							<div class="spinner-layer global-spinner-color">
-								<div class="circle-clipper left">
-									<div class="circle"></div>
-								</div>
-								<div class="gap-patch">
-									<div class="circle"></div>
-								</div>
-								<div class="circle-clipper right">
-									<div class="circle"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="row">
-						<p class="caption">Web app</p>
-					</div>
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="LaunchInternalApiOnStartup" type="checkbox" onchange="OnInternalApiStateChanged()">
-								<span class="lever"></span>
-								Launch internal API on startup
-							</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="switch disabled">
-							<label>
-								<input id="LaunchWebPortalOnStartup" type="checkbox">
-								<span class="lever"></span>
-								Launch Web Portal on startup
-							</label>
-						</div>
-					</div>
-
-					<div class="row">
-						<p class="caption">Global settings</p>
-					</div>
-					<div class="row">
-						<div class="switch">
-							<label>
-								<input id="ParseEmojis" type="checkbox">
-								<span class="lever"></span>
-								Parse Emojis
-							</label>
-						</div>
-					</div>
-				</div>
+<footer class="page-footer footer">
+	<div class="container">
+		<div class="row">
+			<div class="col l6 s12">
+				<h5 class="white-text">Heya there</h5>
+				<p>
+					CatCore is a library which provides a shared connection for mods and other applications to Twitch (and other future streaming platforms).
+					However, it has a cost to keep the authentication service up-and-running. If you like what I'm doing, please consider supporting this project using my Patreon link on the right ^^
+				</p>
+			</div>
+			<div class="col l4 offset-l2 s12">
+				<h5 class="white-text">Links</h5>
+				<ul>
+					<li>
+						<a class="white-text" href="https://www.patreon.com/bePatron?u=56168874" target="_blank">
+							<span style="display: inline-flex">
+							<svg xmlns="http://www.w3.org/2000/svg" style="fill: white; align-self: center; stroke-width: 1px; width: 1.8rem; height: 1.8rem" viewBox="0 0 569 546">
+								<g>
+									<circle cx="362.589996" cy="204.589996" data-fill="1" id="Oval" r="204.589996"></circle>
+									<rect data-fill="2" height="545.799988" id="Rectangle" width="100" x="0" y="0"></rect>
+								</g>
+							</svg>
+							<span style="height: 1px; width: 0.5rem"></span>
+							Support on Patreon
+							</span>
+						</a>
+					</li>
+					<li>
+						<a class="white-text" href="https://github.com/ErisApps/CatCore" target="_blank">
+							<span style="display: inline-flex">
+							<svg xmlns="http://www.w3.org/2000/svg" style="fill: white; align-self: center; stroke-width: 1px; width: 1.8rem; height: 1.8rem" viewBox="0 0 24 24">
+								<path
+									d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+							</svg>
+							<span style="height: 1px; width: 0.5rem"></span>
+							View project on GitHub
+							</span>
+						</a>
+					</li>
+				</ul>
 			</div>
 		</div>
 	</div>
-
-	<div class="row center-align">
-		<button id="SaveButton" class="btn waves-effect waves-light" onclick="SaveSettings(event)">Save settings
-			<i class="material-icons right">send</i>
-		</button>
+	<div class="footer-copyright">
+		<div class="container">
+			<span class="white-text">Have fun and enjoy streaming ^^</span>
+		</div>
 	</div>
-</div>
+</footer>
 
 <!-- Compiled and minified JavaScript -->
 <script src="https://polyfill.io/v3/polyfill.min.js?features=default,fetch&flags=gated"></script>
@@ -336,7 +407,7 @@
 			data: {},
 			minLength: 3,
 			onAutocomplete: (autocompleteCellLabelText) => {
-				const loginName = autocompleteCellLabelText.slice(autocompleteCellLabelText.indexOf(' (') + 2 , -1); // Extract login name from label... I know... it's a hacky work-around...
+				const loginName = autocompleteCellLabelText.slice(autocompleteCellLabelText.indexOf(' (') + 2, -1); // Extract login name from label... I know... it's a hacky work-around...
 				const channelToAdd = additionalTwitchChannelsSuggestionsData.find(ch => ch.LoginName === loginName);
 				twitchChannelData.push(channelToAdd);
 				document.getElementById("twitch-channels").innerHTML += GenerateAdditionalTwitchChannel(channelToAdd);
