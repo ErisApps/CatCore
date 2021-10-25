@@ -139,11 +139,24 @@
 								<!-- Will be filled in with /api/twitch/state endpoint data -->
 							</ul>
 
-							<div class="input-field">
-								<i class="material-icons prefix">person_search</i>
-								<input type="text" id="additionalchannel-input" class="autocomplete">
-								<label id="additionalchannel-input-label" for="additionalchannel-input">Add additional channel by filling in the channel name</label>
-								<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
+							<div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-content: center;">
+								<div class="input-field" style="flex: 1 1 auto">
+									<i class="material-icons prefix">person_search</i>
+									<input type="text" id="additionalchannel-input" class="autocomplete">
+									<label id="additionalchannel-input-label" for="additionalchannel-input">Add additional channel by filling in the channel name</label>
+									<span class="helper-text">This can be found in the url (eg: https://www.twitch.tv/<b>realeris</b>)</span>
+								</div>
+								<div id="additionalchannel-loading-spinner" class="preloader-wrapper small active" style="flex: 0 1 auto; align-self: center; margin-left: 1rem; visibility: collapse">
+									<div class="spinner-layer twitch-spinner-color">
+										<div class="circle-clipper left">
+											<div class="circle"></div>
+										</div><div class="gap-patch">
+										<div class="circle"></div>
+									</div><div class="circle-clipper right">
+										<div class="circle"></div>
+									</div>
+									</div>
+								</div>
 							</div>
 						</div>
 
@@ -350,7 +363,10 @@
 			return;
 		}
 
+		const loadingSpinner = document.getElementById("additionalchannel-loading-spinner");
 		try {
+			loadingSpinner.style.visibility = "visible"
+
 			const existingChannelIds = twitchChannelData.map(ch => ch.ChannelId);
 			const response = await fetch(`/api/twitch/channels?query=${currentInput}`);
 			additionalTwitchChannelsSuggestionsData = (await response.json()).filter(ch => !existingChannelIds.includes(ch.ChannelId)
@@ -360,6 +376,8 @@
 			additionalTwitchChannelsAutocompleteInstance.open();
 		} catch (ex) {
 			console.error(ex);
+		} finally {
+			loadingSpinner.style.visibility = "hidden"
 		}
 	}, 650);
 
