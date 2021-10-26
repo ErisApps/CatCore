@@ -22,29 +22,29 @@ using Serilog.Formatting.Display;
 [assembly: InternalsVisibleTo("CatCoreTests")]
 namespace CatCore
 {
-	public sealed class ChatCoreInstance
+	public sealed class CatCoreInstance
 	{
 		private static readonly SemaphoreSlim CreationLocker = new(1, 1);
 		private static readonly SemaphoreSlim RunLocker = new(1, 1);
 
-		private static ChatCoreInstance? _instance;
+		private static CatCoreInstance? _instance;
 
 		private readonly MessageTemplateTextFormatter _logReceivedTextFormatter;
 		private readonly Version _version;
 
 		private Container? _container;
 
-		private ChatCoreInstance()
+		private CatCoreInstance()
 		{
 			_logReceivedTextFormatter = new MessageTemplateTextFormatter("{Message:lj}{NewLine}{Exception}");
-			_version = typeof(ChatCoreInstance).Assembly.GetName().Version;
+			_version = typeof(CatCoreInstance).Assembly.GetName().Version;
 		}
 
 		[PublicAPI]
 		public event Action<CustomLogLevel, string, string>? OnLogReceived;
 
 		[PublicAPI]
-		public static ChatCoreInstance CreateInstance(Action<CustomLogLevel, string, string>? logHandler = null)
+		public static CatCoreInstance Create(Action<CustomLogLevel, string, string>? logHandler = null)
 		{
 			using var _ = Synchronization.Lock(CreationLocker);
 			if (_instance != null)
@@ -57,7 +57,7 @@ namespace CatCore
 				return _instance;
 			}
 
-			_instance ??= new ChatCoreInstance();
+			_instance ??= new CatCoreInstance();
 			if (logHandler != null)
 			{
 				_instance.OnLogReceived += logHandler;
@@ -229,7 +229,7 @@ namespace CatCore
 			_container.Resolve<IKittenApiService>();
 			if (shouldLaunchPortal)
 			{
-				_container.Resolve<ILogger>().ForContext<ChatCoreInstance>().Debug("Launching web portal");
+				_container.Resolve<ILogger>().ForContext<CatCoreInstance>().Debug("Launching web portal");
 				_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
 			}
 		}
