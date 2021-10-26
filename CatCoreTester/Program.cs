@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CatCore;
 using CatCore.Services.Twitch;
+using CatCore.Services.Twitch.Interfaces;
+using DryIoc;
 
 namespace CatCoreTester
 {
