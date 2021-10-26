@@ -13,7 +13,7 @@ namespace CatCoreTester
 			Console.WriteLine("Tester init");
 
 			stoppyWatch.Start();
-			var chatCoreInstance = ChatCoreInstance.CreateInstance(
+			var chatCoreInstance = CatCoreInstance.Create(
 #if !DEBUG
 				(level, context, message) => Console.Write($"External logger: {DateTimeOffset.Now:O}|{level}|{context}|{message}")
 #endif

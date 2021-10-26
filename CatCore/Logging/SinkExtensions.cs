@@ -9,7 +9,7 @@ namespace CatCore.Logging
 	internal static class SinkExtensions
 	{
 		/// <summary>
-		/// Writes log events to the EventHandler defined in <see cref="CatCore.ChatCoreInstance"/>.
+		/// Writes log events to the EventHandler defined in <see cref="CatCoreInstance"/>.
 		/// </summary>
 		/// <param name="sinkConfiguration">Logger sink configuration.</param>
 		/// <param name="logEventHandler">The action that will handle the event</param>
