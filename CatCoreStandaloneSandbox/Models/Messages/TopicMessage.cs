@@ -3,17 +3,17 @@ using System.Text.Json.Serialization;
 
 namespace CatCoreStandaloneSandbox.Models.Messages
 {
-    internal class ListenMessage : MessageBase
+    internal class TopicMessage : MessageBase
     {
-        public ListenMessage()
+        public TopicMessage(string type)
         {
-            Type = "LISTEN";
+            Type = type;
         }
 
         [JsonPropertyName("nonce")] public string? Nonce { get; init; }
-        [JsonPropertyName("data")] public ListenMessageData Data { get; init; }
+        [JsonPropertyName("data")] public TopicMessageData Data { get; init; }
 
-        internal class ListenMessageData
+        internal class TopicMessageData
         {
             [JsonPropertyName("topics")] public List<string> Topics { get; init; }
             [JsonPropertyName("auth_token")] public string Token { get; init; }
