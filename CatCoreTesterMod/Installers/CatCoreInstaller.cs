@@ -7,12 +7,12 @@ using Zenject;
 
 namespace CatCoreTesterMod.Installers
 {
-	internal class CatCoreInstaller : Installer<Logger, ChatCoreInstance, CatCoreInstaller>
+	internal class CatCoreInstaller : Installer<Logger, CatCoreInstance, CatCoreInstaller>
 	{
 		private readonly Logger _logger;
-		private readonly ChatCoreInstance _chatCoreInstance;
+		private readonly CatCoreInstance _chatCoreInstance;
 
-		internal CatCoreInstaller(Logger logger, ChatCoreInstance chatCoreInstance)
+		internal CatCoreInstaller(Logger logger, CatCoreInstance chatCoreInstance)
 		{
 			_logger = logger;
 			_chatCoreInstance = chatCoreInstance;
@@ -21,7 +21,7 @@ namespace CatCoreTesterMod.Installers
 		public override void InstallBindings()
 		{
 			Container.BindLoggerAsSiraLogger(_logger);
-			Container.BindInstance(new UBinder<Plugin, ChatCoreInstance>(_chatCoreInstance)).AsSingle();
+			Container.BindInstance(new UBinder<Plugin, CatCoreInstance>(_chatCoreInstance)).AsSingle();
 			Container.BindInterfacesAndSelfTo<CatCoreTesterService>().AsSingle();
 		}
 	}
