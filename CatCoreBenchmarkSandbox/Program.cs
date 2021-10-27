@@ -38,7 +38,7 @@ namespace CatCoreBenchmarkSandbox
 				.AddLogger(ConsoleLogger.Default)
 				.AddExporter(BenchmarkReportExporter.Default, HtmlExporter.Default, MarkdownExporter.Console);
 
-			BenchmarkRunner.Run<Benchmarks.TwitchPubSub.TwitchPubSubNonceGenerationBenchmark>(benchmarkConfiguration);
+			BenchmarkRunner.Run<Benchmarks.EmojiParser.EmojiParserBenchmark>(benchmarkConfiguration);
 		}
 	}
 }
