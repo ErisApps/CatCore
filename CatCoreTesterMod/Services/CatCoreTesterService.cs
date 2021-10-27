@@ -9,9 +9,9 @@ namespace CatCoreTesterMod.Services
 	internal class CatCoreTesterService : IInitializable
 	{
 		private readonly SiraLog _logger;
-		private readonly ChatCoreInstance _chatCoreInstance;
+		private readonly CatCoreInstance _chatCoreInstance;
 
-		public CatCoreTesterService(SiraLog logger, UBinder<Plugin, ChatCoreInstance> chatCoreInstance)
+		public CatCoreTesterService(SiraLog logger, UBinder<Plugin, CatCoreInstance> chatCoreInstance)
 		{
 			_logger = logger;
 			_chatCoreInstance = chatCoreInstance.Value;
