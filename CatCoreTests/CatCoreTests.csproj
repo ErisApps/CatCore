@@ -24,4 +24,10 @@
       <ProjectReference Include="..\CatCore\CatCore.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Resources\emoji-test.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
