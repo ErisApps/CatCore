@@ -441,7 +441,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 				catch
 				{
 					codepoint = ConvertUtf16ToCodePoint("🆘");
-					emoji = $"{codepoint:x}".ToUpperInvariant();
+					emoji = codepoint.ToString("X");
 				}
 
 				return emoji;
