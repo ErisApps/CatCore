@@ -16,6 +16,7 @@
 		"ChatCore"
 	],
 	"links": {
-		"project-source": "https://github.com/ErisApps/CatCore"
+		"project-source": "https://github.com/ErisApps/CatCore",
+		"donate": "https://www.patreon.com/erisapps"
 	}
 }
