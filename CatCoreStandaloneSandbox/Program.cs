@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text.Json;
@@ -22,7 +24,7 @@ namespace CatCoreStandaloneSandbox
 		/// </remark>
 		private static async Task Main(string[] args)
 		{
-			var accessToken = args.ElementAtOrDefault(0);
+			/*var accessToken = args.ElementAtOrDefault(0);
 			if (accessToken == null)
 			{
 				throw new NoNullAllowedException(nameof(accessToken));
@@ -39,7 +41,17 @@ namespace CatCoreStandaloneSandbox
 				await _twitchPubSubWss.StopOrFail(WebSocketCloseStatus.NormalClosure, "Requested by user");
 				_twitchPubSubWss.Dispose();
 				_twitchPubSubWss = null;
-			}
+			}*/
+
+			var stoppyWatch = new Stopwatch();
+			stoppyWatch.Start();
+
+			// EmojiReferenceReadingTesting();
+			EmojiTesting();
+
+			stoppyWatch.Stop();
+
+			Console.WriteLine($"Processing took {stoppyWatch.Elapsed:c}");
 		}
 
 		private static async Task TwitchPubSubTesting(string accessToken)
@@ -135,6 +147,27 @@ namespace CatCoreStandaloneSandbox
 			await _twitchPubSubWss.StartOrFail().ConfigureAwait(false);
 
 			_pingPongTimer.Elapsed += (_, _) => _twitchPubSubWss.Send(JsonSerializer.Serialize(new PingMessage()));
+		}
+
+		private static void EmojiTesting()
+		{
+			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️" };
+
+			foreach (var entry in testEntries)
+			{
+				// Console.WriteLine(entry);
+
+				for (var i = 0; i < entry.Length; i++)
+				{
+					var codepoint = char.IsHighSurrogate(entry[i])
+						? char.ConvertToUtf32(entry, i++)
+						: entry[i];
+
+					// Console.WriteLine($"{codepoint:X} - {CharUnicodeInfo.GetUnicodeCategory(codepoint)}");
+				}
+
+				// Console.WriteLine();
+			}
 		}
 
 		private static async Task CustomEmoteMetadataFetchingTesting()
