@@ -13,4 +13,10 @@
       <PackageReference Include="Websocket.Client" Version="4.3.38" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Resources\emoji-test.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
