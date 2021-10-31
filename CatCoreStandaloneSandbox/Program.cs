@@ -217,9 +217,120 @@ namespace CatCoreStandaloneSandbox
 			Console.WriteLine();
 		}
 
+		private static void EmojiReferenceReadingTesting2()
+		{
+			var fullyQualifiedEmotes = File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "emoji-test.txt"))
+				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
+				.Skip(2000)
+				.Select(line =>
+				{
+					var splitEntries = line.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
+
+					var splitEntriesIndexCursor = splitEntries.IndexOf(";");
+					var codepointsRepresentation = splitEntries.Take(splitEntriesIndexCursor).ToArray();
+
+					var status = Enum.Parse<Status>(splitEntries[++splitEntriesIndexCursor].Replace("-", string.Empty), true);
+
+					var emojiRepresentation = splitEntries[splitEntriesIndexCursor += 2];
+					var emojiCharRepresentation = emojiRepresentation.ToArray();
+					var unicodeVersionIntroduced = splitEntries[++splitEntriesIndexCursor];
+
+					var emoteDescription = string.Join(" ", splitEntries.Skip(++splitEntriesIndexCursor));
+
+					return new object[] { line, codepointsRepresentation, status, emojiRepresentation, emojiCharRepresentation, unicodeVersionIntroduced, emoteDescription };
+				})
+				.Where(emojiData => ((Status) emojiData[2]) == Status.FullyQualified)
+				.ToList();
+
+			var sortedCodepointsList = fullyQualifiedEmotes.OrderBy(x => string.Join("-", x[4])).ToList();
+
+			var currentReferenceCodepoint = ((char[]) sortedCodepointsList[0][4])[0];
+			var overlapDictionary = new Dictionary<char, List<object[]>>();
+			for (var i = 1; i < sortedCodepointsList.Count; i++)
+			{
+				var oldReferenceCodepoint = currentReferenceCodepoint;
+				currentReferenceCodepoint = ((char[]) sortedCodepointsList[i][4])[0];
+
+				if (oldReferenceCodepoint.Equals(currentReferenceCodepoint))
+				{
+					Console.WriteLine("Detected overlap in first codepoint");
+
+					if (overlapDictionary.TryGetValue(currentReferenceCodepoint, out var overlapList))
+					{
+						overlapList.Add(sortedCodepointsList[i]);
+					}
+					else
+					{
+						overlapDictionary.TryAdd(currentReferenceCodepoint, new List<object[]> { sortedCodepointsList[i - 1], sortedCodepointsList[i] });
+					}
+				}
+			}
+
+			Console.WriteLine(fullyQualifiedEmotes.Count);
+			Console.WriteLine();
+		}
+
+		private static void EmojiReferenceReadingTesting3()
+		{
+			var fullyQualifiedEmotes = File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "emoji-test.txt"))
+				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
+				.Select(line =>
+				{
+					var splitEntries = line.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
+
+					var splitEntriesIndexCursor = splitEntries.IndexOf(";");
+					var codepointsRepresentation = splitEntries.Take(splitEntriesIndexCursor).ToArray();
+
+					var status = Enum.Parse<Status>(splitEntries[++splitEntriesIndexCursor].Replace("-", string.Empty), true);
+
+					var emojiRepresentation = splitEntries[splitEntriesIndexCursor += 2];
+					var emojiCharRepresentation = emojiRepresentation.ToArray();
+					var unicodeVersionIntroduced = splitEntries[++splitEntriesIndexCursor];
+
+					var emoteDescription = string.Join(" ", splitEntries.Skip(++splitEntriesIndexCursor));
+
+					return new object[] { line, codepointsRepresentation, status, emojiRepresentation, emojiCharRepresentation, unicodeVersionIntroduced, emoteDescription };
+				})
+				.Where(emojiData => ((Status) emojiData[2]) == Status.FullyQualified)
+				.ToList();
+
+			var referenceDictionary = new Dictionary<char, List<object[]>>();
+			foreach (var t in fullyQualifiedEmotes)
+			{
+				var currentReferenceCodepoint = ((char[]) t[4])[0];
+				if (referenceDictionary.TryGetValue(currentReferenceCodepoint, out var referenceList))
+				{
+					referenceList.Add(t);
+				}
+				else
+				{
+					referenceDictionary.TryAdd(currentReferenceCodepoint, new List<object[]> { t });
+				}
+			}
+
+			Console.WriteLine(fullyQualifiedEmotes.Count);
+			Console.WriteLine();
+
+			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️" };
+
+			foreach (var entry in testEntries)
+			{
+				Console.WriteLine(entry);
+				for (var i = 0; i < entry.Length; i++)
+				{
+					if (referenceDictionary.TryGetValue(entry[i], out var possibleEmotes))
+					{
+						Console.WriteLine($"Possibly emote at index {i} (1 of {possibleEmotes.Count})");
+					}
+				}
+
+				Console.WriteLine();
+			}
+		}
+
 		private static void EmojiTesting()
 		{
-			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️" };
+			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️rights are human rights" };
 
 			foreach (var entry in testEntries)
 			{
