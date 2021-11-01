@@ -328,6 +328,63 @@ namespace CatCoreStandaloneSandbox
 			}
 		}
 
+		private static void EmojiReferenceReadingTesting4()
+		{
+			var fullyQualifiedEmotes = File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "emoji-test.txt"))
+				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
+				.Select(line =>
+				{
+					var splitEntries = line.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
+
+					var splitEntriesIndexCursor = splitEntries.IndexOf(";");
+					var codepointsRepresentation = splitEntries.Take(splitEntriesIndexCursor).ToArray();
+
+					var status = Enum.Parse<Status>(splitEntries[++splitEntriesIndexCursor].Replace("-", string.Empty), true);
+
+					var emojiRepresentation = splitEntries[splitEntriesIndexCursor += 2];
+					var emojiCharRepresentation = emojiRepresentation.ToArray();
+					var unicodeVersionIntroduced = splitEntries[++splitEntriesIndexCursor];
+
+					var emoteDescription = string.Join(" ", splitEntries.Skip(++splitEntriesIndexCursor));
+
+					return new object[] { line, codepointsRepresentation, status, emojiRepresentation, emojiCharRepresentation, unicodeVersionIntroduced, emoteDescription };
+				})
+				.Where(emojiData => ((Status) emojiData[2]) == Status.FullyQualified)
+				.ToList();
+
+
+			var referenceDictionary = new EmojiTreeRoot();
+			for (var i = 0; i < fullyQualifiedEmotes.Count; i++)
+			{
+				var emoteEntry = fullyQualifiedEmotes[i];
+				var codepoints = ((char[]) emoteEntry[4]);
+				referenceDictionary.AddToTree(emoteEntry, codepoints);
+			}
+
+			Console.WriteLine(fullyQualifiedEmotes.Count);
+			Console.WriteLine();
+
+			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️", "🏳️‍⚧️rights are human rights" };
+
+			foreach (var entry in testEntries)
+			{
+				Console.WriteLine($"{entry} (Length: {entry.Length})");
+				for (var i = 0; i < entry.Length; i++)
+				{
+					var emojiTreeLeaf = referenceDictionary.LookupLeaf(entry, i);
+					if (emojiTreeLeaf != null)
+					{
+						Console.WriteLine($"Found emote between indexes [{i}-{i + emojiTreeLeaf.Depth}] (Length: {emojiTreeLeaf.Depth + 1})\n" +
+						                  $"  Twemoji url: {emojiTreeLeaf.Url}\n" +
+						                  $"  Description: {emojiTreeLeaf.RawObject[6]}");
+						i = (int) (i + emojiTreeLeaf.Depth);
+					}
+				}
+
+				Console.WriteLine();
+			}
+		}
+
 		private static void EmojiTesting()
 		{
 			var testEntries = new[] { "😸", "I 🧡 Twemoji! 🥳", "I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜", "🧝‍♀️", "🏳️‍⚧️rights are human rights" };
@@ -376,6 +433,127 @@ namespace CatCoreStandaloneSandbox
 			 	// return `http://cdn.betterttv.net/emote/54fa8f1401e468494b85b537/3x`;
 			 	return `http://cdn.betterttv.net/emote/${emoteId}/${version}`;
 			},*/
+		}
+
+		private abstract class EmojiTreeNodeBase : Dictionary<char, IEmojiNode>
+		{
+			public void AddToTree(object[] rawObject, char[] codepoints, uint depth = 0)
+			{
+				var key = codepoints[depth];
+				if (TryGetValue(key, out var node))
+				{
+					if (codepoints.Length - 1 == depth)
+					{
+						if (node is EmojiTreeNodeBlock block)
+						{
+							block.RawObject = rawObject;
+						}
+					}
+					else
+					{
+						EmojiTreeNodeBlock block;
+						if (node is EmojiTreeLeaf leaf)
+						{
+							block = leaf.UpgradeToBlock();
+							this[key] = block;
+						}
+						else
+						{
+							block = (EmojiTreeNodeBlock) node;
+						}
+
+						block.AddToTree(rawObject, codepoints, ++depth);
+					}
+				}
+				else
+				{
+					IEmojiNode newNode;
+					if (codepoints.Length - 1 == depth)
+					{
+						newNode = new EmojiTreeLeaf { Key = key, Depth = depth, RawObject = rawObject };
+					}
+					else
+					{
+						newNode = new EmojiTreeNodeBlock { Key = key, Depth = depth };
+						((EmojiTreeNodeBlock) newNode).AddToTree(rawObject, codepoints, ++depth);
+					}
+
+					TryAdd(key, newNode);
+				}
+			}
+
+			public IEmojiTreeLeaf? LookupLeaf(string findNextEmote, int startPos)
+			{
+				if (TryGetValue(findNextEmote[startPos], out var node))
+				{
+					if (node is EmojiTreeNodeBlock block)
+					{
+						var possibleLeaf = block.LookupLeaf(findNextEmote, ++startPos);
+						if (possibleLeaf == null && block.RawObject != null)
+						{
+							return block;
+						}
+
+						return possibleLeaf;
+					}
+
+					if (node is EmojiTreeLeaf leaf)
+					{
+						return leaf;
+					}
+				}
+
+				return null;
+			}
+		}
+
+		private class EmojiTreeRoot : EmojiTreeNodeBase
+		{
+		}
+
+		private interface IEmojiNode
+		{
+			char Key { get; init; }
+			uint Depth { get; init; }
+		}
+
+		private interface IEmojiTreeLeaf : IEmojiNode
+		{
+			object[] RawObject { get; }
+			string Url => $"https://twemoji.maxcdn.com/v/latest/72x72/{string.Join("-", (string[]) RawObject[1]).ToLowerInvariant()}.png";
+		}
+
+		private class EmojiTreeNodeBlock : EmojiTreeNodeBase, IEmojiTreeLeaf
+		{
+			public char Key { get; init; }
+			public uint Depth { get; init; }
+
+			public object[]? RawObject { get; set; }
+			public string Url => RawObject != null ? $"https://twemoji.maxcdn.com/v/latest/72x72/{string.Join("-", (string[]) RawObject[1]).ToLowerInvariant()}.png" : string.Empty;
+
+			public override string ToString()
+			{
+				return $"Object is a node block with {Count} branches, it is {(RawObject == null ? "NOT" : string.Empty)} a leaf node{(RawObject == null ? string.Empty : " as well")}...";
+			}
+		}
+
+		private class EmojiTreeLeaf : IEmojiTreeLeaf
+		{
+			public char Key { get; init; }
+			public uint Depth { get; init; }
+
+			public object[] RawObject { get; init; } = null!;
+			public string Url => $"https://twemoji.maxcdn.com/v/latest/72x72/{string.Join("-", (string[]) RawObject[1]).ToLowerInvariant()}.png";
+
+			public EmojiTreeNodeBlock UpgradeToBlock()
+			{
+				return new EmojiTreeNodeBlock { Key = Key, Depth = Depth, RawObject = RawObject };
+			}
+
+			public override string ToString()
+			{
+				return $"Object is a leaf with target url {Url}";
+			}
 		}
 	}
 }
