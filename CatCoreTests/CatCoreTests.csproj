@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-        <IsPackable>false</IsPackable>
+        <TargetFramework>net6.0</TargetFramework>
+		<LangVersion>9</LangVersion>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
 
     <ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="3.1.0">
@@ -22,7 +23,15 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CatCore\CatCore.csproj" />
+      <ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
     </ItemGroup>
+
+	<!-- Manually reference the generator props because we locally reference the generator. When added via NuGet this happens automatically -->
+	<Import Project="..\CatCore.Twemoji\CatCore.Twemoji.props" />
+
+	<ItemGroup>
+		<AdditionalFiles Include=".\Resources\emoji-test.txt" ClassName="EmojiTesting" />
+	</ItemGroup>
 
     <ItemGroup>
       <None Update="Resources\emoji-test.txt">
