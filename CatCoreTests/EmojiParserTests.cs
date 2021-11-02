@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using CatCore.Twemoji.Models;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CatCoreTests
 {
@@ -42,7 +41,7 @@ namespace CatCoreTests
 
 		[Theory]
 		[MemberData(nameof(EmojiTestData))]
-		public void FindEmotesTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
+		public void FrwTwemojiBaselineTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
 		{
 			// Arrange
 			// NOP
@@ -60,6 +59,37 @@ namespace CatCoreTests
 				matchedEmojis.Should().HaveCount(1);
 				matchedEmojis.Should().HaveElementAt(0, codepointsRepresentation.Replace(" ", "-"), $"{emoteDescription} introduced in {unicodeVersionIntroduced}");
 
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(EmojiTestData))]
+		public void ReimplementationTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
+		{
+			// Arrange
+			// NOP
+
+			// Act
+			IEmojiTreeLeaf? foundEmojiLeaf = null;
+			for (var i = 0; i < line.Length; i++)
+			{
+				foundEmojiLeaf = CatCore.Twemoji.EmojiTesting.EmojiReferenceData.LookupLeaf(line, i);
+				if (foundEmojiLeaf != null)
+				{
+					break;
+				}
+			}
+
+			// Assert
+			if (status == Status.FullyQualified)
+			{
+				foundEmojiLeaf.Should().NotBeNull();
+				foundEmojiLeaf!.Key.Should().Be(codepointsRepresentation.Replace(" ", "-").ToLowerInvariant());
+				foundEmojiLeaf.Depth.Should().Be(emojiRepresentation.ToCharArray().Length - 1);
+			}
+			else
+			{
+				foundEmojiLeaf.Should().BeNull();
 			}
 		}
 
