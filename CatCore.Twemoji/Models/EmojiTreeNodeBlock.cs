@@ -2,8 +2,10 @@ namespace CatCore.Twemoji.Models
 {
 	public class EmojiTreeNodeBlock : EmojiTreeNodeBase, IEmojiTreeLeaf
 	{
+#pragma warning disable CS8766
 		public string? Key { get; internal set; }
-		public uint Depth { get; internal set; }
+#pragma warning restore CS8766
+		public int Depth { get; internal set; }
 
 		public string Url => Key != null ? $"https://twemoji.maxcdn.com/v/latest/72x72/{Key}.png" : string.Empty;
 
@@ -11,7 +13,7 @@ namespace CatCore.Twemoji.Models
 		{
 		}
 
-		public EmojiTreeNodeBlock(string key, uint depth)
+		public EmojiTreeNodeBlock(string key, int depth)
 		{
 			Key = key;
 			Depth = depth;

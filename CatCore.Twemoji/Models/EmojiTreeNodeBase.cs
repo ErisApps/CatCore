@@ -4,7 +4,7 @@ namespace CatCore.Twemoji.Models
 {
 	public abstract class EmojiTreeNodeBase : Dictionary<char, IEmojiTreeLeaf>
 	{
-		internal void AddToTree(string formattedKey, char[] codepoints, uint depth = 0)
+		internal void AddToTree(string formattedKey, char[] codepoints, int depth = 0)
 		{
 			var key = codepoints[depth];
 			if (TryGetValue(key, out var node))
@@ -50,7 +50,7 @@ namespace CatCore.Twemoji.Models
 			}
 		}
 
-		internal IEmojiTreeLeaf? LookupLeaf(string text, int startPos)
+		public IEmojiTreeLeaf? LookupLeaf(string text, int startPos)
 		{
 			if (text.Length <= startPos)
 			{
