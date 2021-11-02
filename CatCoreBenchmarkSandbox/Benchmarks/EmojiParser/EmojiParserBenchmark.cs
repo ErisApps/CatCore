@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Attributes;
+using CatCore.Twemoji.Models;
 
 namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 {
@@ -22,6 +23,12 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 			"I've eaten Chinese food 😱😍🍱🍣🍥🍙🍘🍚🍜🍱🍣🍥🍙🍘🍚🍜")]
 		public string Message = null!;
 
+		[GlobalSetup(Target = nameof(CatCoreTwemojiReimplementationBenchmark))]
+		public void GlobalSetup()
+		{
+			_ = CatCore.Twemoji.EmojiTesting.EmojiReferenceData;
+		}
+
 		[Benchmark(Baseline = true)]
 		public List<Emoji> FrwTwemojiBaselineBenchmark()
 		{
@@ -32,6 +39,33 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 		public List<Emoji> FrwTwemojiAdjustedBenchmark()
 		{
 			return TwemojiAdjustedImplementation.FindEmojis(Message);
+		}
+
+		[Benchmark]
+		public List<Emoji> CatCoreTwemojiReimplementationBenchmark()
+		{
+			var emojis = new List<Emoji>();
+
+			for (var i = 0; i < Message.Length; i++)
+			{
+				var foundEmojiLeaf = CatCore.Twemoji.EmojiTesting.EmojiReferenceData.LookupLeaf(Message, i);
+				if (foundEmojiLeaf != null)
+				{
+					emojis.Add(new Emoji
+					{
+						Id = $"Emoji_{foundEmojiLeaf.Key}",
+						Name = foundEmojiLeaf.Key,
+						StartIndex = i,
+						EndIndex = i + foundEmojiLeaf.Depth,
+						Uri = foundEmojiLeaf.Url,
+						IsAnimated = false
+					});
+
+					i += foundEmojiLeaf.Depth;
+				}
+			}
+
+			return emojis;
 		}
 
 		#region FrwTwemoji Baseline implementation
