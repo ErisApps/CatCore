@@ -25,8 +25,7 @@ namespace CatCoreBenchmarkSandbox
 		{
 			var benchmarkConfiguration = ManualConfig.CreateEmpty()
 				.AddJob(Job.Default
-					.WithRuntime(ClrRuntime.Net472)
-					.AsBaseline())
+					.WithRuntime(ClrRuntime.Net472))
 				.AddJob(Job.Default
 					.WithRuntime(CoreRuntime.Core50))
 				.AddJob(MonoRuntimes
