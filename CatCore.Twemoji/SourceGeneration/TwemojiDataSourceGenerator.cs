@@ -55,7 +55,7 @@ namespace CatCore.Twemoji.SourceGeneration
 
 		private static EmojiTreeRoot BuildReferenceEmojiTree(AdditionalText file)
 		{
-			var fullyQualifiedEmotes = file.GetText()!
+			IEnumerable<(string codepointRepresentation, EmojiStatus emojiStatus, char[] emojiCharRepresentation)> fullyQualifiedEmotes = file.GetText()!
 				.Lines
 				.Select(line => line!.ToString())
 				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
@@ -70,15 +70,14 @@ namespace CatCore.Twemoji.SourceGeneration
 
 					var emojiCharRepresentation = splitEntries[splitEntriesIndexCursor + 2].ToArray();
 
-					return new ValueTuple<string, EmojiStatus, char[]>(codepointsRepresentation, emojiStatus, emojiCharRepresentation);
+					return (codepointsRepresentation, emojiStatus, emojiCharRepresentation);
 				})
-				.Where(emojiData => emojiData.Item2 == EmojiStatus.FullyQualified)
-				.ToList();
+				.Where(emojiData => emojiData.emojiStatus == EmojiStatus.FullyQualified);
 
 			var emojiTreeRoot = new EmojiTreeRoot();
-			foreach (var (codepointRepresentation, _, emojiChars) in fullyQualifiedEmotes)
+			foreach (var (codepointRepresentation, _, emojiCharRepresentation) in fullyQualifiedEmotes)
 			{
-				emojiTreeRoot.AddToTree(codepointRepresentation, emojiChars);
+				emojiTreeRoot.AddToTree(codepointRepresentation, emojiCharRepresentation);
 			}
 
 			return emojiTreeRoot;
