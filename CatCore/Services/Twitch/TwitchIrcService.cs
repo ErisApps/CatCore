@@ -468,10 +468,6 @@ namespace CatCore.Services.Twitch
 			var emotes = new List<IChatEmote>(emoteGroup.Length);
 			for (var i = 0; i < emoteGroup.Length; i++)
 			{
-				// TODO: Breaks on messages that contains the same emote multiple times
-				// Eg: 1035663:0-3,52-55,87-90,130-133
-				//	   160404:0-7,9-16/81274:18-23
-
 				var emoteSet = emoteGroup[i].Split(':');
 				var emoteId = emoteSet[0];
 
