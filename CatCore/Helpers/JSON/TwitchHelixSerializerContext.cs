@@ -16,6 +16,7 @@ namespace CatCore.Helpers.JSON
 	[JsonSerializable(typeof(ResponseBaseWithPagination<PredictionData>))]
 	[JsonSerializable(typeof(ResponseBase<CheermoteGroupData>))]
 	[JsonSerializable(typeof(ResponseBase<BadgeData>))]
+	[JsonSerializable(typeof(ResponseBaseWithPagination<FollowedStream>))]
 	internal partial class TwitchHelixSerializerContext : JsonSerializerContext
 	{
 	}
