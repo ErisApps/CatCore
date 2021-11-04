@@ -29,6 +29,7 @@ namespace CatCore.Services.Twitch
 			"whispers:read",
 			"whispers:edit",
 			"bits:read",
+			"user:read:follows",
 			"channel:manage:broadcast",
 			"channel:manage:polls",
 			"channel:manage:predictions",
