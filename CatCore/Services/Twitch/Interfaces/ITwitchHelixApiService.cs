@@ -183,6 +183,17 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null);
 
+		/// <summary>
+		/// Gets information about active streams belonging to channels that the authenticated user follows. Streams are returned sorted by number of current viewers, in descending order.
+		/// Across multiple pages of results, there may be duplicate or missing streams, as viewers join and leave streams.
+		/// </summary>
+		/// <param name="limit">Maximum number of results to return. Maximum: 100 Default: 100</param>
+		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of 0, 1 or more more followed streams</returns>
+		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-followed-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<FollowedStream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
 	}
 }
