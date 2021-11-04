@@ -182,5 +182,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <returns>Response containing data of custom chat badges</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null);
+
+		Task<ResponseBaseWithPagination<FollowedStream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
 	}
 }

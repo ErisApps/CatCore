@@ -418,5 +418,41 @@ namespace CatCore.Services.Twitch
 
 			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges?broadcaster_id=" + userId , TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
+
+		/// <inheritdoc />
+		public Task<ResponseBaseWithPagination<FollowedStream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		{
+			var loggedInUser = _twitchAuthService.LoggedInUser;
+			if (loggedInUser == null)
+			{
+				throw new Exception("The user wasn't logged in yet. Try again later.");
+			}
+
+			var userId = loggedInUser.Value.UserId;
+
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}streams/followed?user_id={loggedInUser.Value.UserId}");
+
+			if (limit != null)
+			{
+				if (limit.Value > 100)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 100.", nameof(limit));
+				}
+
+				urlBuilder.Append($"&first={limit}");
+			}
+
+			if (continuationCursor != null)
+			{
+				if (string.IsNullOrWhiteSpace(continuationCursor))
+				{
+					throw new ArgumentException("The continuationCursor parameter should not be empty or whitespace.", nameof(continuationCursor));
+				}
+
+				urlBuilder.Append($"&after={continuationCursor}");
+			}
+
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationFollowedStream, cancellationToken);
+		}
 	}
 }
