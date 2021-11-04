@@ -31,7 +31,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public string Title { get; }
 
 		[JsonPropertyName("viewer_count")]
-		public int ViewerCount { get; }
+		public uint ViewerCount { get; }
 
 		[JsonPropertyName("started_at")]
 		public DateTimeOffset StartedAt { get; }
@@ -46,7 +46,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public IReadOnlyList<string> TagIds { get; }
 
 		[JsonConstructor]
-		public FollowedStream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, int viewerCount, DateTime startedAt,
+		public FollowedStream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
 			string language, string thumbnailUrl, IReadOnlyList<string> tagIds)
 		{
 			Id = id;
