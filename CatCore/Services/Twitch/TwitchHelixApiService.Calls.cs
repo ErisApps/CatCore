@@ -182,7 +182,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentException("The title argument is enforced to be 60 characters tops by Helix. Please use a shorter one.", nameof(title));
 			}
 
-			if (choices.Count is <2 or >5)
+			if (choices.Count is < 2 or > 5)
 			{
 				throw new ArgumentException(
 					"The choices argument is enforced to have minimum 2 and maximum 5 choices by Helix. Please ensure that the amount of provided choices satisfies this range.", nameof(choices));
@@ -306,7 +306,7 @@ namespace CatCore.Services.Twitch
 			{
 				if (string.IsNullOrWhiteSpace(continuationCursor))
 				{
-					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
+					throw new ArgumentException("The continuationCursor parameter should not be empty or whitespace.", nameof(continuationCursor));
 				}
 
 				urlBuilder.Append($"&after={continuationCursor}");
@@ -416,7 +416,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentException("The userId parameter should not be null, empty or whitespace.", nameof(userId));
 			}
 
-			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges?broadcaster_id=" + userId , TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
+			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges?broadcaster_id=" + userId, TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -427,8 +427,6 @@ namespace CatCore.Services.Twitch
 			{
 				throw new Exception("The user wasn't logged in yet. Try again later.");
 			}
-
-			var userId = loggedInUser.Value.UserId;
 
 			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}streams/followed?user_id={loggedInUser.Value.UserId}");
 
@@ -450,6 +448,94 @@ namespace CatCore.Services.Twitch
 				}
 
 				urlBuilder.Append($"&after={continuationCursor}");
+			}
+
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		// ReSharper disable once CognitiveComplexity
+		public Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
+			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null)
+		{
+			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}streams");
+
+			var firstQueryParamSet = false;
+
+			char QueryParamSeparator()
+			{
+				if (firstQueryParamSet)
+				{
+					return '&';
+				}
+
+				firstQueryParamSet = true;
+				return '?';
+			}
+
+			if (limit != null)
+			{
+				if (limit.Value > 100)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 100.", nameof(limit));
+				}
+
+				urlBuilder.Append(QueryParamSeparator()).Append($"first={limit}");
+			}
+
+			if (userIds != null)
+			{
+				if (userIds.Length > 100)
+				{
+					throw new ArgumentException("The userIds parameter has an upper-limit of 100.", nameof(userIds));
+				}
+
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&user_id=", userIds));
+			}
+
+			if (loginNames != null)
+			{
+				if (loginNames.Length > 100)
+				{
+					throw new ArgumentException("The loginNames parameter has an upper-limit of 100.", nameof(loginNames));
+				}
+
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&user_login=", loginNames));
+			}
+
+			if (gameIds != null)
+			{
+				if (gameIds.Length > 100)
+				{
+					throw new ArgumentException("The gameIds parameter has an upper-limit of 100.", nameof(gameIds));
+				}
+
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&game_id=", gameIds));
+			}
+
+			if (languages != null)
+			{
+				if (languages.Length > 100)
+				{
+					throw new ArgumentException("The languages parameter has an upper-limit of 100.", nameof(languages));
+				}
+
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&language=", languages));
+			}
+
+			if (continuationCursorBefore != null && continuationCursorAfter != null)
+			{
+				throw new ArgumentException("The continuationCursorBefore and continuationCursorAfter cannot be specified both simultaneously",
+					$"{nameof(continuationCursorBefore)} | {nameof(continuationCursorAfter)}");
+			}
+
+			if (!string.IsNullOrWhiteSpace(continuationCursorBefore))
+			{
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&before=", continuationCursorBefore));
+			}
+			else if (!string.IsNullOrWhiteSpace(continuationCursorAfter))
+			{
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&after=", continuationCursorAfter));
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);

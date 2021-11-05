@@ -194,6 +194,9 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-followed-streams">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBaseWithPagination<FollowedStream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
+
+		Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
+			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null);
 	}
 }
