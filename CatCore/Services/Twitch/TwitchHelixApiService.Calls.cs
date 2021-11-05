@@ -420,7 +420,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBaseWithPagination<FollowedStream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -452,7 +452,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationFollowedStream, cancellationToken);
+			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);
 		}
 	}
 }

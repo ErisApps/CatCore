@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace CatCore.Models.Twitch.Helix.Responses
 {
-	public readonly struct FollowedStream
+	public readonly struct Stream
 	{
 		[JsonPropertyName("id")]
 		public string Id { get; }
@@ -46,7 +46,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public IReadOnlyList<string> TagIds { get; }
 
 		[JsonConstructor]
-		public FollowedStream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
+		public Stream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
 			string language, string thumbnailUrl, IReadOnlyList<string> tagIds)
 		{
 			Id = id;
