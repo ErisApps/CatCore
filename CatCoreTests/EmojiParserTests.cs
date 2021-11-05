@@ -37,7 +37,8 @@ namespace CatCoreTests
 					var emoteDescription = string.Join(" ", splitEntries.Skip(splitEntriesIndexCursor));
 
 					return new object[] { line, codepointsRepresentation, status, emojiRepresentation, unicodeVersionIntroduced, emoteDescription };
-				});
+				})
+				.Where(x => ((Status)x[2]) == Status.FullyQualified);
 
 		[Theory]
 		[MemberData(nameof(EmojiTestData))]
@@ -50,21 +51,15 @@ namespace CatCoreTests
 			var matchedEmojis = TwemojiBaselineImplementation.FindEmojis(line).ToList();
 
 			// Assert
-			if (status == Status.Unqualified)
-			{
-				matchedEmojis.Should().HaveCount(0);
-			}
-			else
-			{
-				matchedEmojis.Should().HaveCount(1);
-				matchedEmojis.Should().HaveElementAt(0, codepointsRepresentation.Replace(" ", "-"), $"{emoteDescription} introduced in {unicodeVersionIntroduced}");
+			matchedEmojis.Should().HaveCount(1);
+			matchedEmojis.Should().HaveElementAt(0, codepointsRepresentation.Replace(" ", "-"), $"{emoteDescription} introduced in {unicodeVersionIntroduced}");
 
-			}
+			// Not asserting failure conditions because it might either result in no matches or in a match of a fully-qualified subset emote
 		}
 
 		[Theory]
 		[MemberData(nameof(EmojiTestData))]
-		public void ReimplementationTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
+		public void CatCoreTwemojiTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
 		{
 			// Arrange
 			// NOP
@@ -81,16 +76,11 @@ namespace CatCoreTests
 			}
 
 			// Assert
-			if (status == Status.FullyQualified)
-			{
-				foundEmojiLeaf.Should().NotBeNull();
-				foundEmojiLeaf!.Key.Should().Be(codepointsRepresentation.Replace(" ", "-").ToLowerInvariant());
-				foundEmojiLeaf.Depth.Should().Be(emojiRepresentation.ToCharArray().Length - 1);
-			}
-			else
-			{
-				foundEmojiLeaf.Should().BeNull();
-			}
+			foundEmojiLeaf.Should().NotBeNull();
+			foundEmojiLeaf!.Key.Should().Be(codepointsRepresentation.Replace(" ", "-").ToLowerInvariant());
+			foundEmojiLeaf.Depth.Should().Be(emojiRepresentation.ToCharArray().Length - 1);
+
+			// Not asserting failure conditions because it might either result in no matches or in a match of a fully-qualified subset emote
 		}
 
 		#region FrwTwemoji Baseline implementation
