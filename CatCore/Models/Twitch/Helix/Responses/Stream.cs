@@ -45,9 +45,12 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		[JsonPropertyName("tag_ids")]
 		public IReadOnlyList<string> TagIds { get; }
 
+		[JsonPropertyName("is_mature")]
+		public bool IsMature { get; }
+
 		[JsonConstructor]
 		public Stream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
-			string language, string thumbnailUrl, IReadOnlyList<string> tagIds)
+			string language, string thumbnailUrl, IReadOnlyList<string> tagIds, bool isMature)
 		{
 			Id = id;
 			UserId = userId;
@@ -62,6 +65,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 			Language = language;
 			ThumbnailUrl = thumbnailUrl;
 			TagIds = tagIds;
+			IsMature = isMature;
 		}
 	}
 }
