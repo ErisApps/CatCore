@@ -42,7 +42,9 @@ namespace CatCoreTests
 
 		[Theory]
 		[MemberData(nameof(EmojiTestData))]
+#pragma warning disable xUnit1026
 		public void FrwTwemojiBaselineTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
+#pragma warning restore xUnit1026
 		{
 			// Arrange
 			// NOP
@@ -59,7 +61,9 @@ namespace CatCoreTests
 
 		[Theory]
 		[MemberData(nameof(EmojiTestData))]
+#pragma warning disable xUnit1026
 		public void CatCoreTwemojiTest(string line, string codepointsRepresentation, Status status, string emojiRepresentation, string unicodeVersionIntroduced, string emoteDescription)
+#pragma warning restore xUnit1026
 		{
 			// Arrange
 			// NOP
