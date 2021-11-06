@@ -20,7 +20,7 @@ namespace CatCoreTests
 		}
 
 		public static IEnumerable<object[]> EmojiTestData =>
-			File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "emoji-test.txt"))
+			File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "Unicode13_1EmojiTest.txt"))
 				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
 				.Select(line =>
 				{

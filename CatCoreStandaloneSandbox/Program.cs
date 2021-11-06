@@ -46,11 +46,10 @@ namespace CatCoreStandaloneSandbox
 			var stoppyWatch = new Stopwatch();
 			stoppyWatch.Start();
 
-			EmojiReferenceReadingTesting();
+			EmojiReferenceReadingTesting4();
 			// EmojiTesting();
 
 			stoppyWatch.Stop();
-
 			Console.WriteLine($"Processing took {stoppyWatch.Elapsed:c}");
 		}
 
@@ -330,7 +329,7 @@ namespace CatCoreStandaloneSandbox
 
 		private static void EmojiReferenceReadingTesting4()
 		{
-			var fullyQualifiedEmotes = File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "emoji-test.txt"))
+			var fullyQualifiedEmotes = File.ReadLines(Path.Combine(Environment.CurrentDirectory, "Resources", "Unicode13_1EmojiTest.txt"))
 				.Where(line => !string.IsNullOrWhiteSpace(line) && line[0] != '#')
 				.Select(line =>
 				{
