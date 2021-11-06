@@ -21,7 +21,11 @@
 	<Import Project="..\CatCore.Twemoji\CatCore.Twemoji.props" />
 
 	<ItemGroup>
-		<AdditionalFiles Include=".\Resources\emoji-test.txt" ClassName="EmojiTesting" />
+		<Folder Include="Resources" />
+		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="EmojiTesting">
+			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</AdditionalFiles>
 	</ItemGroup>
 
 </Project>

@@ -13,10 +13,19 @@
       <PackageReference Include="Websocket.Client" Version="4.3.38" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="Resources\emoji-test.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+	</ItemGroup>
+
+	<!-- Manually reference the generator props because we locally reference the generator. When added via NuGet this happens automatically -->
+	<Import Project="..\CatCore.Twemoji\CatCore.Twemoji.props" />
+
+	<ItemGroup>
+		<Folder Include="Resources" />
+		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="EmojiTesting">
+			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</AdditionalFiles>
+	</ItemGroup>
 
 </Project>
