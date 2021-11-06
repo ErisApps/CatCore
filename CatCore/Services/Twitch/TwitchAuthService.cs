@@ -2,14 +2,15 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers;
+using CatCore.Helpers.JSON;
 using CatCore.Models.Credentials;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
-using CatCore.Shared.Models.Twitch.OAuth;
 using Serilog;
 
 namespace CatCore.Services.Twitch
@@ -83,7 +84,7 @@ namespace CatCore.Services.Twitch
 #if !RELEASE
 				Proxy = SharedProxyProvider.PROXY
 #endif
-			}) {BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute)};
+			}) { BaseAddress = new Uri(TWITCH_AUTH_BASEURL, UriKind.Absolute) };
 			_twitchAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 
 			_catCoreAuthClient = new HttpClient(new HttpClientHandler
@@ -91,7 +92,7 @@ namespace CatCore.Services.Twitch
 #if !RELEASE
 				Proxy = SharedProxyProvider.PROXY
 #endif
-			}) {BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute)};
+			}) { BaseAddress = new Uri(constants.CatCoreAuthServerUri, UriKind.Absolute) };
 			_catCoreAuthClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
 		}
 
@@ -132,32 +133,37 @@ namespace CatCore.Services.Twitch
 			       $"&scope={string.Join(" ", _twitchAuthorizationScope)}";
 		}
 
-		public async Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
+		public async Task GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl)
 		{
 			_logger.Information("Exchanging authorization code for credentials using secure CatCore auth back-end");
 
-			var responseMessage = await _catCoreAuthClient
-				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/authorize?code={authorizationCode}&redirect_uri={redirectUrl}", null)
-				.ConfigureAwait(false);
-
-			if (!responseMessage.IsSuccessStatusCode)
+			try
 			{
-				return null;
-			}
+				using var responseMessage = await _catCoreAuthClient
+					.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/authorize?code={authorizationCode}&redirect_uri={redirectUrl}", null)
+					.ConfigureAwait(false);
 
-			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
-			if (authorizationResponse == null)
+				if (!responseMessage.IsSuccessStatusCode)
+				{
+					return;
+				}
+
+				var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync(TwitchAuthSerializerContext.Default.AuthorizationResponse).ConfigureAwait(false);
+
+				AccessToken = authorizationResponse.AccessToken;
+				RefreshToken = authorizationResponse.RefreshToken;
+				ValidUntil = authorizationResponse.ExpiresIn;
+
+				await ValidateAccessToken().ConfigureAwait(false);
+			}
+			catch (HttpRequestException ex)
 			{
-				return null;
+				_logger.Error(ex, "An error occured while trying to exchange the authorization code for credentials");
 			}
-
-			AccessToken = authorizationResponse.Value.AccessToken;
-			RefreshToken = authorizationResponse.Value.RefreshToken;
-			ValidUntil = authorizationResponse.Value.ExpiresIn;
-
-			await ValidateAccessToken().ConfigureAwait(false);
-
-			return authorizationResponse;
+			catch (JsonException ex)
+			{
+				_logger.Error(ex, "An error occured while trying to deserialize the credentials response");
+			}
 		}
 
 		public async Task<ValidationResponse?> ValidateAccessToken(bool resetDataOnFailure = true)
@@ -169,20 +175,23 @@ namespace CatCore.Services.Twitch
 
 			using var requestMessage = new HttpRequestMessage(HttpMethod.Get, TWITCH_AUTH_BASEURL + "validate");
 			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-			var responseMessage = await _twitchAuthClient.SendAsync(requestMessage).ConfigureAwait(false);
+			using var responseMessage = await _twitchAuthClient.SendAsync(requestMessage).ConfigureAwait(false);
 
 			using var _ = ChangeTransaction();
-			if (!responseMessage.IsSuccessStatusCode && resetDataOnFailure)
+			if (!responseMessage.IsSuccessStatusCode)
 			{
-				AccessToken = null;
-				RefreshToken = null;
-				ValidUntil = null;
-				LoggedInUser = null;
+				if (resetDataOnFailure)
+				{
+					AccessToken = null;
+					RefreshToken = null;
+					ValidUntil = null;
+					LoggedInUser = null;
+				}
 
 				return null;
 			}
 
-			LoggedInUser = await responseMessage.Content.ReadFromJsonAsync<ValidationResponse?>().ConfigureAwait(false);
+			LoggedInUser = await responseMessage.Content.ReadFromJsonAsync(TwitchAuthSerializerContext.Default.ValidationResponse).ConfigureAwait(false);
 			ValidUntil = LoggedInUser?.ExpiresIn;
 
 			return LoggedInUser;
@@ -202,21 +211,30 @@ namespace CatCore.Services.Twitch
 			}
 
 			_logger.Information("Refreshing tokens using secure CatCore auth back-end");
-
-			var responseMessage = await _catCoreAuthClient
-				.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/refresh?refresh_token={RefreshToken}", null)
-				.ConfigureAwait(false);
-
-			if (!responseMessage.IsSuccessStatusCode)
+			try
 			{
-				_logger.Warning("Refreshing tokens resulted in non-success status code");
-				return false;
+				using var responseMessage = await _catCoreAuthClient
+					.PostAsync($"{_constants.CatCoreAuthServerUri}api/twitch/refresh?refresh_token={RefreshToken}", null)
+					.ConfigureAwait(false);
+
+				if (!responseMessage.IsSuccessStatusCode)
+				{
+					_logger.Warning("Refreshing tokens resulted in non-success status code");
+					return false;
+				}
+
+				var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync(TwitchAuthSerializerContext.Default.AuthorizationResponse).ConfigureAwait(false);
+
+				AccessToken = authorizationResponse.AccessToken;
+				RefreshToken = authorizationResponse.RefreshToken;
+				ValidUntil = authorizationResponse.ExpiresIn;
+
+				return await ValidateAccessToken().ConfigureAwait(false) != null;
 			}
-
-			var authorizationResponse = await responseMessage.Content.ReadFromJsonAsync<AuthorizationResponse?>().ConfigureAwait(false);
-
-			if (authorizationResponse == null)
+			catch (JsonException ex)
 			{
+				_logger.Warning(ex, "Something went wrong while trying to deserialize the refresh tokens body");
+
 				using (ChangeTransaction())
 				{
 					AccessToken = null;
@@ -227,12 +245,6 @@ namespace CatCore.Services.Twitch
 
 				return false;
 			}
-
-			AccessToken = authorizationResponse.Value.AccessToken;
-			RefreshToken = authorizationResponse.Value.RefreshToken;
-			ValidUntil = authorizationResponse.Value.ExpiresIn;
-
-			return await ValidateAccessToken().ConfigureAwait(false) != null;
 		}
 
 		public async Task<bool> RevokeTokens()
@@ -242,16 +254,25 @@ namespace CatCore.Services.Twitch
 				return false;
 			}
 
-			var responseMessage = await _twitchAuthClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={RefreshToken}", null);
+			try
+			{
+				using var responseMessage = await _twitchAuthClient.PostAsync($"{TWITCH_AUTH_BASEURL}revoke?client_id={_constants.TwitchClientId}&token={RefreshToken}", null).ConfigureAwait(false);
 
-			AccessToken = null;
-			RefreshToken = null;
-			ValidUntil = null;
-			LoggedInUser = null!;
+				AccessToken = null;
+				RefreshToken = null;
+				ValidUntil = null;
+				LoggedInUser = null!;
 
-			Store();
+				Store();
 
-			return responseMessage.IsSuccessStatusCode;
+				return responseMessage.IsSuccessStatusCode;
+			}
+			catch (JsonException ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to deserialize the revoke tokens body");
+
+				return false;
+			}
 		}
 	}
 }
