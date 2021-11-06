@@ -196,6 +196,25 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-followed-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
 
+		/// <summary>
+		/// Gets information about active streams. Streams are returned sorted by number of current viewers, in descending order.
+		/// Across multiple pages of results, there may be duplicate or missing streams, as viewers join and leave streams.
+		/// </summary>
+		/// <param name="userIds">Returns streams broadcast by one or more specified user IDs. You can specify up to 100 IDs.</param>
+		/// <param name="loginNames">Returns streams broadcast by one or more specified user login names. You can specify up to 100 names.</param>
+		/// <param name="gameIds">Returns streams broadcasting a specified game ID. You can specify up to 100 IDs.</param>
+		/// <param name="languages">
+		/// Stream language. You can specify up to 100 languages.
+		/// A language value must be either the <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1</a> two-letter code for a
+		/// <a href="https://help.twitch.tv/s/article/languages-on-twitch#streamlang">supported stream language</a> or “other”.
+		/// </param>
+		/// <param name="limit">Maximum number of results to return. Maximum: 100 Default: 20</param>
+		/// <param name="continuationCursorBefore">Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="continuationCursorAfter">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of 0, 1 or more more active streams</returns>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
 			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null);
 	}
