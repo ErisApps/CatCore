@@ -17,7 +17,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		ValidationResponse? LoggedInUser { get; }
 
 		string AuthorizationUrl(string redirectUrl);
-		Task<AuthorizationResponse?> GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl);
+		Task GetTokensByAuthorizationCode(string authorizationCode, string redirectUrl);
 		Task<ValidationResponse?> ValidateAccessToken(bool resetDataOnFailure = true);
 		Task<bool> RefreshTokens();
 		Task<bool> RevokeTokens();
