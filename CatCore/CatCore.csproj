@@ -44,15 +44,23 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00879" />
 	</ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\index.html" />
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\CatCore.Shared\CatCore.Shared.csproj" />
+		<ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+	</ItemGroup>
+
+	<!-- Manually reference the generator props because we locally reference the generator. When added via NuGet this happens automatically -->
+	<Import Project="..\CatCore.Twemoji\CatCore.Twemoji.props" />
 
     <ItemGroup>
-		<Content Include="CatCore.csproj.user" />
-		<Content Include="manifest.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="Emojis">
+			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
+		</AdditionalFiles>
+		<EmbeddedResource Include="Resources\index.html" />
+		<None Include="CatCore.csproj.user" />
+		<None Include="manifest.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
     </ItemGroup>
 
 	<ItemGroup>
@@ -60,10 +68,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\CatCore.Shared\CatCore.Shared.csproj" />
 	</ItemGroup>
 
     <Import Project="ILRepack.targets" />
