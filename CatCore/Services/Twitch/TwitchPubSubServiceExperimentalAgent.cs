@@ -14,6 +14,7 @@ using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Models.Twitch.PubSub.Responses;
 using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
+using CatCore.Models.Twitch.PubSub.Responses.VideoPlayback;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -85,6 +86,11 @@ namespace CatCore.Services.Twitch
 			_pongTimer = new Timer { Interval = TWITCH_PUBSUB_PONG_TIMER_INTERVAL, AutoReset = false };
 			_pongTimer.Elapsed += PongTimerOnElapsed;
 		}
+
+		internal event Action<string, StreamUp>? OnStreamUp;
+		internal event Action<string, StreamDown>? OnStreamDown;
+		internal event Action<string, ViewCountUpdate>? OnViewCountUpdate;
+		internal event Action<string, Commercial>? OnCommercial;
 
 		internal event Action<string, Follow>? OnFollow;
 		internal event Action<string, PollData>? OnPoll;
@@ -444,6 +450,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		// ReSharper disable once CognitiveComplexity
 		private void HandleMessageTypeInternal(JsonElement rootElement)
 		{
 			var data = rootElement.GetProperty("data");
@@ -455,6 +462,44 @@ namespace CatCore.Services.Twitch
 
 			switch (topic)
 			{
+				case PubSubTopics.VIDEO_PLAYBACK:
+				{
+					var videoFeedbackDocument = JsonDocument.Parse(message).RootElement;
+					var internalType = videoFeedbackDocument.GetProperty("type").GetString();
+					var serverTimeRaw = videoFeedbackDocument.GetProperty("server_time").GetRawText();
+
+					switch (internalType)
+					{
+						case PubSubTopics.VideoPlaybackSubTopics.VIEW_COUNT:
+							// available properties: serverTime, viewers
+							// {"type":"viewcount","server_time":1634247120.108903,"viewers":36}
+							OnViewCountUpdate?.Invoke(_channelId, new ViewCountUpdate(serverTimeRaw, videoFeedbackDocument.GetProperty("viewers").GetUInt32()));
+
+							// _logger.Debug("Main event type: {MainType} - Internal event type: {SubType} - Viewers: {Viewers}", topic, internalType, viewers);
+
+							break;
+						case PubSubTopics.VideoPlaybackSubTopics.STREAM_UP:
+							OnStreamUp?.Invoke(_channelId, new StreamUp(serverTimeRaw, videoFeedbackDocument.GetProperty("play_delay").GetInt32()));
+
+							// _logger.Debug("Main event type: {MainType} - Internal event type: {SubType} - Play delay: {PlayDelay}", topic, internalType, playDelay);
+
+							break;
+						case PubSubTopics.VideoPlaybackSubTopics.STREAM_DOWN:
+							// _logger.Debug("Main event type: {MainType} - Internal event type: {SubType}", topic, internalType);
+
+							OnStreamDown?.Invoke(_channelId, new StreamDown(serverTimeRaw));
+
+							break;
+						case PubSubTopics.VideoPlaybackSubTopics.COMMERCIAL:
+							OnCommercial?.Invoke(_channelId, new Commercial(serverTimeRaw, videoFeedbackDocument.GetProperty("length").GetUInt32()));
+
+							// _logger.Debug("Main event type: {MainType} - Internal event type: {SubType} - Length: {Length}", topic, internalType, length);
+
+							break;
+					}
+
+					break;
+				}
 				case PubSubTopics.FOLLOWING:
 				{
 					var follow = JsonSerializer.Deserialize(message, TwitchPubSubSerializerContext.Default.Follow);
