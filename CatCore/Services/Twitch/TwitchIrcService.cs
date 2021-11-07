@@ -31,6 +31,7 @@ namespace CatCore.Services.Twitch
 		private readonly ILogger _logger;
 		private readonly IKittenWebSocketProvider _kittenWebSocketProvider;
 		private readonly IKittenPlatformActiveStateManager _activeStateManager;
+		private readonly IKittenSettingsService _settingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly ITwitchRoomStateTrackerService _roomStateTrackerService;
@@ -47,12 +48,14 @@ namespace CatCore.Services.Twitch
 
 		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 
-		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, ITwitchAuthService twitchAuthService,
-			ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService, ITwitchUserStateTrackerService userStateTrackerService)
+		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, IKittenSettingsService settingsService,
+			ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService,
+			ITwitchUserStateTrackerService userStateTrackerService)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
 			_activeStateManager = activeStateManager;
+			_settingsService = settingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_roomStateTrackerService = roomStateTrackerService;
@@ -457,15 +460,37 @@ namespace CatCore.Services.Twitch
 			));
 		}
 
-		private static List<IChatEmote> ExtractEmoteInfo(string message, IReadOnlyDictionary<string, string>? messageMeta)
+		// TODO: Look into moving this logic into its own class
+		private List<IChatEmote> ExtractEmoteInfo(string message, IReadOnlyDictionary<string, string>? messageMeta)
 		{
-			if (messageMeta == null || !messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
+			var emotes = new List<IChatEmote>();
+			if (message.Length == 0)
 			{
-				return new List<IChatEmote>(0);
+				return emotes;
+			}
+
+			var twitchConfig = _settingsService.Config.TwitchConfig;
+			if (twitchConfig.ParseTwitchEmotes && messageMeta != null)
+			{
+				ExtractTwitchEmotes(emotes, message, messageMeta);
+			}
+
+			if (_settingsService.Config.GlobalConfig.HandleEmojis)
+			{
+				ExtractEmojis(emotes, message);
+			}
+
+			return emotes;
+		}
+
+		private static void ExtractTwitchEmotes(List<IChatEmote> emotes, string message, IReadOnlyDictionary<string, string> messageMeta)
+		{
+			if (!messageMeta.TryGetValue(IrcMessageTags.EMOTES, out var emotesString))
+			{
+				return;
 			}
 
 			var emoteGroup = emotesString.Split('/');
-			var emotes = new List<IChatEmote>(emoteGroup.Length);
 			for (var i = 0; i < emoteGroup.Length; i++)
 			{
 				var emoteSet = emoteGroup[i].Split(':');
@@ -479,11 +504,24 @@ namespace CatCore.Services.Twitch
 					var emoteStart = int.Parse(emoteMeta[0]);
 					var emoteEnd = int.Parse(emoteMeta[1]);
 
-					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart)));
+					// TODO: Use v2 url instead
+					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart), emoteStart, emoteEnd,
+						$"https://static-cdn.jtvnw.net/emoticons/v1/{emoteId}/3.0"));
 				}
 			}
+		}
 
-			return emotes;
+		private static void ExtractEmojis(List<IChatEmote> emotes, string message)
+		{
+			for (var i = 0; i < message.Length; i++)
+			{
+				var foundEmojiLeaf = Twemoji.Emojis.EmojiReferenceData.LookupLeaf(message, i);
+				if (foundEmojiLeaf != null)
+				{
+					emotes.Add(new Emoji(foundEmojiLeaf.Key, foundEmojiLeaf.Key, i, i + foundEmojiLeaf.Depth, foundEmojiLeaf.Url));
+					i += foundEmojiLeaf.Depth;
+				}
+			}
 		}
 
 		// ReSharper disable once CognitiveComplexity
