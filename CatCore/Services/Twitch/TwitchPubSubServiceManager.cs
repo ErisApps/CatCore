@@ -97,6 +97,11 @@ namespace CatCore.Services.Twitch
 		{
 			var agent = new TwitchPubSubServiceExperimentalAgent(_logger, _randomFactory.CreateNewRandom(), _twitchAuthService, _activeStateManager, channelId, _topicsWithRegisteredCallbacks);
 
+			agent.OnViewCountUpdate += NotifyOnViewCountUpdated;
+			agent.OnStreamUp += NotifyOnStreamUp;
+			agent.OnStreamDown += NotifyOnStreamDown;
+			agent.OnCommercial += NotifyOnCommercial;
+
 			agent.OnFollow += NotifyOnFollow;
 			agent.OnPoll += NotifyOnPoll;
 			agent.OnRewardRedeemed += NotifyOnRewardRedeemed;
@@ -106,6 +111,11 @@ namespace CatCore.Services.Twitch
 
 		private async Task DestroyPubSubAgent(string channelId, TwitchPubSubServiceExperimentalAgent twitchPubSubServiceAgent)
 		{
+			twitchPubSubServiceAgent.OnViewCountUpdate -= NotifyOnViewCountUpdated;
+			twitchPubSubServiceAgent.OnStreamUp -= NotifyOnStreamUp;
+			twitchPubSubServiceAgent.OnStreamDown -= NotifyOnStreamDown;
+			twitchPubSubServiceAgent.OnCommercial -= NotifyOnCommercial;
+
 			twitchPubSubServiceAgent.OnFollow -= NotifyOnFollow;
 			twitchPubSubServiceAgent.OnPoll -= NotifyOnPoll;
 			twitchPubSubServiceAgent.OnRewardRedeemed -= NotifyOnRewardRedeemed;

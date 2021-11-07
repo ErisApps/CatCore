@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using CatCore.Helpers;
 using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Responses;
 using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
+using CatCore.Models.Twitch.PubSub.Responses.VideoPlayback;
 
 namespace CatCore.Services.Twitch
 {
@@ -74,6 +74,13 @@ namespace CatCore.Services.Twitch
 
 			switch (topic)
 			{
+				case PubSubTopics.VIDEO_PLAYBACK:
+					if (_viewCountCallbackRegistrations.IsEmpty && _streamUpCallbackRegistrations.IsEmpty && _streamDownCallbackRegistrations.IsEmpty && _commercialCallbackRegistrations.IsEmpty)
+					{
+						RequestTopicDeregistration();
+					}
+
+					break;
 				default:
 					RequestTopicDeregistration();
 					break;
@@ -106,6 +113,135 @@ namespace CatCore.Services.Twitch
 				PubSubTopics.CHANNEL_POINTS_CHANNEL_V1 => false,
 				_ => true
 			};
+		}
+
+		#endregion
+
+		#region video-playback-by-id
+
+		private readonly ConcurrentDictionary<Action<string, ViewCountUpdate>, bool> _viewCountCallbackRegistrations = new();
+		private readonly ConcurrentDictionary<Action<string, StreamUp>, bool> _streamUpCallbackRegistrations = new();
+		private readonly ConcurrentDictionary<Action<string, StreamDown>, bool> _streamDownCallbackRegistrations = new();
+		private readonly ConcurrentDictionary<Action<string, Commercial>, bool> _commercialCallbackRegistrations = new();
+
+		private void NotifyOnViewCountUpdated(string channelId, ViewCountUpdate viewCountUpdateData)
+		{
+			foreach (var action in _viewCountCallbackRegistrations.Keys)
+			{
+				action(channelId, viewCountUpdateData);
+			}
+		}
+
+		private void NotifyOnStreamUp(string channelId, StreamUp streamUpData)
+		{
+			foreach (var action in _streamUpCallbackRegistrations.Keys)
+			{
+				action(channelId, streamUpData);
+			}
+		}
+
+		private void NotifyOnStreamDown(string channelId, StreamDown streamDownData)
+		{
+			foreach (var action in _streamDownCallbackRegistrations.Keys)
+			{
+				action(channelId, streamDownData);
+			}
+		}
+
+		private void NotifyOnCommercial(string channelId, Commercial commercialData)
+		{
+			foreach (var action in _commercialCallbackRegistrations.Keys)
+			{
+				action(channelId, commercialData);
+			}
+		}
+
+		public event Action<string, ViewCountUpdate> OnViewCountUpdated
+		{
+			add
+			{
+				if (_viewCountCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_viewCountCallbackRegistrations.TryRemove(value, out _) && _viewCountCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+			}
+		}
+
+		public event Action<string, StreamUp> OnStreamUp
+		{
+			add
+			{
+				if (_streamUpCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_streamUpCallbackRegistrations.TryRemove(value, out _) && _streamUpCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+			}
+		}
+
+		public event Action<string, StreamDown> OnStreamDown
+		{
+			add
+			{
+				if (_streamDownCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_streamDownCallbackRegistrations.TryRemove(value, out _) && _streamDownCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+			}
+		}
+
+		public event Action<string, Commercial> OnCommercial
+		{
+			add
+			{
+				if (_commercialCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_commercialCallbackRegistrations.TryRemove(value, out _) && _commercialCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.VIDEO_PLAYBACK);
+				}
+			}
 		}
 
 		#endregion
