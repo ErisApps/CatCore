@@ -33,6 +33,7 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		[JsonPropertyName("started_at")]
 		public string StartedAtRaw { get; }
 
+		[JsonIgnore]
 		public DateTimeOffset? StartedAt => DateTimeOffset.TryParse(StartedAtRaw, out var parsedValue) ? parsedValue : null;
 
 		[JsonPropertyName("tag_ids")]
