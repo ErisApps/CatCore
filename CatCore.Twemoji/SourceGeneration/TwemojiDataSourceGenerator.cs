@@ -20,7 +20,6 @@ namespace CatCore.Twemoji.SourceGeneration
 
 		public void Execute(GeneratorExecutionContext context)
 		{
-			// TODO - actual source generator goes here!
 			var additionalFiles = GetLoadOptions(context);
 			var sourceFilesFromAdditionalFiles = SourceFilesFromAdditionalFiles(additionalFiles);
 			foreach (var (className, code) in sourceFilesFromAdditionalFiles)
