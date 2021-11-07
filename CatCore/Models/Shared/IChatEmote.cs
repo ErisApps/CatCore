@@ -4,5 +4,9 @@ namespace CatCore.Models.Shared
 	{
 		string Id { get; }
 		string Name { get; }
+		int StartIndex { get; }
+		int EndIndex { get; }
+		string Url { get; }
+		bool Animated { get; }
 	}
 }
