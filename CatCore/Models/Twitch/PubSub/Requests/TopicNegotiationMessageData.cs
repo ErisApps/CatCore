@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.PubSub.Requests
 {
-	internal sealed class TopicNegotiationMessageData
+	internal readonly struct TopicNegotiationMessageData
 	{
 		public TopicNegotiationMessageData(string[] topics, string? token = null)
 		{

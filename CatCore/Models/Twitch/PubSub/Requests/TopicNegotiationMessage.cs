@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.PubSub.Requests
 {
-	internal sealed class TopicNegotiationMessage
+	internal readonly struct TopicNegotiationMessage
 	{
 		internal const string LISTEN = nameof(LISTEN);
 		internal const string UNLISTEN = nameof(UNLISTEN);
