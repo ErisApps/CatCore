@@ -1,4 +1,4 @@
-namespace CatCore.Twemoji.Models.SourceGeneration
+namespace CatCore.Twemoji.SourceGeneration.Models
 {
 	internal enum EmojiStatus
 	{

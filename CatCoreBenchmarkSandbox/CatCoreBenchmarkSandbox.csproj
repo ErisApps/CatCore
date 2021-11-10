@@ -14,11 +14,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+		<ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" />
+		<ProjectReference Include="..\CatCore.Twemoji.SourceGeneration\CatCore.Twemoji.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<!-- Manually reference the generator props because we locally reference the generator. When added via NuGet this happens automatically -->
-	<Import Project="..\CatCore.Twemoji\CatCore.Twemoji.props" />
+	<Import Project="..\CatCore.Twemoji.SourceGeneration\CatCore.Twemoji.SourceGeneration.props" />
 
 	<ItemGroup>
 		<Folder Include="Resources" />

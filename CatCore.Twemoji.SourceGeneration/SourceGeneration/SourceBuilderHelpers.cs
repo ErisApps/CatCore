@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using CatCore.Twemoji.Models;
 
-namespace CatCore.Twemoji.SourceGeneration
+namespace CatCore.Twemoji.SourceGeneration.SourceGeneration
 {
 	internal static class SourceBuilderHelpers
 	{

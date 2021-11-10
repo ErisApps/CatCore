@@ -4,11 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using CatCore.Twemoji.Models;
-using CatCore.Twemoji.Models.SourceGeneration;
+using CatCore.Twemoji.SourceGeneration.Extensions;
+using CatCore.Twemoji.SourceGeneration.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace CatCore.Twemoji.SourceGeneration
+namespace CatCore.Twemoji.SourceGeneration.SourceGeneration
 {
 	[Generator]
 	internal class TwemojiDataSourceGenerator : ISourceGenerator
