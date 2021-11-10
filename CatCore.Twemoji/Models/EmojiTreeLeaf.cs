@@ -12,10 +12,5 @@ namespace CatCore.Twemoji.Models
 			Key = key;
 			Depth = depth;
 		}
-
-		public EmojiTreeNodeBlock UpgradeToBlock()
-		{
-			return new EmojiTreeNodeBlock { Key = Key, Depth = Depth };
-		}
 	}
 }
