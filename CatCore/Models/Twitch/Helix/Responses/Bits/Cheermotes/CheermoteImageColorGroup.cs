@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 {
-	public class CheermoteImageColorGroup
+	public readonly struct CheermoteImageColorGroup
 	{
 		[JsonPropertyName("light")]
 		public CheermoteImageTypesGroup Light { get; }

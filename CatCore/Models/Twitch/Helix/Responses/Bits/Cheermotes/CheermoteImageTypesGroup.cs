@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 {
-	public class CheermoteImageTypesGroup
+	public readonly struct CheermoteImageTypesGroup
 	{
 		[JsonPropertyName("static")]
 		public CheermoteImageSizeGroup Static { get; }
