@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 {
-	public class CheermoteTier
+	public readonly struct CheermoteTier
 	{
 		[JsonPropertyName("id")]
 		public string Id { get; }
