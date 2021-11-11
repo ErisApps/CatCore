@@ -8,6 +8,7 @@ namespace CatCore.Services.Multiplexer
 		{
 			public abstract string GetId(object o);
 			public abstract string GetName(object o);
+			public abstract void SendMessage(object o, string msg);
 			public abstract object Clone(object o);
 		}
 
@@ -19,11 +20,14 @@ namespace CatCore.Services.Multiplexer
 
 			public override string GetId(object o) => ((TChannel) o).Id;
 			public override string GetName(object o) => ((TChannel) o).Name;
+			public override void SendMessage(object o, string msg) => ((TChannel) o).SendMessage(msg);
 			public override object Clone(object o) => ((TChannel) o).Clone();
 		}
 
 		private readonly Info info;
 		private readonly object channel;
+
+		public object Underlying => channel;
 
 		private MultiplexedChannel(Info info, object channel)
 			=> (this.info, this.channel) = (info, channel);
@@ -36,6 +40,8 @@ namespace CatCore.Services.Multiplexer
 		public string Id => info.GetId(channel);
 
 		public string Name => info.GetName(channel);
+
+		public void SendMessage(string message) => info.SendMessage(channel, message);
 
 		public object Clone() => new MultiplexedChannel(info, info.Clone(channel));
 	}

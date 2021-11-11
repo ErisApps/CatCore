@@ -3,7 +3,7 @@ using CatCore.Models.Shared;
 
 namespace CatCore.Services.Interfaces
 {
-	public interface IChatService<out TChat, TChannel, out TMessage>
+	public interface IChatService<out TChat, out TChannel, out TMessage>
 		where TChat : IChatService<TChat, TChannel, TMessage>
 		where TChannel : IChatChannel<TChannel, TMessage>
 		where TMessage : IChatMessage<TMessage, TChannel>
@@ -37,7 +37,5 @@ namespace CatCore.Services.Interfaces
 		/// Callback that occurs when a text message is received
 		/// </summary>
 		public event Action<TChat, TMessage>? OnTextMessageReceived;
-
-		public void SendMessage(TChannel channel, string message);
 	}
 }

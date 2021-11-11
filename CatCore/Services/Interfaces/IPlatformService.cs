@@ -3,7 +3,7 @@ using CatCore.Models.Shared;
 
 namespace CatCore.Services.Interfaces
 {
-	public interface IPlatformService<out TPlatform, TChannel, out TMessage>
+	public interface IPlatformService<out TPlatform, out TChannel, out TMessage>
 		: IChatService<TPlatform, TChannel, TMessage>
 		where TPlatform : IPlatformService<TPlatform, TChannel, TMessage>
 		where TChannel : IChatChannel<TChannel, TMessage>
