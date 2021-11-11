@@ -1,7 +1,10 @@
-﻿namespace CatCore
+namespace CatCore
 {
 	internal sealed partial class Constants : ConstantsBase
 	{
+		internal override string CatCoreAuthServerUri => throw new System.NotImplementedException();
+
+		internal override string TwitchClientId => throw new System.NotImplementedException();
 	}
 
 	internal abstract class ConstantsBase

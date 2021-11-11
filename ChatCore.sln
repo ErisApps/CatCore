@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31903.286
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatCore", "CatCore\CatCore.csproj", "{11DC019A-20BE-495B-8336-80E71CAEF9E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatCore.Azure", "CatCore.Azure\CatCore.Azure.csproj", "{07C0CEB7-B8A9-4BD0-AE40-EB3C8B3BE697}"
@@ -68,8 +71,8 @@ Global
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Develop|Any CPU.Build.0 = Develop|Any CPU
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B07F1349-F895-4FEF-8FDF-A1531D612325}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Develop|Any CPU.ActiveCfg = Develop|Any CPU
 		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Develop|Any CPU.Build.0 = Develop|Any CPU
 		{C8E74FFE-6993-455F-A263-0DA67C7970BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -86,5 +89,11 @@ Global
 		{BD1FFE15-543C-42E5-9C64-16BD4D48F26F}.Develop|Any CPU.Build.0 = Debug|Any CPU
 		{BD1FFE15-543C-42E5-9C64-16BD4D48F26F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD1FFE15-543C-42E5-9C64-16BD4D48F26F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7F97EA3-BB84-49C8-91B8-81854DB34A3C}
 	EndGlobalSection
 EndGlobal
