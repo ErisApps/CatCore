@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CatCore;
@@ -40,10 +40,10 @@ namespace CatCoreTester
 			}
 
 			var chatServiceMultiplexer = chatCoreInstance.RunAllServices();
-			chatServiceMultiplexer.OnLogin += async service =>
+			chatServiceMultiplexer.OnChatConnected += async service =>
 			{
 				await Console.Out.WriteLineAsync("Logged in... presumably").ConfigureAwait(false);
-				if (service is TwitchService twitchService)
+				if (service.Underlying is TwitchService twitchService)
 				{
 					var helix = twitchService.GetHelixApiService();
 

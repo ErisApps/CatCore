@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,14 +12,16 @@ namespace CatCore.Services.Twitch
 {
 	public sealed class TwitchChannelManagementService : ITwitchChannelManagementService
 	{
+		private readonly ITwitchIrcService twitchService;
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
 		public event EventHandler<TwitchChannelsUpdatedEventArgs>? ChannelsUpdated;
 
-		internal TwitchChannelManagementService(IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
+		internal TwitchChannelManagementService(ITwitchIrcService twitchService, IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
 		{
+			this.twitchService = twitchService;
 			_kittenSettingsService = kittenSettingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchHelixApiService = twitchHelixApiService;
@@ -28,7 +30,7 @@ namespace CatCore.Services.Twitch
 		public TwitchChannel? GetOwnChannel()
 		{
 			var self = _twitchAuthService.LoggedInUser;
-			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(self.Value.UserId, self.Value.LoginName) : null;
+			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(twitchService, self.Value.UserId, self.Value.LoginName) : null;
 		}
 
 		public List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false)
@@ -65,10 +67,10 @@ namespace CatCore.Services.Twitch
 			var self = _twitchAuthService.LoggedInUser;
 			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
 			{
-				allChannels.Add(new TwitchChannel(self.Value.UserId, self.Value.LoginName));
+				allChannels.Add(new TwitchChannel(twitchService, self.Value.UserId, self.Value.LoginName));
 			}
 
-			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Select(kvp => new TwitchChannel(kvp.Key, kvp.Value)));
+			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Select(kvp => new TwitchChannel(twitchService, kvp.Key, kvp.Value)));
 
 			return allChannels;
 		}
