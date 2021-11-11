@@ -6,14 +6,14 @@ namespace CatCore.Services.Interfaces
 	public interface IChatService
 	{
 		/// <summary>
-		/// Callback that occurs when a successful login to the provided streaming service occurs
+		/// Callback that occurs when the authentication state changes for the provided streaming service
 		/// </summary>
-		public event Action<IPlatformService>? OnLogin;
+		public event Action<IPlatformService>? OnAuthenticatedStateChanged;
 
 		/// <summary>
-		/// Callback that occurs when a text message is received
+		/// Callback that occurs when the provided streaming service successfully connected to the chat
 		/// </summary>
-		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
+		public event Action<IPlatformService>? OnChatConnected;
 
 		/// <summary>
 		/// Callback that occurs when the user joins a chat channel
@@ -29,6 +29,11 @@ namespace CatCore.Services.Interfaces
 		/// Callback that occurs when the user leaves a chat channel
 		/// </summary>
 		public event Action<IPlatformService, IChatChannel>? OnLeaveChannel;
+
+		/// <summary>
+		/// Callback that occurs when a text message is received
+		/// </summary>
+		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
 
 		public void SendMessage(IChatChannel channel, string message);
 	}

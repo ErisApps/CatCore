@@ -7,6 +7,7 @@ namespace CatCore.Services.Interfaces
 		internal void Start();
 		internal void Stop();
 
-		public IChatChannel? DefaultChannel { get; }
+		bool LoggedIn { get; }
+		IChatChannel? DefaultChannel { get; }
 	}
 }
