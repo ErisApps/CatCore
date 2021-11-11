@@ -1,18 +1,20 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using CatCore.Models.Shared;
+using CatCore.Models.Twitch;
+using CatCore.Models.Twitch.IRC;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
 	internal interface ITwitchIrcService
 	{
 		event Action? OnChatConnected;
-		event Action<IChatChannel>? OnJoinChannel;
-		event Action<IChatChannel>? OnLeaveChannel;
-		event Action<IChatChannel>? OnRoomStateChanged;
-		event Action<IChatMessage>? OnMessageReceived;
+		event Action<TwitchChannel>? OnJoinChannel;
+		event Action<TwitchChannel>? OnLeaveChannel;
+		event Action<TwitchChannel>? OnRoomStateChanged;
+		event Action<TwitchMessage>? OnMessageReceived;
 
-		void SendMessage(IChatChannel channel, string message);
+		void SendMessage(TwitchChannel channel, string message);
 
 		public Task Start();
 		public Task Stop();

@@ -1,5 +1,8 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 using CatCore.Models.Shared;
+using CatCore.Models.Twitch;
+using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -37,37 +40,37 @@ namespace CatCore.Services.Twitch
 		public ITwitchUserStateTrackerService GetUserStateTrackerService() => _twitchUserStateTrackerService;
 		public ITwitchChannelManagementService GetChannelManagementService() => _twitchChannelManagementService;
 
-		void IPlatformService.Start()
+		async Task IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>.Start()
 		{
 			_logger.Information("Initializing {Type}", nameof(TwitchService));
 
 			RegisterInternalEventHandlers();
 
-			_twitchIrcService.Start();
-			_twitchPubSubServiceManager.Start();
+			await _twitchIrcService.Start();
+			await _twitchPubSubServiceManager.Start();
 		}
 
-		void IPlatformService.Stop()
+		async Task IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>.Stop()
 		{
 			_logger.Information("Stopped {Type}", nameof(TwitchService));
 
 			DeregisterInternalEventHandlers();
 
-			_twitchIrcService.Stop();
-			_twitchPubSubServiceManager.Stop();
+			await _twitchIrcService.Stop();
+			await _twitchPubSubServiceManager.Stop();
 		}
 
 		public bool LoggedIn => _twitchAuthService.HasTokens && _twitchAuthService.TokenIsValid;
-		public IChatChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
+		public TwitchChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
 
-		public event Action<IPlatformService>? OnAuthenticatedStateChanged;
-		public event Action<IPlatformService>? OnChatConnected;
-		public event Action<IPlatformService, IChatChannel>? OnJoinChannel;
-		public event Action<IPlatformService, IChatChannel>? OnLeaveChannel;
-		public event Action<IPlatformService, IChatChannel>? OnRoomStateUpdated;
-		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
+		public event Action<ITwitchService>? OnAuthenticatedStateChanged;
+		public event Action<ITwitchService>? OnChatConnected;
+		public event Action<ITwitchService, TwitchChannel>? OnJoinChannel;
+		public event Action<ITwitchService, TwitchChannel>? OnLeaveChannel;
+		public event Action<ITwitchService, TwitchChannel>? OnRoomStateUpdated;
+		public event Action<ITwitchService, TwitchMessage>? OnTextMessageReceived;
 
-		public void SendMessage(IChatChannel channel, string message)
+		public void SendMessage(TwitchChannel channel, string message)
 		{
 			_twitchIrcService.SendMessage(channel, message);
 		}
@@ -106,22 +109,22 @@ namespace CatCore.Services.Twitch
 			OnChatConnected?.Invoke(this);
 		}
 
-		private void TwitchIrcServiceOnJoinChannel(IChatChannel channel)
+		private void TwitchIrcServiceOnJoinChannel(TwitchChannel channel)
 		{
 			OnJoinChannel?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnLeaveChannel(IChatChannel channel)
+		private void TwitchIrcServiceOnLeaveChannel(TwitchChannel channel)
 		{
 			OnLeaveChannel?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnRoomStateChanged(IChatChannel channel)
+		private void TwitchIrcServiceOnRoomStateChanged(TwitchChannel channel)
 		{
 			OnRoomStateUpdated?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnMessageReceived(IChatMessage message)
+		private void TwitchIrcServiceOnMessageReceived(TwitchMessage message)
 		{
 			OnTextMessageReceived?.Invoke(this, message);
 		}
