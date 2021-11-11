@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 
 namespace CatCore.Models.Shared
 {
-	public interface IChatMessage
+	public interface IChatMessage<out TMessage, out TChannel>
+		where TMessage : IChatMessage<TMessage, TChannel>
+		where TChannel : IChatChannel<TChannel, TMessage>
 	{
 		/// <summary>
 		/// The internal identifier for this chat message
@@ -37,7 +39,7 @@ namespace CatCore.Models.Shared
 		/// <summary>
 		/// The channel this message was sent in
 		/// </summary>
-		IChatChannel Channel { get; }
+		TChannel Channel { get; }
 
 		/// <summary>
 		/// The emotes that are contained in this message.
