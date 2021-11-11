@@ -14,7 +14,8 @@ namespace CatCore.Services.Multiplexer
 		private readonly ILogger _logger;
 		private readonly ITwitchService _twitchPlatformService;
 
-		public event Action<IPlatformService>? OnLogin;
+		public event Action<IPlatformService>? OnAuthenticatedStateChanged;
+		public event Action<IPlatformService>? OnChatConnected;
 		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
 		public event Action<IPlatformService, IChatChannel>? OnJoinChannel;
 		public event Action<IPlatformService, IChatChannel>? OnLeaveChannel;
@@ -27,11 +28,12 @@ namespace CatCore.Services.Multiplexer
 			foreach (var platformService in platformServices)
 			{
 				// TODO: Register to all event handlers of IChatService
-				platformService.OnLogin += ChatServiceOnOnLogin;
-				platformService.OnJoinChannel += ChatServiceOnOnJoinChannel;
-				platformService.OnLeaveChannel += ChatServiceOnOnLeaveChannel;
-				platformService.OnRoomStateUpdated += ChatServiceOnOnRoomStateUpdated;
-				platformService.OnTextMessageReceived += ChatServiceOnOnTextMessageReceived;
+				platformService.OnAuthenticatedStateChanged += ChatServiceOnAuthenticatedStateChanged;
+				platformService.OnChatConnected += ChatServiceOnChatConnected;
+				platformService.OnJoinChannel += ChatServiceOnJoinChannel;
+				platformService.OnLeaveChannel += ChatServiceOnLeaveChannel;
+				platformService.OnRoomStateUpdated += ChatServiceOnRoomStateUpdated;
+				platformService.OnTextMessageReceived += ChatServiceOnTextMessageReceived;
 			}
 
 			_twitchPlatformService = platformServices.OfType<ITwitchService>().First();
@@ -55,27 +57,32 @@ namespace CatCore.Services.Multiplexer
 			}
 		}
 
-		private void ChatServiceOnOnLogin(IPlatformService scv)
+		private void ChatServiceOnAuthenticatedStateChanged(IPlatformService scv)
 		{
-			OnLogin?.Invoke(scv);
+			OnAuthenticatedStateChanged?.Invoke(scv);
 		}
 
-		private void ChatServiceOnOnJoinChannel(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnChatConnected(IPlatformService scv)
+		{
+			OnChatConnected?.Invoke(scv);
+		}
+
+		private void ChatServiceOnJoinChannel(IPlatformService scv, IChatChannel channel)
 		{
 			OnJoinChannel?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnOnLeaveChannel(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnLeaveChannel(IPlatformService scv, IChatChannel channel)
 		{
 			OnLeaveChannel?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnOnRoomStateUpdated(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnRoomStateUpdated(IPlatformService scv, IChatChannel channel)
 		{
 			OnRoomStateUpdated?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnOnTextMessageReceived(IPlatformService scv, IChatMessage message)
+		private void ChatServiceOnTextMessageReceived(IPlatformService scv, IChatMessage message)
 		{
 			OnTextMessageReceived?.Invoke(scv, message);
 		}

@@ -9,6 +9,7 @@ namespace CatCore.Services.Twitch
 	public sealed class TwitchService : ITwitchService
 	{
 		private readonly ILogger _logger;
+		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchIrcService _twitchIrcService;
 		private readonly ITwitchPubSubServiceManager _twitchPubSubServiceManager;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
@@ -16,10 +17,12 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchUserStateTrackerService _twitchUserStateTrackerService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 
-		internal TwitchService(ILogger logger, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager, ITwitchHelixApiService twitchHelixApiService,
-			ITwitchRoomStateTrackerService twitchRoomStateTrackerService, ITwitchUserStateTrackerService twitchUserStateTrackerService, ITwitchChannelManagementService twitchChannelManagementService)
+		internal TwitchService(ILogger logger, ITwitchAuthService twitchAuthService, ITwitchIrcService twitchIrcService, ITwitchPubSubServiceManager twitchPubSubServiceManager,
+			ITwitchHelixApiService twitchHelixApiService, ITwitchRoomStateTrackerService twitchRoomStateTrackerService, ITwitchUserStateTrackerService twitchUserStateTrackerService,
+			ITwitchChannelManagementService twitchChannelManagementService)
 		{
 			_logger = logger;
+			_twitchAuthService = twitchAuthService;
 			_twitchIrcService = twitchIrcService;
 			_twitchPubSubServiceManager = twitchPubSubServiceManager;
 			_twitchHelixApiService = twitchHelixApiService;
@@ -54,13 +57,15 @@ namespace CatCore.Services.Twitch
 			_twitchPubSubServiceManager.Stop();
 		}
 
+		public bool LoggedIn => _twitchAuthService.HasTokens && _twitchAuthService.TokenIsValid;
 		public IChatChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
 
-		public event Action<IPlatformService>? OnLogin;
-		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
+		public event Action<IPlatformService>? OnAuthenticatedStateChanged;
+		public event Action<IPlatformService>? OnChatConnected;
 		public event Action<IPlatformService, IChatChannel>? OnJoinChannel;
 		public event Action<IPlatformService, IChatChannel>? OnLeaveChannel;
 		public event Action<IPlatformService, IChatChannel>? OnRoomStateUpdated;
+		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
 
 		public void SendMessage(IChatChannel channel, string message)
 		{
@@ -71,43 +76,52 @@ namespace CatCore.Services.Twitch
 		{
 			DeregisterInternalEventHandlers();
 
-			_twitchIrcService.OnLogin += TwitchIrcServiceOnOnLogin;
-			_twitchIrcService.OnJoinChannel += TwitchIrcServiceOnOnJoinChannel;
-			_twitchIrcService.OnLeaveChannel += TwitchIrcServiceOnOnLeaveChannel;
-			_twitchIrcService.OnRoomStateChanged += TwitchIrcServiceOnOnRoomStateChanged;
-			_twitchIrcService.OnMessageReceived += TwitchIrcServiceOnOnMessageReceived;
+			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnCredentialsChanged;
+
+			_twitchIrcService.OnChatConnected += TwitchIrcServiceOnChatConnected;
+			_twitchIrcService.OnJoinChannel += TwitchIrcServiceOnJoinChannel;
+			_twitchIrcService.OnLeaveChannel += TwitchIrcServiceOnLeaveChannel;
+			_twitchIrcService.OnRoomStateChanged += TwitchIrcServiceOnRoomStateChanged;
+			_twitchIrcService.OnMessageReceived += TwitchIrcServiceOnMessageReceived;
 		}
 
 		private void DeregisterInternalEventHandlers()
 		{
-			_twitchIrcService.OnLogin -= TwitchIrcServiceOnOnLogin;
-			_twitchIrcService.OnJoinChannel -= TwitchIrcServiceOnOnJoinChannel;
-			_twitchIrcService.OnLeaveChannel -= TwitchIrcServiceOnOnLeaveChannel;
-			_twitchIrcService.OnRoomStateChanged -= TwitchIrcServiceOnOnRoomStateChanged;
-			_twitchIrcService.OnMessageReceived -= TwitchIrcServiceOnOnMessageReceived;
+			_twitchAuthService.OnCredentialsChanged -= TwitchAuthServiceOnCredentialsChanged;
+
+			_twitchIrcService.OnChatConnected -= TwitchIrcServiceOnChatConnected;
+			_twitchIrcService.OnJoinChannel -= TwitchIrcServiceOnJoinChannel;
+			_twitchIrcService.OnLeaveChannel -= TwitchIrcServiceOnLeaveChannel;
+			_twitchIrcService.OnRoomStateChanged -= TwitchIrcServiceOnRoomStateChanged;
+			_twitchIrcService.OnMessageReceived -= TwitchIrcServiceOnMessageReceived;
 		}
 
-		private void TwitchIrcServiceOnOnLogin()
+		private void TwitchAuthServiceOnCredentialsChanged()
 		{
-			OnLogin?.Invoke(this);
+			OnAuthenticatedStateChanged?.Invoke(this);
 		}
 
-		private void TwitchIrcServiceOnOnJoinChannel(IChatChannel channel)
+		private void TwitchIrcServiceOnChatConnected()
+		{
+			OnChatConnected?.Invoke(this);
+		}
+
+		private void TwitchIrcServiceOnJoinChannel(IChatChannel channel)
 		{
 			OnJoinChannel?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnOnLeaveChannel(IChatChannel channel)
+		private void TwitchIrcServiceOnLeaveChannel(IChatChannel channel)
 		{
 			OnLeaveChannel?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnOnRoomStateChanged(IChatChannel channel)
+		private void TwitchIrcServiceOnRoomStateChanged(IChatChannel channel)
 		{
 			OnRoomStateUpdated?.Invoke(this, channel);
 		}
 
-		private void TwitchIrcServiceOnOnMessageReceived(IChatMessage message)
+		private void TwitchIrcServiceOnMessageReceived(IChatMessage message)
 		{
 			OnTextMessageReceived?.Invoke(this, message);
 		}

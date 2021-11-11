@@ -71,7 +71,7 @@ namespace CatCore.Services.Twitch
 			_messageSendTimestamps = new List<long>();
 		}
 
-		public event Action? OnLogin;
+		public event Action? OnChatConnected;
 		public event Action<IChatChannel>? OnJoinChannel;
 		public event Action<IChatChannel>? OnLeaveChannel;
 		public event Action<IChatChannel>? OnRoomStateChanged;
@@ -223,7 +223,7 @@ namespace CatCore.Services.Twitch
 					_kittenWebSocketProvider.SendMessage($"{IrcCommands.PONG} :{message!}");
 					break;
 				case IrcCommands.RPL_ENDOFMOTD:
-					OnLogin?.Invoke();
+					OnChatConnected?.Invoke();
 					foreach (var loginName in _twitchChannelManagementService.GetAllActiveLoginNames())
 					{
 						_kittenWebSocketProvider.SendMessage($"JOIN #{loginName}");

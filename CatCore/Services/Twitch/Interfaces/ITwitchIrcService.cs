@@ -6,7 +6,7 @@ namespace CatCore.Services.Twitch.Interfaces
 {
 	internal interface ITwitchIrcService
 	{
-		event Action? OnLogin;
+		event Action? OnChatConnected;
 		event Action<IChatChannel>? OnJoinChannel;
 		event Action<IChatChannel>? OnLeaveChannel;
 		event Action<IChatChannel>? OnRoomStateChanged;
