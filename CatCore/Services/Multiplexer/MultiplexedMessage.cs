@@ -41,6 +41,8 @@ namespace CatCore.Services.Multiplexer
 		private readonly Info info;
 		private readonly object message;
 
+		internal object Underlying => message;
+
 		private MultiplexedMessage(Info info, object message)
 			=> (this.info, this.message) = (info, message);
 

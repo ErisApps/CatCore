@@ -8,5 +8,7 @@ namespace CatCore.Models.Shared
 	{
 		string Id { get; }
 		string Name { get; }
+
+		void SendMessage(string message);
 	}
 }
