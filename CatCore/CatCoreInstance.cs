@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using CatCore.Exceptions;
 using CatCore.Helpers;
 using CatCore.Logging;
+using CatCore.Models.Twitch;
+using CatCore.Models.Twitch.IRC;
 using CatCore.Services;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Multiplexer;
@@ -134,16 +136,16 @@ namespace CatCore
 			_container.Register<ITwitchUserStateTrackerService, TwitchUserStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
-			_container.RegisterMany(new[] {typeof(IPlatformService), typeof(ITwitchService)}, typeof(TwitchService), Reuse.Singleton,
+			_container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,
 				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.RegisterMany(new[] {typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager)}, typeof(TwitchServiceManager), Reuse.Singleton);
+			_container.RegisterMany(new[] { typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager) }, typeof(TwitchServiceManager), Reuse.Singleton);
 
 			// Register multiplexer services
 			_container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
 			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
 			// Spin up internal web api service
-			Task.Run(() =>
+			_ = Task.Run(() =>
 			{
 				var globalConfig = _container.Resolve<IKittenSettingsService>().Config.GlobalConfig;
 				if (globalConfig.LaunchInternalApiOnStartup)
@@ -226,7 +228,7 @@ namespace CatCore
 
 		private void LaunchApiAndPortal(bool shouldLaunchPortal)
 		{
-			_container.Resolve<IKittenApiService>();
+			_ = _container.Resolve<IKittenApiService>();
 			if (shouldLaunchPortal)
 			{
 				_container.Resolve<ILogger>().ForContext<CatCoreInstance>().Debug("Launching web portal");

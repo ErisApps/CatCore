@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
 {
-	public sealed class TwitchMessage : IChatMessage
+	public sealed class TwitchMessage : IChatMessage<TwitchMessage, TwitchChannel>
 	{
 		/// <inheritdoc cref="IChatMessage.Id"/>
 		[PublicAPI]
@@ -32,7 +32,7 @@ namespace CatCore.Models.Twitch.IRC
 
 		/// <inheritdoc cref="IChatMessage.Channel"/>
 		[PublicAPI]
-		public IChatChannel Channel { get; internal set; }
+		public TwitchChannel Channel { get; internal set; }
 
 		/// <inheritdoc cref="IChatMessage.Emotes"/>
 		[PublicAPI]
@@ -54,7 +54,7 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public uint Bits { get; internal set; }
 
-		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isMentioned, string message, IChatUser sender, IChatChannel channel, ReadOnlyCollection<IChatEmote> emotes,
+		public TwitchMessage(string id, bool isSystemMessage, bool isActionMessage, bool isMentioned, string message, IChatUser sender, TwitchChannel channel, ReadOnlyCollection<IChatEmote> emotes,
 			ReadOnlyDictionary<string, string>? metadata, string type, uint bits)
 		{
 			Id = id;

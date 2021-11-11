@@ -1,9 +1,10 @@
-﻿using CatCore.Models.Shared;
+using CatCore.Models.Shared;
+using CatCore.Models.Twitch.IRC;
 using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch
 {
-	public sealed class TwitchChannel : IChatChannel
+	public sealed class TwitchChannel : IChatChannel<TwitchChannel, TwitchMessage>
 	{
 		[PublicAPI]
 		public string Id { get; }

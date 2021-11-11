@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using CatCore.Models.Shared;
 
 namespace CatCore.Services.Interfaces
@@ -8,8 +9,8 @@ namespace CatCore.Services.Interfaces
 		where TChannel : IChatChannel<TChannel, TMessage>
 		where TMessage : IChatMessage<TMessage, TChannel>
 	{
-		internal void Start();
-		internal void Stop();
+		internal Task Start();
+		internal Task Stop();
 
 		bool LoggedIn { get; }
 		TChannel? DefaultChannel { get; }

@@ -68,6 +68,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="CatCoreTesterMod.csproj.user" />
 		<None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
 		<None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
 		<None Include="CatCoreTesterMod.csproj.user" Condition="Exists('CatCoreTesterMod.csproj.user')" />

@@ -1,9 +1,11 @@
-﻿using CatCore.Services.Interfaces;
+using CatCore.Models.Twitch;
+using CatCore.Models.Twitch.IRC;
+using CatCore.Services.Interfaces;
 using JetBrains.Annotations;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
-	public interface ITwitchService : IPlatformService
+	public interface ITwitchService : IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>
 	{
 		[PublicAPI]
 		ITwitchPubSubServiceManager GetPubSubService();
