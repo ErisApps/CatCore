@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CatCore.Models.Shared;
@@ -9,19 +9,19 @@ using Serilog;
 
 namespace CatCore.Services.Multiplexer
 {
-	public sealed class ChatServiceMultiplexer : IChatService
+	public sealed class ChatServiceMultiplexer : IChatService<MultiplexedPlatformService, MultiplexedChannel, MultiplexedMessage>
 	{
 		private readonly ILogger _logger;
 		private readonly ITwitchService _twitchPlatformService;
 
-		public event Action<IPlatformService>? OnAuthenticatedStateChanged;
-		public event Action<IPlatformService>? OnChatConnected;
-		public event Action<IPlatformService, IChatMessage>? OnTextMessageReceived;
-		public event Action<IPlatformService, IChatChannel>? OnJoinChannel;
-		public event Action<IPlatformService, IChatChannel>? OnLeaveChannel;
-		public event Action<IPlatformService, IChatChannel>? OnRoomStateUpdated;
+		public event Action<MultiplexedPlatformService>? OnAuthenticatedStateChanged;
+		public event Action<MultiplexedPlatformService>? OnChatConnected;
+		public event Action<MultiplexedPlatformService, MultiplexedMessage>? OnTextMessageReceived;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnJoinChannel;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnLeaveChannel;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnRoomStateUpdated;
 
-		public ChatServiceMultiplexer(ILogger logger, IList<IPlatformService> platformServices)
+		public ChatServiceMultiplexer(ILogger logger, IList<MultiplexedPlatformService> platformServices)
 		{
 			_logger = logger;
 
@@ -36,7 +36,7 @@ namespace CatCore.Services.Multiplexer
 				platformService.OnTextMessageReceived += ChatServiceOnTextMessageReceived;
 			}
 
-			_twitchPlatformService = platformServices.OfType<ITwitchService>().First();
+			_twitchPlatformService = platformServices.Select(s => s.Underlying).OfType<ITwitchService>().First();
 		}
 
 		public ITwitchService GetTwitchPlatformService()
@@ -44,45 +44,32 @@ namespace CatCore.Services.Multiplexer
 			return _twitchPlatformService;
 		}
 
-		public void SendMessage(IChatChannel channel, string message)
-		{
-			switch (channel)
-			{
-				case TwitchChannel _:
-					GetTwitchPlatformService().SendMessage(channel, message);
-					break;
-				default:
-					_logger.Error("Sending a message of type {Type} isn't supported (yet)", channel.GetType().Name);
-					throw new NotSupportedException();
-			}
-		}
-
-		private void ChatServiceOnAuthenticatedStateChanged(IPlatformService scv)
+		private void ChatServiceOnAuthenticatedStateChanged(MultiplexedPlatformService scv)
 		{
 			OnAuthenticatedStateChanged?.Invoke(scv);
 		}
 
-		private void ChatServiceOnChatConnected(IPlatformService scv)
+		private void ChatServiceOnChatConnected(MultiplexedPlatformService scv)
 		{
 			OnChatConnected?.Invoke(scv);
 		}
 
-		private void ChatServiceOnJoinChannel(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnJoinChannel(MultiplexedPlatformService scv, MultiplexedChannel channel)
 		{
 			OnJoinChannel?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnLeaveChannel(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnLeaveChannel(MultiplexedPlatformService scv, MultiplexedChannel channel)
 		{
 			OnLeaveChannel?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnRoomStateUpdated(IPlatformService scv, IChatChannel channel)
+		private void ChatServiceOnRoomStateUpdated(MultiplexedPlatformService scv, MultiplexedChannel channel)
 		{
 			OnRoomStateUpdated?.Invoke(scv, channel);
 		}
 
-		private void ChatServiceOnTextMessageReceived(IPlatformService scv, IChatMessage message)
+		private void ChatServiceOnTextMessageReceived(MultiplexedPlatformService scv, MultiplexedMessage message)
 		{
 			OnTextMessageReceived?.Invoke(scv, message);
 		}
