@@ -43,8 +43,8 @@ namespace CatCore.Services.Twitch
 		private readonly ConcurrentDictionary<string, long> _forcedSendChannelMessageSendDelays;
 		private readonly List<long> _messageSendTimestamps;
 
-		private readonly SemaphoreSlim _workerCanSleepSemaphoreSlim = new SemaphoreSlim(1, 1);
-		private readonly SemaphoreSlim _workerSemaphoreSlim = new SemaphoreSlim(0, 1);
+		private readonly SemaphoreSlim _workerCanSleepSemaphoreSlim = new(1, 1);
+		private readonly SemaphoreSlim _workerSemaphoreSlim = new(0, 1);
 
 		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 
@@ -72,21 +72,21 @@ namespace CatCore.Services.Twitch
 		}
 
 		public event Action? OnChatConnected;
-		public event Action<IChatChannel>? OnJoinChannel;
-		public event Action<IChatChannel>? OnLeaveChannel;
-		public event Action<IChatChannel>? OnRoomStateChanged;
-		public event Action<IChatMessage>? OnMessageReceived;
+		public event Action<TwitchChannel>? OnJoinChannel;
+		public event Action<TwitchChannel>? OnLeaveChannel;
+		public event Action<TwitchChannel>? OnRoomStateChanged;
+		public event Action<TwitchMessage>? OnMessageReceived;
 
-		public void SendMessage(IChatChannel channel, string message)
+		public void SendMessage(TwitchChannel channel, string message)
 		{
 			_workerCanSleepSemaphoreSlim.Wait();
 			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Name} :{message}"));
-			_workerCanSleepSemaphoreSlim.Release();
+			_ = _workerCanSleepSemaphoreSlim.Release();
 
 			// Trigger re-activation of worker thread
 			if (_workerSemaphoreSlim.CurrentCount == 0)
 			{
-				_workerSemaphoreSlim.Release();
+				_ = _workerSemaphoreSlim.Release();
 			}
 		}
 
@@ -99,7 +99,7 @@ namespace CatCore.Services.Twitch
 
 			if (!_twitchAuthService.TokenIsValid)
 			{
-				await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
+				_ = await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
 			}
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
@@ -241,7 +241,7 @@ namespace CatCore.Services.Twitch
 					{
 						case "Login authentication failed":
 							_logger.Warning("Login failed. Error {ErrorMessage}", message);
-							_kittenWebSocketProvider.Disconnect(message).ConfigureAwait(false);
+							_ = _kittenWebSocketProvider.Disconnect(message).ConfigureAwait(false);
 							break;
 					}
 
@@ -253,25 +253,25 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.JOIN:
 				{
-					prefix.ParsePrefix(out _, out _, out var username, out _);
+						_ = prefix.ParsePrefix(out _, out _, out var username, out _);
 					if (_twitchAuthService.LoggedInUser?.LoginName == username)
 					{
 						// TODO: pass channel object with correct Id
-						OnJoinChannel?.Invoke(new TwitchChannel(channelName!, channelName!));
+						OnJoinChannel?.Invoke(new TwitchChannel(this, channelName!, channelName!));
 					}
 
 					break;
 				}
 				case IrcCommands.PART:
 				{
-					prefix.ParsePrefix(out _, out _, out var username, out _);
+						_ = prefix.ParsePrefix(out _, out _, out var username, out _);
 					if (_twitchAuthService.LoggedInUser?.LoginName == username)
 					{
 						var roomState = _roomStateTrackerService.GetRoomState(channelName!);
 						// TODO: pass channel object with guaranteed Id
-						OnLeaveChannel?.Invoke(new TwitchChannel(roomState?.RoomId ?? string.Empty, channelName!));
+						OnLeaveChannel?.Invoke(new TwitchChannel(this, roomState?.RoomId ?? string.Empty, channelName!));
 
-						_roomStateTrackerService.UpdateRoomState(channelName!, null);
+						_ = _roomStateTrackerService.UpdateRoomState(channelName!, null);
 						_userStateTrackerService.UpdateUserState(channelName!, null);
 					}
 
@@ -280,7 +280,7 @@ namespace CatCore.Services.Twitch
 				case TwitchIrcCommands.ROOMSTATE:
 					var updatedRoomState = _roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
 					// TODO: pass channel object with guaranteed Id
-					OnRoomStateChanged?.Invoke(new TwitchChannel(updatedRoomState?.RoomId ?? "", channelName!));
+					OnRoomStateChanged?.Invoke(new TwitchChannel(this, updatedRoomState?.RoomId ?? "", channelName!));
 
 					break;
 				case TwitchIrcCommands.USERSTATE:
@@ -296,7 +296,7 @@ namespace CatCore.Services.Twitch
 				case TwitchIrcCommands.CLEARMSG:
 					break;
 				case TwitchIrcCommands.RECONNECT:
-					((ITwitchIrcService) this).Start().ConfigureAwait(false);
+					_ = ((ITwitchIrcService) this).Start().ConfigureAwait(false);
 					break;
 				case TwitchIrcCommands.HOSTTARGET:
 					// NOP
@@ -311,7 +311,7 @@ namespace CatCore.Services.Twitch
 		private void HandlePrivMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
 			bool wasSendByLibrary)
 		{
-			prefix.ParsePrefix(out var isServer, out _, out var username, out var hostname);
+			_ = prefix.ParsePrefix(out var isServer, out _, out var username, out var hostname);
 
 			// Determine channelId
 			var channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
@@ -319,7 +319,7 @@ namespace CatCore.Services.Twitch
 				: _roomStateTrackerService.GetRoomState(channelName!)?.RoomId ?? string.Empty;
 
 			// Create Channel object
-			var channel = new TwitchChannel(channelId, channelName!);
+			var channel = new TwitchChannel(this, channelId, channelName!);
 
 			var globalUserState = _userStateTrackerService.GlobalUserState;
 			var userState = _userStateTrackerService.GetUserState(channelName!);
@@ -447,7 +447,7 @@ namespace CatCore.Services.Twitch
 			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
 				messageId,
-				commandType == IrcCommands.NOTICE || commandType == TwitchIrcCommands.USERNOTICE,
+				commandType is IrcCommands.NOTICE or TwitchIrcCommands.USERNOTICE,
 				isActionMessage,
 				isMentioned,
 				message,
@@ -582,7 +582,7 @@ namespace CatCore.Services.Twitch
 						}
 					}
 
-					_messageQueue.TryDequeue(out msg);
+					_ = _messageQueue.TryDequeue(out msg);
 
 					// Send message
 					await _kittenWebSocketProvider.SendMessageInstant(msg.message).ConfigureAwait(false);
@@ -606,13 +606,13 @@ namespace CatCore.Services.Twitch
 
 					await _workerCanSleepSemaphoreSlim.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 					var canConsume = !_messageQueue.IsEmpty;
-					_workerCanSleepSemaphoreSlim.Release();
+					_ = _workerCanSleepSemaphoreSlim.Release();
 
 					var remainingTicks = GetTicksTillReset();
 					var autoReExecutionDelay = canConsume ? remainingTicks > 0 ? (int) Math.Ceiling((double) remainingTicks / TimeSpan.TicksPerMillisecond) : 0 : -1;
 					_logger.Information("Auto re-execution delay: {AutoReExecutionDelay}ms", autoReExecutionDelay);
 
-					await Task.WhenAny(
+					_ = await Task.WhenAny(
 							Task.Delay(autoReExecutionDelay, cts),
 							_workerSemaphoreSlim.WaitAsync(cts))
 						.ConfigureAwait(false);
