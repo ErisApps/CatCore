@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace CatCore.Services.Interfaces
 {
 	internal interface IKittenPlatformServiceManagerBase : IDisposable
 	{
 		bool IsRunning { get; }
-		void Start(Assembly callingAssembly);
-		void Stop(Assembly? callingAssembly);
+		Task Start(Assembly callingAssembly);
+		Task Stop(Assembly? callingAssembly);
 	}
 }

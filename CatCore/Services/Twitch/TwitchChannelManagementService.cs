@@ -12,20 +12,22 @@ namespace CatCore.Services.Twitch
 {
 	public sealed class TwitchChannelManagementService : ITwitchChannelManagementService
 	{
-		private readonly ITwitchIrcService twitchService;
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
 		public event EventHandler<TwitchChannelsUpdatedEventArgs>? ChannelsUpdated;
 
-		internal TwitchChannelManagementService(ITwitchIrcService twitchService, IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
+		internal TwitchChannelManagementService(IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService, ITwitchHelixApiService twitchHelixApiService)
 		{
-			this.twitchService = twitchService;
 			_kittenSettingsService = kittenSettingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchHelixApiService = twitchHelixApiService;
 		}
+
+		private ITwitchIrcService twitchService = null!;
+		internal void SetIrcService(ITwitchIrcService irc)
+			=> twitchService = irc;
 
 		public TwitchChannel? GetOwnChannel()
 		{
