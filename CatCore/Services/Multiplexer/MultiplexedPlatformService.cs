@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using CatCore.Models.Shared;
 using CatCore.Services.Interfaces;
