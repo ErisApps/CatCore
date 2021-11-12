@@ -155,6 +155,8 @@ namespace CatCore
 			});
 		}
 
+		// TODO: handle all of the start/stop tasks
+
 		/// <summary>
 		/// Starts all services if they haven't been already.
 		/// </summary>
@@ -162,14 +164,14 @@ namespace CatCore
 		[PublicAPI]
 		public ChatServiceMultiplexer RunAllServices()
 		{
-			using var _ = Synchronization.Lock(RunLocker);
+			using var __ = Synchronization.Lock(RunLocker);
 			if (_container == null)
 			{
 				throw new CatCoreNotInitializedException();
 			}
 
 			var multiplexerManager = _container.Resolve<ChatServiceMultiplexerManager>();
-			multiplexerManager.Start(Assembly.GetCallingAssembly());
+			_ = multiplexerManager.Start(Assembly.GetCallingAssembly());
 			return multiplexerManager.GetMultiplexer();
 		}
 
@@ -182,8 +184,8 @@ namespace CatCore
 		[PublicAPI]
 		public void StopAllServices()
 		{
-			using var _ = Synchronization.Lock(RunLocker);
-			_container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
+			using var __ = Synchronization.Lock(RunLocker);
+			_ = _container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -193,14 +195,14 @@ namespace CatCore
 		[PublicAPI]
 		public ITwitchService RunTwitchServices()
 		{
-			using var _ = Synchronization.Lock(RunLocker);
+			using var __ = Synchronization.Lock(RunLocker);
 			if (_container == null)
 			{
 				throw new CatCoreNotInitializedException();
 			}
 
 			var twitchServiceManager = _container.Resolve<TwitchServiceManager>();
-			twitchServiceManager.Start(Assembly.GetCallingAssembly());
+			_ = twitchServiceManager.Start(Assembly.GetCallingAssembly());
 			return twitchServiceManager.GetService();
 		}
 
@@ -213,8 +215,8 @@ namespace CatCore
 		[PublicAPI]
 		public void StopTwitchServices()
 		{
-			using var _ = Synchronization.Lock(RunLocker);
-			_container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
+			using var __ = Synchronization.Lock(RunLocker);
+			_ = _container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
 using Serilog;
 
@@ -20,21 +21,21 @@ namespace CatCore.Services.Multiplexer
 
 		public bool IsRunning => false;
 
-		public void Start(Assembly callingAssembly)
+		public async Task Start(Assembly callingAssembly)
 		{
 			foreach (var service in _platformServices)
 			{
-				service.Start(callingAssembly);
+				await service.Start(callingAssembly);
 			}
 
 			_logger.Information("Streaming services have been started");
 		}
 
-		public void Stop(Assembly? callingAssembly)
+		public async Task Stop(Assembly? callingAssembly)
 		{
 			foreach (var service in _platformServices)
 			{
-				service.Stop(callingAssembly);
+				await service.Stop(callingAssembly);
 			}
 
 			_logger.Information("Streaming services have been stopped");
@@ -44,7 +45,8 @@ namespace CatCore.Services.Multiplexer
 		{
 			foreach (var service in _platformServices)
 			{
-				service.Stop(null);
+				// TODO: how do you want to handle this?
+				_ = service.Stop(null);
 			}
 
 			_logger.Information("Disposed");
