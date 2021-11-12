@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using CatCore.Models.Shared;
 using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
 

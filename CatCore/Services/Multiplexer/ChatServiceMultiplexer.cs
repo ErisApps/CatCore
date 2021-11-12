@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CatCore.Models.Shared;
-using CatCore.Models.Twitch;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
