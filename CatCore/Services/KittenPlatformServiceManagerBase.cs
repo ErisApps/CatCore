@@ -38,7 +38,7 @@ namespace CatCore.Services
 
 		public async Task Start(Assembly callingAssembly)
 		{
-			using var __ = Synchronization.Lock(_locker);
+			using var __ = await Synchronization.LockAsync(_locker);
 			_ = RegisteredAssemblies.Add(callingAssembly);
 
 			if (IsRunning)
@@ -54,7 +54,7 @@ namespace CatCore.Services
 
 		public async Task Stop(Assembly? callingAssembly)
 		{
-			using var __ = Synchronization.Lock(_locker);
+			using var __ = await Synchronization.LockAsync(_locker);
 			if (!IsRunning)
 			{
 				return;
