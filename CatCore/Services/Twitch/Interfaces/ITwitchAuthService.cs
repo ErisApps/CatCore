@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Interfaces;
-using CatCore.Shared.Models.Twitch.OAuth;
 
 namespace CatCore.Services.Twitch.Interfaces
 {
