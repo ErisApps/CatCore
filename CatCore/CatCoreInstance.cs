@@ -141,6 +141,8 @@ namespace CatCore
 			_container.RegisterMany(new[] { typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager) }, typeof(TwitchServiceManager), Reuse.Singleton);
 
 			// Register multiplexer services
+			_container.Register( // manually register Twitch service to multiplexer, TODO: make a general form of this for all IPlatformServices
+				made: Made.Of(() => MultiplexedPlatformService.From<ITwitchService, TwitchChannel, TwitchMessage>(Arg.Of<ITwitchService>())));
 			_container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
 			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
