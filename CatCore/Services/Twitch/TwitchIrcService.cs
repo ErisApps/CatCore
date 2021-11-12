@@ -69,11 +69,6 @@ namespace CatCore.Services.Twitch
 			_messageQueue = new ConcurrentQueue<(string channelName, string message)>();
 			_forcedSendChannelMessageSendDelays = new ConcurrentDictionary<string, long>();
 			_messageSendTimestamps = new List<long>();
-
-			if (twitchChannelManagementService is TwitchChannelManagementService tcms)
-			{
-				tcms.SetIrcService(this); // this is a *horrible* hack, TODO: figure out the right reorg to do for this
-			}
 		}
 
 		public event Action? OnChatConnected;
@@ -237,7 +232,7 @@ namespace CatCore.Services.Twitch
 					_messageQueueProcessorCancellationTokenSource?.Cancel();
 					_messageQueueProcessorCancellationTokenSource = new CancellationTokenSource();
 
-					_ = Task.Run(() => ProcessQueuedMessage(_messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token).ConfigureAwait(false);
+					_ = Task.Run(() => ProcessQueuedMessage(_messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token);
 
 					break;
 				case IrcCommands.NOTICE:
