@@ -17,6 +17,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
 		List<TwitchChannel> GetActiveChannels(bool includeSelfRegardlessOfState = false);
 		Task<List<UserData>> GetAllChannelsEnriched();
+		TwitchChannel CreateChannel(string channelId, string channelName);
 
 		internal void UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData);
 	}

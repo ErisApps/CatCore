@@ -31,7 +31,7 @@ namespace CatCore.Services.Twitch
 		public TwitchChannel? GetOwnChannel()
 		{
 			var self = _twitchAuthService.LoggedInUser;
-			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? new TwitchChannel(_twitchIrcService.Value, self.Value.UserId, self.Value.LoginName) : null;
+			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? CreateChannel(self.Value.UserId, self.Value.LoginName) : null;
 		}
 
 		public List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false)
@@ -69,10 +69,10 @@ namespace CatCore.Services.Twitch
 
 			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
 			{
-				allChannels.Add(new TwitchChannel(_twitchIrcService.Value, self.Value.UserId, self.Value.LoginName));
+				allChannels.Add(CreateChannel(self.Value.UserId, self.Value.LoginName));
 			}
 
-			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Select(kvp => new TwitchChannel(_twitchIrcService.Value, kvp.Key, kvp.Value)));
+			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Select(kvp => CreateChannel(kvp.Key, kvp.Value)));
 
 			return allChannels;
 		}
@@ -82,6 +82,11 @@ namespace CatCore.Services.Twitch
 			var allActiveChannelIds = GetAllActiveChannelIds(true);
 			var userInfos = await _twitchHelixApiService.FetchUserInfo(allActiveChannelIds.ToArray()).ConfigureAwait(false);
 			return userInfos?.Data ?? new List<UserData>();
+		}
+
+		public TwitchChannel CreateChannel(string channelId, string channelName)
+		{
+			return new TwitchChannel(_twitchIrcService.Value, channelId, channelName);
 		}
 
 		void ITwitchChannelManagementService.UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData)
