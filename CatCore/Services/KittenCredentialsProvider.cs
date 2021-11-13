@@ -11,7 +11,7 @@ namespace CatCore.Services
 {
 	internal abstract class KittenCredentialsProvider<T> where T : class, ICredentials, new()
 	{
-		private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim _locker = new(1, 1);
 
 		private readonly ILogger _logger;
 		private readonly IKittenPathProvider _pathProvider;

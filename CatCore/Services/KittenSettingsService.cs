@@ -13,7 +13,7 @@ namespace CatCore.Services
 	{
 		private const string CONFIG_FILENAME = nameof(CatCore) + "Settings.json";
 
-		private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim _locker = new(1, 1);
 
 		private readonly ILogger _logger;
 		private readonly IKittenPathProvider _pathProvider;
