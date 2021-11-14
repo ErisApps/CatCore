@@ -69,7 +69,7 @@ namespace CatCore.Services.Twitch
 				.Handle<HttpRequestException>()
 				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(2 ^ (retryAttempt - 1) * 500));
 
-			var bulkheadPolicy = Policy.BulkheadAsync<HttpResponseMessage>(1, 1000);
+			var bulkheadPolicy = Policy.BulkheadAsync<HttpResponseMessage>(4, 1000);
 
 			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy, exceptionRetryPolicy);
 		}
