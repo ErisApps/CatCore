@@ -6,39 +6,39 @@ namespace CatCore.Models.Twitch.IRC
 {
 	public sealed class TwitchMessage : IChatMessage<TwitchMessage, TwitchChannel>
 	{
-		/// <inheritdoc cref="IChatMessage.Id"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public string Id { get; internal set;  }
 
-		/// <inheritdoc cref="IChatMessage.IsSystemMessage"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public bool IsSystemMessage { get; internal set;  }
 
-		/// <inheritdoc cref="IChatMessage.IsActionMessage"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public bool IsActionMessage { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.IsMentioned"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public bool IsMentioned { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.Message"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public string Message { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.Sender"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public IChatUser Sender { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.Channel"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public TwitchChannel Channel { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.Emotes"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public ReadOnlyCollection<IChatEmote> Emotes { get; internal set; }
 
-		/// <inheritdoc cref="IChatMessage.Metadata"/>
+		/// <inheritdoc />
 		[PublicAPI]
 		public ReadOnlyDictionary<string, string>? Metadata { get; internal set; }
 

@@ -7,8 +7,9 @@ namespace CatCore.Models.Twitch
 {
 	public sealed class TwitchChannel : IChatChannel<TwitchChannel, TwitchMessage>
 	{
-		private readonly ITwitchIrcService service;
+		private readonly ITwitchIrcService _service;
 
+		/// <inheritdoc />
 		[PublicAPI]
 		public string Id { get; }
 
@@ -17,16 +18,17 @@ namespace CatCore.Models.Twitch
 
 		internal TwitchChannel(ITwitchIrcService service, string id, string name)
 		{
-			this.service = service;
+			_service = service;
+
 			Id = id;
 			Name = name;
 		}
 
 		public object Clone()
 		{
-			return new TwitchChannel(service, Id, Name);
+			return new TwitchChannel(_service, Id, Name);
 		}
 
-		public void SendMessage(string message) => service.SendMessage(this, message);
+		public void SendMessage(string message) => _service.SendMessage(this, message);
 	}
 }
