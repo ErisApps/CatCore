@@ -10,9 +10,9 @@ namespace CatCore.Services.Twitch.Interfaces
 		TwitchGlobalUserState? GlobalUserState { get; }
 
 		[PublicAPI]
-		TwitchUserState? GetUserState(string channelName);
+		TwitchUserState? GetUserState(string channelId);
 
 		internal void UpdateGlobalUserState(ReadOnlyDictionary<string, string>? globalUserStateUpdate);
-		internal void UpdateUserState(string channelName, ReadOnlyDictionary<string, string>? userStateUpdate);
+		internal void UpdateUserState(string channelId, ReadOnlyDictionary<string, string>? userStateUpdate);
 	}
 }

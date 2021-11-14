@@ -18,9 +18,9 @@ namespace CatCore.Services.Twitch
 
 		public TwitchGlobalUserState? GlobalUserState { get; private set; }
 
-		public TwitchUserState? GetUserState(string channelName)
+		public TwitchUserState? GetUserState(string channelId)
 		{
-			return _userStates.TryGetValue(channelName, out var userState) ? userState : null;
+			return _userStates.TryGetValue(channelId, out var userState) ? userState : null;
 		}
 
 		void ITwitchUserStateTrackerService.UpdateGlobalUserState(ReadOnlyDictionary<string, string>? globalUserStateUpdate)
@@ -42,13 +42,13 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		void ITwitchUserStateTrackerService.UpdateUserState(string channelName, ReadOnlyDictionary<string, string>? userStateUpdate)
+		void ITwitchUserStateTrackerService.UpdateUserState(string channelId, ReadOnlyDictionary<string, string>? userStateUpdate)
 		{
 			if (userStateUpdate == null)
 			{
-				_userStates.TryRemove(channelName, out _);
+				_userStates.TryRemove(channelId, out _);
 			}
-			else if (_userStates.TryGetValue(channelName, out var existingUserState))
+			else if (_userStates.TryGetValue(channelId, out var existingUserState))
 			{
 				existingUserState.UpdateState(
 					ExtractBadgeInfo(userStateUpdate),
@@ -61,7 +61,7 @@ namespace CatCore.Services.Twitch
 			}
 			else
 			{
-				_userStates.TryAdd(channelName, new TwitchUserState(
+				_userStates.TryAdd(channelId, new TwitchUserState(
 					ExtractBadgeInfo(userStateUpdate),
 					ExtractBadges(userStateUpdate),
 					ExtractColor(userStateUpdate),

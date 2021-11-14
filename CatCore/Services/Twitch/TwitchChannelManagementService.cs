@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CatCore.Models.EventArgs;
@@ -62,7 +63,26 @@ namespace CatCore.Services.Twitch
 			return allChannels;
 		}
 
-		public List<TwitchChannel> GetActiveChannels(bool includeSelfRegardlessOfState = false)
+		public ReadOnlyDictionary<string, string> GetAllActiveChannelsAsDictionary(bool includeSelfRegardlessOfState = false)
+		{
+			var allChannels = new Dictionary<string, string>();
+			var self = _twitchAuthService.LoggedInUser;
+			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
+
+			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
+			{
+				allChannels.Add(self.Value.UserId, self.Value.LoginName);
+			}
+
+			foreach (var kvp in twitchConfig.AdditionalChannelsData)
+			{
+				allChannels.Add(kvp.Key, kvp.Value);
+			}
+
+			return new ReadOnlyDictionary<string, string>(allChannels);
+		}
+
+		public List<TwitchChannel> GetAllActiveChannels(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new List<TwitchChannel>();
 			var self = _twitchAuthService.LoggedInUser;
