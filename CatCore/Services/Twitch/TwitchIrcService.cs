@@ -37,9 +37,11 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchRoomStateTrackerService _roomStateTrackerService;
 		private readonly ITwitchUserStateTrackerService _userStateTrackerService;
 
-		private readonly char[] _ircMessageSeparator;
+		private readonly char[] _ircMessageSeparator = {'\r', '\n'};
 
-		private readonly ConcurrentQueue<(string channelName, string message)> _messageQueue;
+		private readonly Dictionary<string, string> _channelNameToChannelIdDictionary;
+
+		private readonly ConcurrentQueue<(string channelId, string message)> _messageQueue;
 		private readonly ConcurrentDictionary<string, long> _forcedSendChannelMessageSendDelays;
 		private readonly List<long> _messageSendTimestamps;
 
@@ -64,9 +66,9 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
-			_ircMessageSeparator = new[] {'\r', '\n'};
+			_channelNameToChannelIdDictionary = new Dictionary<string, string>();
 
-			_messageQueue = new ConcurrentQueue<(string channelName, string message)>();
+			_messageQueue = new ConcurrentQueue<(string channelId, string message)>();
 			_forcedSendChannelMessageSendDelays = new ConcurrentDictionary<string, long>();
 			_messageSendTimestamps = new List<long>();
 		}
@@ -80,7 +82,7 @@ namespace CatCore.Services.Twitch
 		public void SendMessage(TwitchChannel channel, string message)
 		{
 			_workerCanSleepSemaphoreSlim.Wait();
-			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()} {IrcCommands.PRIVMSG} #{channel.Name} :{message}"));
+			_messageQueue.Enqueue((channel.Id, $"@id={Guid.NewGuid().ToString()};{IrcMessageTags.ROOM_ID}={channel.Id} {IrcCommands.PRIVMSG} #{channel.Name} :{message}"));
 			_ = _workerCanSleepSemaphoreSlim.Release();
 
 			// Trigger re-activation of worker thread
@@ -149,6 +151,7 @@ namespace CatCore.Services.Twitch
 
 				foreach (var enabledChannel in e.EnabledChannels)
 				{
+					_channelNameToChannelIdDictionary[enabledChannel.Key] = enabledChannel.Value;
 					_kittenWebSocketProvider.SendMessage($"JOIN #{enabledChannel.Value}");
 				}
 			}
@@ -166,6 +169,8 @@ namespace CatCore.Services.Twitch
 		{
 			_messageQueueProcessorCancellationTokenSource?.Cancel();
 			_messageQueueProcessorCancellationTokenSource = null;
+
+			_channelNameToChannelIdDictionary.Clear();
 		}
 
 		private void MessageReceivedHandler(string message)
@@ -224,9 +229,10 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.RPL_ENDOFMOTD:
 					OnChatConnected?.Invoke();
-					foreach (var loginName in _twitchChannelManagementService.GetAllActiveLoginNames())
+					foreach (var channel in _twitchChannelManagementService.GetAllActiveChannelsAsDictionary())
 					{
-						_kittenWebSocketProvider.SendMessage($"JOIN #{loginName}");
+						_channelNameToChannelIdDictionary[channel.Value] = channel.Key;
+						_kittenWebSocketProvider.SendMessage($"JOIN #{channel.Value}");
 					}
 
 					_messageQueueProcessorCancellationTokenSource?.Cancel();
@@ -253,38 +259,38 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.JOIN:
 				{
-						_ = prefix.ParsePrefix(out _, out _, out var username, out _);
+					_ = prefix.ParsePrefix(out _, out _, out var username, out _);
 					if (_twitchAuthService.LoggedInUser?.LoginName == username)
 					{
-						// TODO: pass channel object with correct Id
-						OnJoinChannel?.Invoke(new TwitchChannel(this, channelName!, channelName!));
+						OnJoinChannel?.Invoke(new TwitchChannel(this, _channelNameToChannelIdDictionary[channelName!], channelName!));
 					}
 
 					break;
 				}
 				case IrcCommands.PART:
 				{
-						_ = prefix.ParsePrefix(out _, out _, out var username, out _);
+					_ = prefix.ParsePrefix(out _, out _, out var username, out _);
 					if (_twitchAuthService.LoggedInUser?.LoginName == username)
 					{
-						var roomState = _roomStateTrackerService.GetRoomState(channelName!);
-						// TODO: pass channel object with guaranteed Id
-						OnLeaveChannel?.Invoke(new TwitchChannel(this, roomState?.RoomId ?? string.Empty, channelName!));
+						var channelId = _channelNameToChannelIdDictionary[channelName!];
+						OnLeaveChannel?.Invoke(new TwitchChannel(this, channelId, channelName!));
 
 						_ = _roomStateTrackerService.UpdateRoomState(channelName!, null);
-						_userStateTrackerService.UpdateUserState(channelName!, null);
+						_userStateTrackerService.UpdateUserState(channelId, null);
 					}
 
 					break;
 				}
 				case TwitchIrcCommands.ROOMSTATE:
-					var updatedRoomState = _roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
-					// TODO: pass channel object with guaranteed Id
-					OnRoomStateChanged?.Invoke(new TwitchChannel(this, updatedRoomState?.RoomId ?? "", channelName!));
+				{
+					_ = _roomStateTrackerService.UpdateRoomState(channelName!, messageMeta);
+
+					OnRoomStateChanged?.Invoke(new TwitchChannel(this, _channelNameToChannelIdDictionary[channelName!], channelName!));
 
 					break;
+				}
 				case TwitchIrcCommands.USERSTATE:
-					_userStateTrackerService.UpdateUserState(channelName!, messageMeta);
+					_userStateTrackerService.UpdateUserState(_channelNameToChannelIdDictionary[channelName!], messageMeta);
 
 					break;
 				case TwitchIrcCommands.GLOBALUSERSTATE:
@@ -322,7 +328,7 @@ namespace CatCore.Services.Twitch
 			var channel = new TwitchChannel(this, channelId, channelName!);
 
 			var globalUserState = _userStateTrackerService.GlobalUserState;
-			var userState = _userStateTrackerService.GetUserState(channelName!);
+			var userState = _userStateTrackerService.GetUserState(channelId);
 
 			var selfDisplayName = globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName;
 
@@ -534,7 +540,7 @@ namespace CatCore.Services.Twitch
 					return null;
 				}
 
-				var rateLimit = (int) GetRateLimit(_messageQueue.First().channelName);
+				var rateLimit = (int) GetRateLimit(_messageQueue.First().channelId);
 
 				if (_messageSendTimestamps.Count < rateLimit)
 				{
@@ -557,21 +563,21 @@ namespace CatCore.Services.Twitch
 			{
 				UpdateRateLimitState();
 
-				return !_messageQueue.IsEmpty && _messageSendTimestamps.Count < (int) GetRateLimit(_messageQueue.First().channelName);
+				return _messageQueue.TryPeek(out var queueEntry) && _messageSendTimestamps.Count < (int) GetRateLimit(queueEntry.channelId);
 			}
 
 			async Task HandleQueue()
 			{
 				while (_messageQueue.TryPeek(out var msg))
 				{
-					var rateLimit = GetRateLimit(msg.channelName);
+					var rateLimit = GetRateLimit(msg.channelId);
 					if (_messageSendTimestamps.Count >= (int) rateLimit)
 					{
 						_logger.Debug("Hit rate limit. Type {RateLimit}", rateLimit.ToString("G"));
 						break;
 					}
 
-					if (_forcedSendChannelMessageSendDelays.TryGetValue(msg.channelName, out var ticksSinceLastChannelMessage))
+					if (_forcedSendChannelMessageSendDelays.TryGetValue(msg.channelId, out var ticksSinceLastChannelMessage))
 					{
 						var ticksTillReset = ticksSinceLastChannelMessage + (rateLimit == MessageSendingRateLimit.Relaxed ? 50 : 1250) * TimeSpan.TicksPerMillisecond - DateTime.UtcNow.Ticks;
 						if (ticksTillReset > 0)
@@ -592,7 +598,7 @@ namespace CatCore.Services.Twitch
 
 					var ticksNow = DateTime.UtcNow.Ticks;
 					_messageSendTimestamps.Add(ticksNow);
-					_forcedSendChannelMessageSendDelays[msg.channelName] = ticksNow;
+					_forcedSendChannelMessageSendDelays[msg.channelId] = ticksNow;
 				}
 			}
 
@@ -624,14 +630,14 @@ namespace CatCore.Services.Twitch
 			_logger.Warning("Stopped worker queue");
 		}
 
-		private MessageSendingRateLimit GetRateLimit(string channelName)
+		private MessageSendingRateLimit GetRateLimit(string channelId)
 		{
-			if (_twitchAuthService.LoggedInUser?.LoginName == channelName)
+			if (_twitchAuthService.LoggedInUser?.UserId == channelId)
 			{
 				return MessageSendingRateLimit.Relaxed;
 			}
 
-			var userState = _userStateTrackerService.GetUserState(channelName);
+			var userState = _userStateTrackerService.GetUserState(channelId);
 			if (userState != null && (userState.IsBroadcaster || userState.IsModerator))
 			{
 				return MessageSendingRateLimit.Relaxed;

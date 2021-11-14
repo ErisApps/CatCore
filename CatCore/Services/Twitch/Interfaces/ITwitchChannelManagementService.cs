@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Twitch;
@@ -15,8 +16,10 @@ namespace CatCore.Services.Twitch.Interfaces
 
 		List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false);
 		List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false);
-		List<TwitchChannel> GetActiveChannels(bool includeSelfRegardlessOfState = false);
+		List<TwitchChannel> GetAllActiveChannels(bool includeSelfRegardlessOfState = false);
+		ReadOnlyDictionary<string, string> GetAllActiveChannelsAsDictionary(bool includeSelfRegardlessOfState = false);
 		Task<List<UserData>> GetAllChannelsEnriched();
+
 		TwitchChannel CreateChannel(string channelId, string channelName);
 
 		internal void UpdateChannels(bool ownChannelActive, Dictionary<string, string> additionalChannelsData);
