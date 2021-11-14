@@ -37,13 +37,15 @@ namespace CatCore.Services.Multiplexer
 			where TMsg : IChatMessage<TMsg, TChannel>
 			=> new(Info<TChannel, TMsg>.INSTANCE, channel);
 
+		/// <inheritdoc />
 		public string Id => info.GetId(channel);
 
+		/// <inheritdoc />
 		public string Name => info.GetName(channel);
 
+		/// <inheritdoc />
 		public void SendMessage(string message) => info.SendMessage(channel, message);
 
 		public object Clone() => new MultiplexedChannel(info, info.Clone(channel));
 	}
 }
- 
