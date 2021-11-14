@@ -151,7 +151,7 @@ namespace CatCore.Services.Twitch
 
 				foreach (var enabledChannel in e.EnabledChannels)
 				{
-					_channelNameToChannelIdDictionary[enabledChannel.Key] = enabledChannel.Value;
+					_channelNameToChannelIdDictionary[enabledChannel.Value] = enabledChannel.Key;
 					_kittenWebSocketProvider.SendMessage($"JOIN #{enabledChannel.Value}");
 				}
 			}
@@ -277,6 +277,8 @@ namespace CatCore.Services.Twitch
 
 						_ = _roomStateTrackerService.UpdateRoomState(channelName!, null);
 						_userStateTrackerService.UpdateUserState(channelId, null);
+
+						_channelNameToChannelIdDictionary.Remove(channelName!);
 					}
 
 					break;
