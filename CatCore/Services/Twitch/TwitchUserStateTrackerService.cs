@@ -99,13 +99,13 @@ namespace CatCore.Services.Twitch
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static string? ExtractDisplayName(IReadOnlyDictionary<string, string> userStateUpdate)
 		{
-			return userStateUpdate.TryGetValue(IrcMessageTags.DISPLAY_NAME, out var userId) ? userId : null;
+			return userStateUpdate.TryGetValue(IrcMessageTags.DISPLAY_NAME, out var displayName) ? displayName : null;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static string? ExtractEmoteSets(IReadOnlyDictionary<string, string> userStateUpdate)
 		{
-			return userStateUpdate.TryGetValue(IrcMessageTags.EMOTE_SETS, out var userId) ? userId : null;
+			return userStateUpdate.TryGetValue(IrcMessageTags.EMOTE_SETS, out var emoteSets) ? emoteSets : null;
 		}
 	}
 }
