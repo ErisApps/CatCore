@@ -39,12 +39,14 @@ namespace CatCore.Services.Twitch
 		{
 			var allChannels = new List<string>();
 			var self = _twitchAuthService.LoggedInUser;
-			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
+			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
+
+			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
 			{
 				allChannels.Add(self.Value.UserId);
 			}
 
-			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Keys);
+			allChannels.AddRange(twitchConfig.AdditionalChannelsData.Keys);
 
 			return allChannels;
 		}
@@ -53,12 +55,14 @@ namespace CatCore.Services.Twitch
 		{
 			var allChannels = new List<string>();
 			var self = _twitchAuthService.LoggedInUser;
-			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
+			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
+
+			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
 			{
 				allChannels.Add(self.Value.LoginName);
 			}
 
-			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Values);
+			allChannels.AddRange(twitchConfig.AdditionalChannelsData.Values);
 
 			return allChannels;
 		}
@@ -86,13 +90,14 @@ namespace CatCore.Services.Twitch
 		{
 			var allChannels = new List<TwitchChannel>();
 			var self = _twitchAuthService.LoggedInUser;
+			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
-			if (self != null && (_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
+			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
 			{
 				allChannels.Add(CreateChannel(self.Value.UserId, self.Value.LoginName));
 			}
 
-			allChannels.AddRange(_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData.Select(kvp => CreateChannel(kvp.Key, kvp.Value)));
+			allChannels.AddRange(twitchConfig.AdditionalChannelsData.Select(kvp => CreateChannel(kvp.Key, kvp.Value)));
 
 			return allChannels;
 		}
@@ -114,13 +119,15 @@ namespace CatCore.Services.Twitch
 			var enabledChannels = new Dictionary<string, string>();
 			var disabledChannels = new Dictionary<string, string>();
 
-			if (_twitchAuthService.LoggedInUser != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled != ownChannelActive)
+			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
+
+			if (_twitchAuthService.LoggedInUser != null && twitchConfig.OwnChannelEnabled != ownChannelActive)
 			{
-				_kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled = ownChannelActive;
+				twitchConfig.OwnChannelEnabled = ownChannelActive;
 				(ownChannelActive ? enabledChannels : disabledChannels).Add(_twitchAuthService.LoggedInUser.Value.UserId, _twitchAuthService.LoggedInUser.Value.LoginName);
 			}
 
-			var twitchChannelData = _kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData;
+			var twitchChannelData = twitchConfig.AdditionalChannelsData;
 
 			foreach (var keyValuePair in twitchChannelData.Except(additionalChannelsData))
 			{
@@ -132,7 +139,7 @@ namespace CatCore.Services.Twitch
 				enabledChannels.Add(keyValuePair.Key, keyValuePair.Value);
 			}
 
-			_kittenSettingsService.Config.TwitchConfig.AdditionalChannelsData = additionalChannelsData;
+			twitchConfig.AdditionalChannelsData = additionalChannelsData;
 
 			ChannelsUpdated?.Invoke(this, new TwitchChannelsUpdatedEventArgs(enabledChannels, disabledChannels));
 		}
