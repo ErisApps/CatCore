@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
+using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Shared;
@@ -217,5 +218,26 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
 			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null);
+
+		/// <summary>
+		/// Gets all <a href="https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes/">global emotes</a>. Global emotes are Twitch-created emoticons that users can use in any Twitch chat.
+		/// </summary>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of globally available chat emotes</returns>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-emotes">Check out the Twitch API Reference docs.</a></remarks>
+		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken? cancellationToken = null);
+
+		/// <summary>
+		/// Gets all emotes that the specified Twitch channel created. Broadcasters create these custom emotes for users who subscribe to or follow the channel, or cheer Bits in the channel’s chat
+		/// window. For information about the custom emotes, see <a href="https://help.twitch.tv/s/article/subscriber-emote-guide">subscriber emotes</a>,
+		/// <a href="https://help.twitch.tv/s/article/custom-bit-badges-guide?language=bg#slots">Bits tier emotes</a>, and
+		/// <a href="https://blog.twitch.tv/en/2021/06/04/kicking-off-10-years-with-our-biggest-emote-update-ever/">follower emotes</a>.
+		/// <b>NOTE:</b> With the exception of custom follower emotes, users may use custom emotes in any Twitch chat.
+		/// </summary>
+		/// <param name="userId">Id of the channel for which to retrieve the custom chat emotes.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of custom chat emotes</returns>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
+		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken? cancellationToken = null);
 	}
 }
