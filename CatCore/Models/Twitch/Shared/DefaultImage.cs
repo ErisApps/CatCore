@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1
+namespace CatCore.Models.Twitch.Shared
 {
 	public readonly struct DefaultImage
 	{

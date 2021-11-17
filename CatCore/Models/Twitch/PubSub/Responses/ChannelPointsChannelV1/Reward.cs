@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using CatCore.Models.Twitch.Shared;
 
 namespace CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1
 {
