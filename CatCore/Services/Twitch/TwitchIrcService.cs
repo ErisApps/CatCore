@@ -512,9 +512,8 @@ namespace CatCore.Services.Twitch
 					var emoteStart = int.Parse(emoteMeta[0]);
 					var emoteEnd = int.Parse(emoteMeta[1]);
 
-					// TODO: Use v2 url instead
-					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd - emoteStart), emoteStart, emoteEnd,
-						$"https://static-cdn.jtvnw.net/emoticons/v1/{emoteId}/3.0"));
+					emotes.Add(new TwitchEmote(emoteId, message.Substring(emoteStart, emoteEnd + 1 - emoteStart), emoteStart, emoteEnd,
+						$"https://static-cdn.jtvnw.net/emoticons/v2/{emoteId}/static/dark/3.0"));
 				}
 			}
 		}
