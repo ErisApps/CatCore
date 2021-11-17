@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,7 @@ using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
+using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Shared;
@@ -539,6 +540,23 @@ namespace CatCore.Services.Twitch
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken? cancellationToken = null)
+		{
+			return GetAsync(TWITCH_HELIX_BASEURL + "chat/emotes/global", TwitchHelixSerializerContext.Default.ResponseBaseWithTemplateGlobalEmote, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken? cancellationToken = null)
+		{
+			if (string.IsNullOrWhiteSpace(userId))
+			{
+				throw new ArgumentException("The userId parameter should not be null, empty or whitespace.", nameof(userId));
+			}
+
+			return GetAsync(TWITCH_HELIX_BASEURL + "chat/emotes?broadcaster_id=" + userId, TwitchHelixSerializerContext.Default.ResponseBaseWithTemplateChannelEmote, cancellationToken);
 		}
 	}
 }
