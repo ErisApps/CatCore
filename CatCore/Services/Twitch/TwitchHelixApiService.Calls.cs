@@ -25,7 +25,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)
 		{
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}users");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "users");
 
 			var totalParamCount = 0;
 			void CheckCount(ref string[]? array, out bool hasBool)
@@ -77,7 +77,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreateStreamMarkerRequestDto(userId, description);
-			return PostAsync($"{TWITCH_HELIX_BASEURL}streams/markers", body, TwitchHelixSerializerContext.Default.ResponseBaseCreateStreamMarkerData, cancellationToken);
+			return PostAsync(TWITCH_HELIX_BASEURL + "streams/markers", body, TwitchHelixSerializerContext.Default.ResponseBaseCreateStreamMarkerData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -89,7 +89,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentException("The query parameter should not be null, empty or whitespace.", nameof(query));
 			}
 
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}search/channels?query={query}");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "search/channels?query=" + query);
 			if (limit != null)
 			{
 				if (limit.Value > 100)
@@ -97,12 +97,12 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The limit parameter has an upper-limit of 100.", nameof(limit));
 				}
 
-				urlBuilder.Append($"&first={limit}");
+				urlBuilder.Append("&first=").Append(limit);
 			}
 
 			if (liveOnly != null)
 			{
-				urlBuilder.Append($"&live_only={liveOnly}");
+				urlBuilder.Append("&live_only=").Append(liveOnly);
 			}
 
 			if (continuationCursor != null)
@@ -112,7 +112,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
 				}
 
-				urlBuilder.Append($"&after={continuationCursor}");
+				urlBuilder.Append("&after=").Append(continuationCursor);
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationChannelData, cancellationToken);
@@ -128,7 +128,7 @@ namespace CatCore.Services.Twitch
 				throw new Exception("The user wasn't logged in yet. Try again later.");
 			}
 
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}polls?broadcaster_id={loggedInUser.Value.UserId}");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "polls?broadcaster_id=" +loggedInUser.Value.UserId);
 			if (pollIds != null && pollIds.Any())
 			{
 				if (pollIds.Count > 100)
@@ -138,7 +138,7 @@ namespace CatCore.Services.Twitch
 
 				foreach (var pollId in pollIds)
 				{
-					urlBuilder.Append($"&id={pollId}");
+					urlBuilder.Append("&id=").Append(pollId);
 				}
 			}
 
@@ -149,7 +149,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The limit parameter has an upper-limit of 20.", nameof(limit));
 				}
 
-				urlBuilder.Append($"&first={limit}");
+				urlBuilder.Append("&first=").Append(limit);
 			}
 
 			if (continuationCursor != null)
@@ -159,7 +159,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The continuationCursor parameter should not be null, empty or whitespace.", nameof(continuationCursor));
 				}
 
-				urlBuilder.Append($"&after={continuationCursor}");
+				urlBuilder.Append("&after=").Append(continuationCursor);
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPollData, cancellationToken);
@@ -240,7 +240,7 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
 			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
-			return PostAsync($"{TWITCH_HELIX_BASEURL}polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
+			return PostAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -265,7 +265,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPollRequestDto(userId, pollId, pollStatus);
-			return PatchAsync($"{TWITCH_HELIX_BASEURL}polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
+			return PatchAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -279,7 +279,7 @@ namespace CatCore.Services.Twitch
 				throw new Exception("The user wasn't logged in yet. Try again later.");
 			}
 
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}predictions?broadcaster_id={loggedInUser.Value.UserId}");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "predictions?broadcaster_id=" + loggedInUser.Value.UserId);
 			if (predictionIds != null && predictionIds.Any())
 			{
 				if (predictionIds.Count > 100)
@@ -289,7 +289,7 @@ namespace CatCore.Services.Twitch
 
 				foreach (var predictionId in predictionIds)
 				{
-					urlBuilder.Append($"&id={predictionId}");
+					urlBuilder.Append("&id=").Append(predictionId);
 				}
 			}
 
@@ -300,7 +300,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The limit parameter has an upper-limit of 20.", nameof(limit));
 				}
 
-				urlBuilder.Append($"&first={limit}");
+				urlBuilder.Append("&first=").Append(limit);
 			}
 
 			if (continuationCursor != null)
@@ -310,7 +310,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The continuationCursor parameter should not be empty or whitespace.", nameof(continuationCursor));
 				}
 
-				urlBuilder.Append($"&after={continuationCursor}");
+				urlBuilder.Append("&after=").Append(continuationCursor);
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPredictionData, cancellationToken);
@@ -358,7 +358,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreatePredictionsRequestDto(userId, title, predictionOutcomes, duration);
-			return PostAsync($"{TWITCH_HELIX_BASEURL}predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
+			return PostAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -388,13 +388,13 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPredictionRequestDto(userId, predictionId, predictionStatus, winningOutcomeId);
-			return PatchAsync($"{TWITCH_HELIX_BASEURL}predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
+			return PatchAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
 		}
 
 		/// <inheritdoc />
 		public Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null)
 		{
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}bits/cheermotes");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "bits/cheermotes");
 			if (!string.IsNullOrWhiteSpace(userId))
 			{
 				urlBuilder.Append("?broadcaster_id=").Append(userId);
@@ -406,7 +406,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		public Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null)
 		{
-			return GetAsync($"{TWITCH_HELIX_BASEURL}chat/badges/global", TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
+			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges/global", TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -429,7 +429,7 @@ namespace CatCore.Services.Twitch
 				throw new Exception("The user wasn't logged in yet. Try again later.");
 			}
 
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}streams/followed?user_id={loggedInUser.Value.UserId}");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "streams/followed?user_id=" + loggedInUser.Value.UserId);
 
 			if (limit != null)
 			{
@@ -459,7 +459,7 @@ namespace CatCore.Services.Twitch
 		public Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
 			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null)
 		{
-			var urlBuilder = new StringBuilder($"{TWITCH_HELIX_BASEURL}streams");
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "streams");
 
 			var firstQueryParamSet = false;
 
@@ -491,7 +491,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The userIds parameter has an upper-limit of 100.", nameof(userIds));
 				}
 
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&user_id=", userIds));
+				urlBuilder.Append(QueryParamSeparator()).Append("user_id=").Append(string.Join("&user_id=", userIds));
 			}
 
 			if (loginNames != null)
@@ -501,7 +501,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The loginNames parameter has an upper-limit of 100.", nameof(loginNames));
 				}
 
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&user_login=", loginNames));
+				urlBuilder.Append(QueryParamSeparator()).Append("user_login=").Append(string.Join("&user_login=", loginNames));
 			}
 
 			if (gameIds != null)
@@ -511,7 +511,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The gameIds parameter has an upper-limit of 100.", nameof(gameIds));
 				}
 
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&game_id=", gameIds));
+				urlBuilder.Append(QueryParamSeparator()).Append("game_id=").Append(string.Join("&game_id=", gameIds));
 			}
 
 			if (languages != null)
@@ -521,7 +521,7 @@ namespace CatCore.Services.Twitch
 					throw new ArgumentException("The languages parameter has an upper-limit of 100.", nameof(languages));
 				}
 
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&language=", languages));
+				urlBuilder.Append(QueryParamSeparator()).Append("language=").Append(string.Join("&language=", languages));
 			}
 
 			if (continuationCursorBefore != null && continuationCursorAfter != null)
@@ -532,11 +532,11 @@ namespace CatCore.Services.Twitch
 
 			if (!string.IsNullOrWhiteSpace(continuationCursorBefore))
 			{
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&before=", continuationCursorBefore));
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("before=", continuationCursorBefore));
 			}
 			else if (!string.IsNullOrWhiteSpace(continuationCursorAfter))
 			{
-				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("&after=", continuationCursorAfter));
+				urlBuilder.Append(QueryParamSeparator()).Append(string.Join("after=", continuationCursorAfter));
 			}
 
 			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);
