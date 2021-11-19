@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.ThirdParty.Bttv.Ffz
 {
-	public struct FfzImageSizes
+	public readonly struct FfzImageSizes
 	{
 		[JsonPropertyName("1x")]
 		public string? Url1X { get; }
@@ -12,6 +12,9 @@ namespace CatCore.Models.ThirdParty.Bttv.Ffz
 
 		[JsonPropertyName("4x")]
 		public string? Url4X { get; }
+
+		[JsonIgnore]
+		public string? PreferredUrl => Url4X ?? Url2X ?? Url1X;
 
 		[JsonConstructor]
 		public FfzImageSizes(string url1X, string url2X, string url4X)

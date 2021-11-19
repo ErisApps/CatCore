@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers.JSON;
+using CatCore.Models.Shared;
 using CatCore.Models.ThirdParty.Bttv.Base;
-using CatCore.Models.Twitch.IRC;
+using CatCore.Models.ThirdParty.Bttv.Ffz;
 using Serilog;
 
 namespace CatCore.Services.Twitch.Media
@@ -29,12 +34,11 @@ namespace CatCore.Services.Twitch.Media
 		private readonly ILogger _logger;
 		private readonly HttpClient _bttvApiClient;
 
-		// TODO: Change datatype containing emote info like url and such...
-		private IReadOnlyDictionary<string, TwitchBadge> _globalBttvData;
-		private readonly Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>> _channelBttvData;
+		private IReadOnlyDictionary<string, ChatResourceData> _globalBttvData;
+		private readonly Dictionary<string, IReadOnlyDictionary<string, ChatResourceData>> _channelBttvData;
 
-		private IReadOnlyDictionary<string, TwitchBadge> _globalFfzData;
-		private readonly Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>> _channelFfzData;
+		private IReadOnlyDictionary<string, ChatResourceData> _globalFfzData;
+		private readonly Dictionary<string, IReadOnlyDictionary<string, ChatResourceData>> _channelFfzData;
 
 		public BttvDataProvider(ILogger logger, Version libraryVersion)
 		{
@@ -49,11 +53,11 @@ namespace CatCore.Services.Twitch.Media
 				};
 			_bttvApiClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
 
-			_globalBttvData = new Dictionary<string, TwitchBadge>();
-			_channelBttvData = new Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>>();
+			_globalBttvData = new Dictionary<string, ChatResourceData>();
+			_channelBttvData = new Dictionary<string, IReadOnlyDictionary<string, ChatResourceData>>();
 
-			_globalFfzData = new Dictionary<string, TwitchBadge>();
-			_channelFfzData = new Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>>();
+			_globalFfzData = new Dictionary<string, ChatResourceData>();
+			_channelFfzData = new Dictionary<string, IReadOnlyDictionary<string, ChatResourceData>>();
 		}
 
 		internal async Task<bool> TryRequestGlobalResources()
@@ -70,12 +74,13 @@ namespace CatCore.Services.Twitch.Media
 		{
 			try
 			{
-				var bttvGlobalData = await _bttvApiClient.GetFromJsonAsync(BTTV_API_BASEURL + "emotes/global", BttvSerializerContext.Default.IReadOnlyListBttvEmote).ConfigureAwait(false);
-				if (bttvGlobalData == null)
+				var (success, bttvGlobalData) = await GetAsync(BTTV_API_BASEURL + "emotes/global", BttvSerializerContext.Default.IReadOnlyListBttvEmote).ConfigureAwait(false);
+				if (!success)
 				{
 					return false;
 				}
-				_globalBttvData = ParseEmoteData(bttvGlobalData);
+
+				_globalBttvData = ParseBttvEmoteData(bttvGlobalData!, "BTTVGlobalEmote");
 
 				return true;
 			}
@@ -87,35 +92,17 @@ namespace CatCore.Services.Twitch.Media
 			}
 		}
 
-		private async Task<bool> TryRequestGlobalFfzResources()
-		{
-			try
-			{
-				var ffzGlobalData = await _bttvApiClient.GetFromJsonAsync(BTTV_API_BASEURL + "frankerfacez/emotes/global", BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
-				if (ffzGlobalData == null)
-				{
-					return false;
-				}
-
-				_globalFfzData = ParseEmoteData(ffzGlobalData);
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				_logger.Warning(ex, "Something went wrong while trying to fetch the global FFZ emotes");
-
-				return false;
-			}
-		}
-
 		private async Task<bool> TryRequestBttvChannelResources(string userId)
 		{
 			try
 			{
-				var bttvChannelData = await _bttvApiClient.GetFromJsonAsync(BTTV_API_BASEURL + "users/twitch/" + userId, BttvSerializerContext.Default.BttvChannelData).ConfigureAwait(false);
+				var (success, bttvChannelData) = await GetAsync(BTTV_API_BASEURL + "users/twitch/" + userId, BttvSerializerContext.Default.BttvChannelData).ConfigureAwait(false);
+				if (!success)
+				{
+					return false;
+				}
 
-				_channelBttvData[userId] = ParseEmoteData(bttvChannelData.ChannelEmotes.Concat<EmoteBase>(bttvChannelData.SharedEmotes));
+				_channelBttvData[userId] = ParseBttvEmoteData(bttvChannelData.ChannelEmotes.Concat<EmoteBase>(bttvChannelData.SharedEmotes), "BTTVChannelEmote");
 
 				return true;
 			}
@@ -127,18 +114,41 @@ namespace CatCore.Services.Twitch.Media
 			}
 		}
 
-		private async Task<bool> TryRequestFfzChannelResources(string userId)
+		private async Task<bool> TryRequestGlobalFfzResources()
 		{
 			try
 			{
-				var ffzChannelData = await _bttvApiClient.GetFromJsonAsync(BTTV_API_BASEURL + "frankerfacez/users/twitch/" + userId, BttvSerializerContext.Default.IReadOnlyListFfzEmote)
-					.ConfigureAwait(false);
-				if (ffzChannelData == null)
+				var (success, ffzGlobalData) =
+					await GetAsync(BTTV_API_BASEURL + "frankerfacez/emotes/global", BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
+				if (!success)
 				{
 					return false;
 				}
 
-				_channelFfzData[userId] = ParseEmoteData(ffzChannelData);
+				_globalFfzData = ParseFfzEmoteData(ffzGlobalData!, "FFZGlobalEmote");
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to fetch the global FFZ emotes");
+
+				return false;
+			}
+		}
+
+		private async Task<bool> TryRequestFfzChannelResources(string userId)
+		{
+			try
+			{
+				var (success, ffzChannelData) =
+					await GetAsync(BTTV_API_BASEURL + "frankerfacez/users/twitch/" + userId, BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
+				if (!success)
+				{
+					return false;
+				}
+
+				_channelFfzData[userId] = ParseFfzEmoteData(ffzChannelData!, "FFZChannelEmote");
 
 				return true;
 			}
@@ -150,15 +160,78 @@ namespace CatCore.Services.Twitch.Media
 			}
 		}
 
-		private ReadOnlyDictionary<string, TwitchBadge> ParseEmoteData(IEnumerable<EmoteBase> emoteData)
+		private ReadOnlyDictionary<string, ChatResourceData> ParseBttvEmoteData(IEnumerable<EmoteBase> emoteData, string type)
 		{
-			var parsedEmotes = new Dictionary<string, TwitchBadge>();
+			var parsedEmotes = new Dictionary<string, ChatResourceData>();
 
-			// TODO: Implement parsing logic
+			foreach (var emote in emoteData)
+			{
+				if (CheckIfAnimated(emote, out var isAnimated))
+				{
+					parsedEmotes.Add(emote.Code, new ChatResourceData(type + "_" + emote.Id, emote.Code, "https://cdn.betterttv.net/emote/" + emote.Id + "/3x", isAnimated, type));
+				}
+			}
 
-			return new ReadOnlyDictionary<string, TwitchBadge>(parsedEmotes);
+			return new ReadOnlyDictionary<string, ChatResourceData>(parsedEmotes);
 		}
 
+		private ReadOnlyDictionary<string, ChatResourceData> ParseFfzEmoteData(IEnumerable<FfzEmote> emoteData, string type)
+		{
+			var parsedEmotes = new Dictionary<string, ChatResourceData>();
+
+			foreach (var emote in emoteData)
+			{
+				var preferredUrl = emote.Images.PreferredUrl;
+				if (preferredUrl == null)
+				{
+					_logger.Warning("No url found for FFZ emote {Code}", emote.Code);
+					continue;
+				}
+
+				parsedEmotes.Add(emote.Code, new ChatResourceData(type + "_" + emote.Id, emote.Code, preferredUrl, false, type));
+			}
+
+			return new ReadOnlyDictionary<string, ChatResourceData>(parsedEmotes);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private bool CheckIfAnimated(EmoteBase emote, out bool isAnimated)
+		{
+			isAnimated = false;
+
+			var imageType = emote.ImageType;
+			if (imageType == "png")
+			{
+				return true;
+			}
+
+			if (imageType == "gif")
+			{
+				isAnimated = true;
+				return true;
+			}
+
+			_logger.Warning("Unsupported imageType \"{ImageType}\" detected for emote {Code}", imageType, emote.Code);
+			return false;
+		}
+
+		internal void ReleaseAllResources()
+		{
+			ReleaseBttvResources();
+			ReleaseFfzResources();
+		}
+
+		internal void ReleaseBttvResources()
+		{
+			_globalBttvData = new Dictionary<string, ChatResourceData>();
+			_channelBttvData.Clear();
+		}
+
+		internal void ReleaseFfzResources()
+		{
+			_globalFfzData = new Dictionary<string, ChatResourceData>();
+			_channelFfzData.Clear();
+		}
 
 		internal void ReleaseChannelResources(string userId)
 		{
@@ -166,15 +239,48 @@ namespace CatCore.Services.Twitch.Media
 			_channelFfzData.Remove(userId);
 		}
 
-		public bool TryGetEmote(string identifier, string userId, out TwitchBadge? badge)
+		public bool TryGetEmote(string identifier, string userId, out ChatResourceData? badge)
 		{
-			if (_channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out badge) ||
-			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out badge))
+			ChatResourceData badgeInternal;
+			if (_channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out badgeInternal) ||
+			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out badgeInternal))
 			{
+				badge = badgeInternal;
 				return true;
 			}
 
-			return _globalBttvData.TryGetValue(identifier, out badge) || _globalFfzData.TryGetValue(identifier, out badge);
+			if (_globalBttvData.TryGetValue(identifier, out badgeInternal) || _globalFfzData.TryGetValue(identifier, out badgeInternal))
+			{
+				badge = badgeInternal;
+				return true;
+			}
+
+			badge = null;
+			return false;
+		}
+
+		private async Task<(bool success, TResponse? response)> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null)
+		{
+			try
+			{
+				using var httpResponseMessage = await _bttvApiClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				{
+					if (httpResponseMessage?.StatusCode == HttpStatusCode.NotFound)
+					{
+						_logger.Warning("No BetterTTV (proxied) emotes returned by endpoint {Url}", url);
+					}
+
+					return (false, default);
+				}
+
+				return (true, await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
+			}
+			catch (Exception ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to execute the GET call to {Uri}", url);
+				return (false, default);
+			}
 		}
 	}
 }
