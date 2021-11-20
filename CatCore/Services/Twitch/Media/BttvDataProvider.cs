@@ -239,23 +239,20 @@ namespace CatCore.Services.Twitch.Media
 			_channelFfzData.Remove(userId);
 		}
 
-		public bool TryGetEmote(string identifier, string userId, out ChatResourceData? badge)
+		public bool TryGetEmote(string identifier, string userId, out ChatResourceData? customEmote)
 		{
-			ChatResourceData badgeInternal;
-			if (_channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out badgeInternal) ||
-			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out badgeInternal))
+			if (_channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out customEmote) ||
+			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out customEmote))
 			{
-				badge = badgeInternal;
 				return true;
 			}
 
-			if (_globalBttvData.TryGetValue(identifier, out badgeInternal) || _globalFfzData.TryGetValue(identifier, out badgeInternal))
+			if (_globalBttvData.TryGetValue(identifier, out customEmote) || _globalFfzData.TryGetValue(identifier, out customEmote))
 			{
-				badge = badgeInternal;
 				return true;
 			}
 
-			badge = null;
+			customEmote = null;
 			return false;
 		}
 

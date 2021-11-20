@@ -8,7 +8,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 		public string Id { get; }
 
 		[JsonPropertyName("min_bits")]
-		public int MinBits { get; }
+		public uint MinBits { get; }
 
 		[JsonPropertyName("color")]
 		public string Color { get; }
@@ -23,7 +23,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 		public bool ShowInBitsCard { get; }
 
 		[JsonConstructor]
-		public CheermoteTier(string id, int minBits, string color, CheermoteImageColorGroup images, bool canCheer, bool showInBitsCard)
+		public CheermoteTier(string id, uint minBits, string color, CheermoteImageColorGroup images, bool canCheer, bool showInBitsCard)
 		{
 			Id = id;
 			MinBits = minBits;

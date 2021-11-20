@@ -1,10 +1,10 @@
 ﻿namespace CatCore.Models.Shared
 {
-	public readonly struct ChatResourceData
+	public sealed class ChatResourceData : IChatResourceData
 	{
 		public string Id { get; }
 		public string Name { get; }
-		public string Uri { get; }
+		public string Url { get; }
 		public bool IsAnimated { get; }
 		public string Type { get; }
 
@@ -12,7 +12,7 @@
 		{
 			Id = id;
 			Name = name;
-			Uri = uri;
+			Url = uri;
 			IsAnimated = isAnimated;
 			Type = type;
 		}
