@@ -99,9 +99,9 @@ namespace CatCore.Services.Twitch
 				return;
 			}
 
-			if (!_twitchAuthService.TokenIsValid)
+			if (!(_twitchAuthService.TokenIsValid || await _twitchAuthService.RefreshTokens().ConfigureAwait(false)))
 			{
-				_ = await _twitchAuthService.RefreshTokens().ConfigureAwait(false);
+				return;
 			}
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
