@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers.JSON;
 using CatCore.Models.Shared;
+using CatCore.Models.ThirdParty.Bttv;
 using CatCore.Models.ThirdParty.Bttv.Base;
 using CatCore.Models.ThirdParty.Bttv.Ffz;
 using Serilog;
@@ -102,7 +103,7 @@ namespace CatCore.Services.Twitch.Media
 					return false;
 				}
 
-				_channelBttvData[userId] = ParseBttvEmoteData(bttvChannelData.ChannelEmotes.Concat<EmoteBase>(bttvChannelData.SharedEmotes), "BTTVChannelEmote");
+				_channelBttvData[userId] = ParseBttvEmoteData(bttvChannelData.ChannelEmotes.Concat<BttvEmoteBase>(bttvChannelData.SharedEmotes), "BTTVChannelEmote");
 
 				return true;
 			}
@@ -160,7 +161,7 @@ namespace CatCore.Services.Twitch.Media
 			}
 		}
 
-		private ReadOnlyDictionary<string, ChatResourceData> ParseBttvEmoteData(IEnumerable<EmoteBase> emoteData, string type)
+		private ReadOnlyDictionary<string, ChatResourceData> ParseBttvEmoteData(IEnumerable<BttvEmoteBase> emoteData, string type)
 		{
 			var parsedEmotes = new Dictionary<string, ChatResourceData>();
 

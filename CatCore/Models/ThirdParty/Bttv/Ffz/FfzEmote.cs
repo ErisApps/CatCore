@@ -5,6 +5,9 @@ namespace CatCore.Models.ThirdParty.Bttv.Ffz
 {
 	public sealed class FfzEmote : EmoteBase
 	{
+		[JsonPropertyName("id")]
+		public uint Id { get; }
+
 		[JsonPropertyName("user")]
 		public FfzEmoteUser User { get; }
 
@@ -12,8 +15,9 @@ namespace CatCore.Models.ThirdParty.Bttv.Ffz
 		public FfzImageSizes Images { get; }
 
 		[JsonConstructor]
-		public FfzEmote(string id, string code, string imageType, FfzEmoteUser user, FfzImageSizes images) : base(id, code, imageType)
+		public FfzEmote(uint id, string code, string imageType, FfzEmoteUser user, FfzImageSizes images) : base(code, imageType)
 		{
+			Id = id;
 			User = user;
 			Images = images;
 		}

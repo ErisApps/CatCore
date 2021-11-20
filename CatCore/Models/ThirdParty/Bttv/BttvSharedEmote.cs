@@ -1,9 +1,8 @@
 ﻿using System.Text.Json.Serialization;
-using CatCore.Models.ThirdParty.Bttv.Base;
 
 namespace CatCore.Models.ThirdParty.Bttv
 {
-	public sealed class BttvSharedEmote : EmoteBase
+	public sealed class BttvSharedEmote : BttvEmoteBase
 	{
 		[JsonPropertyName("user")]
 		public BttvEmoteUser User { get; }

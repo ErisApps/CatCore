@@ -4,9 +4,6 @@ namespace CatCore.Models.ThirdParty.Bttv.Base
 {
 	public abstract class EmoteBase
 	{
-		[JsonPropertyName("id")]
-		public string Id { get; }
-
 		[JsonPropertyName("code")]
 		public string Code { get; }
 
@@ -14,9 +11,8 @@ namespace CatCore.Models.ThirdParty.Bttv.Base
 		public string ImageType { get; }
 
 		[JsonConstructor]
-		public EmoteBase(string id, string code, string imageType)
+		public EmoteBase(string code, string imageType)
 		{
-			Id = id;
 			Code = code;
 			ImageType = imageType;
 		}
