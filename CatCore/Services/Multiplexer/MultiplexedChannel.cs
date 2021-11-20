@@ -24,13 +24,13 @@ namespace CatCore.Services.Multiplexer
 			public override object Clone(object o) => ((TChannel) o).Clone();
 		}
 
-		private readonly Info info;
-		private readonly object channel;
+		private readonly Info _info;
+		private readonly object _channel;
 
-		public object Underlying => channel;
+		public object Underlying => _channel;
 
 		private MultiplexedChannel(Info info, object channel)
-			=> (this.info, this.channel) = (info, channel);
+			=> (_info, _channel) = (info, channel);
 
 		public static MultiplexedChannel From<TChannel, TMsg>(TChannel channel)
 			where TChannel : IChatChannel<TChannel, TMsg>
@@ -38,14 +38,14 @@ namespace CatCore.Services.Multiplexer
 			=> new(Info<TChannel, TMsg>.INSTANCE, channel);
 
 		/// <inheritdoc />
-		public string Id => info.GetId(channel);
+		public string Id => _info.GetId(_channel);
 
 		/// <inheritdoc />
-		public string Name => info.GetName(channel);
+		public string Name => _info.GetName(_channel);
 
 		/// <inheritdoc />
-		public void SendMessage(string message) => info.SendMessage(channel, message);
+		public void SendMessage(string message) => _info.SendMessage(_channel, message);
 
-		public object Clone() => new MultiplexedChannel(info, info.Clone(channel));
+		public object Clone() => new MultiplexedChannel(_info, _info.Clone(_channel));
 	}
 }

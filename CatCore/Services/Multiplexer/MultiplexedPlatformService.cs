@@ -71,12 +71,12 @@ namespace CatCore.Services.Multiplexer
 			private sealed class EventHost
 			{
 				// only keep a weak reference so that the MultiplexedPlatformService can be GC'd
-				private readonly WeakReference<MultiplexedPlatformService> svc;
+				private readonly WeakReference<MultiplexedPlatformService> _svc;
 				public EventHost(MultiplexedPlatformService svc)
-					=> this.svc = new(svc);
+					=> _svc = new(svc);
 
 				private MultiplexedPlatformService? Get()
-					=> svc.TryGetTarget(out var target) ? target : null;
+					=> _svc.TryGetTarget(out var target) ? target : null;
 
 				internal void OnAuthenticatedStateChanged(TService obj)
 					=> Get()?.OnAuthenticatedStateChanged?.Invoke(From(obj));
@@ -100,18 +100,18 @@ namespace CatCore.Services.Multiplexer
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnLeaveChannel;
 		public event Action<MultiplexedPlatformService, MultiplexedMessage>? OnTextMessageReceived;
 
-		private readonly Info info;
-		private readonly object service;
-		private readonly object eventHost;
-		private bool disposedValue;
+		private readonly Info _info;
+		private readonly object _service;
+		private readonly object _eventHost;
+		private bool _disposedValue;
 
-		public object Underlying => service;
+		public object Underlying => _service;
 
 		private MultiplexedPlatformService(object service, Info info)
 		{
-			(this.info, this.service) = (info, service);
-			eventHost = info.GetEventHost(this);
-			info.Subscribe(service, eventHost);
+			(_info, _service) = (info, service);
+			_eventHost = info.GetEventHost(this);
+			info.Subscribe(service, _eventHost);
 		}
 
 		public static MultiplexedPlatformService From<TService, TChannel, TMsg>(TService service)
@@ -120,27 +120,27 @@ namespace CatCore.Services.Multiplexer
 			where TMsg : IChatMessage<TMsg, TChannel>
 			=> new(service, Info<TService, TChannel, TMsg>.INSTANCE);
 
-		public bool LoggedIn => info.LoggedIn(service);
+		public bool LoggedIn => _info.LoggedIn(_service);
 
-		public MultiplexedChannel? DefaultChannel => info.GetDefaultChannel(service);
+		public MultiplexedChannel? DefaultChannel => _info.GetDefaultChannel(_service);
 
 		Task IPlatformService<MultiplexedPlatformService, MultiplexedChannel, MultiplexedMessage>.Start()
-			=> info.Start(service);
+			=> _info.Start(_service);
 
 		Task IPlatformService<MultiplexedPlatformService, MultiplexedChannel, MultiplexedMessage>.Stop()
-			=> info.Stop(service);
+			=> _info.Stop(_service);
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
+			if (!_disposedValue)
 			{
 				if (disposing)
 				{
 				}
 
-				info.Unsubscribe(service, eventHost);
+				_info.Unsubscribe(_service, _eventHost);
 
-				disposedValue = true;
+				_disposedValue = true;
 			}
 		}
 
