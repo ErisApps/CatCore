@@ -35,35 +35,35 @@ namespace CatCore.Services.Multiplexer
 			public override ReadOnlyDictionary<string, string>? GetMetadata(object o) => ((TMsg) o).Metadata;
 		}
 
-		private readonly Info info;
-		private readonly object message;
+		private readonly Info _info;
+		private readonly object _message;
 
-		internal object Underlying => message;
+		internal object Underlying => _message;
 
 		private MultiplexedMessage(Info info, object message)
-			=> (this.info, this.message) = (info, message);
+			=> (_info, _message) = (info, message);
 
 		public static MultiplexedMessage From<TMsg, TChannel>(TMsg message)
 			where TChannel : IChatChannel<TChannel, TMsg>
 			where TMsg : IChatMessage<TMsg, TChannel>
 			=> new(Info<TChannel, TMsg>.INSTANCE, message);
 
-		public string Id => info.GetId(message);
+		public string Id => _info.GetId(_message);
 
-		public bool IsSystemMessage => info.IsSystemMessage(message);
+		public bool IsSystemMessage => _info.IsSystemMessage(_message);
 
-		public bool IsActionMessage => info.IsActionMessage(message);
+		public bool IsActionMessage => _info.IsActionMessage(_message);
 
-		public bool IsMentioned => info.IsMentioned(message);
+		public bool IsMentioned => _info.IsMentioned(_message);
 
-		public string Message => info.GetMessage(message);
+		public string Message => _info.GetMessage(_message);
 
-		public IChatUser Sender => info.GetSender(message);
+		public IChatUser Sender => _info.GetSender(_message);
 
-		public MultiplexedChannel Channel => info.GetChannel(message);
+		public MultiplexedChannel Channel => _info.GetChannel(_message);
 
-		public ReadOnlyCollection<IChatEmote> Emotes => info.GetEmotes(message);
+		public ReadOnlyCollection<IChatEmote> Emotes => _info.GetEmotes(_message);
 
-		public ReadOnlyDictionary<string, string>? Metadata => info.GetMetadata(message);
+		public ReadOnlyDictionary<string, string>? Metadata => _info.GetMetadata(_message);
 	}
 }
