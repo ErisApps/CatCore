@@ -27,8 +27,6 @@ namespace CatCore.Services.Twitch
 			"channel:moderate",
 			"chat:edit",
 			"chat:read",
-			"whispers:read",
-			"whispers:edit",
 			"bits:read",
 			"user:read:follows",
 			"channel:manage:broadcast",
