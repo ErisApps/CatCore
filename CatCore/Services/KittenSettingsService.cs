@@ -22,6 +22,7 @@ namespace CatCore.Services
 		private readonly JsonSerializerOptions _jsonSerializerOptions;
 
 		public ConfigRoot Config { get; private set; } = null!;
+		public event Action<IKittenSettingsService, ConfigRoot>? OnConfigChanged;
 
 		public KittenSettingsService(ILogger logger, IKittenPathProvider pathProvider)
 		{
@@ -85,6 +86,8 @@ namespace CatCore.Services
 				}
 
 				File.WriteAllText(_configFilePath, JsonSerializer.Serialize(Config, _jsonSerializerOptions));
+
+				OnConfigChanged?.Invoke(this, Config);
 			}
 			catch (Exception e)
 			{
