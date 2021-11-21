@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CatCore.Models.Config;
 using CatCore.Models.EventArgs;
+using CatCore.Models.Shared;
+using CatCore.Models.Twitch.Media;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
@@ -39,6 +41,11 @@ namespace CatCore.Services.Twitch.Media
 			_kittenSettingsService.OnConfigChanged += KittenSettingsServiceOnConfigChanged;
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
+
+			var twitchConfig = kittenSettingsService.Config.TwitchConfig;
+			_cheermotesEnabled = twitchConfig.ParseCheermotes;
+			_bttvEnabled = twitchConfig.ParseBttvEmotes;
+			_ffzEnabled = twitchConfig.ParseFfzEmotes;
 		}
 
 		public void Initialize()
@@ -192,6 +199,28 @@ namespace CatCore.Services.Twitch.Media
 			_twitchBadgeDataProvider.ReleaseChannelResources(userId);
 			_twitchCheermoteDataProvider.ReleaseChannelResources(userId);
 			_bttvDataProvider.ReleaseChannelResources(userId);
+		}
+
+		internal bool TryGetCheermote(string identifier, string userId, out uint emoteBits, out TwitchCheermoteData? cheermoteData)
+		{
+			emoteBits = 0;
+			cheermoteData = null;
+
+			// TODO: Implement splitting of identifier into prefix and bits and do the actual look up
+
+			return false;
+		}
+
+		internal bool TryGetThirdPartyEmote(string identifier, string userId, out ChatResourceData? customEmote)
+		{
+			if (_bttvEnabled && _bttvDataProvider.TryGetBttvEmote(identifier, userId, out customEmote) ||
+			    _ffzEnabled && _bttvDataProvider.TryGetFfzEmote(identifier, userId, out customEmote))
+			{
+				return true;
+			}
+
+			customEmote = null;
+			return false;
 		}
 	}
 }
