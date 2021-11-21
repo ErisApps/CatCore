@@ -201,14 +201,31 @@ namespace CatCore.Services.Twitch.Media
 			_bttvDataProvider.ReleaseChannelResources(userId);
 		}
 
+		// TODO: Verify this implementation actually works...
 		internal bool TryGetCheermote(string identifier, string userId, out uint emoteBits, out TwitchCheermoteData? cheermoteData)
 		{
 			emoteBits = 0;
 			cheermoteData = null;
 
-			// TODO: Implement splitting of identifier into prefix and bits and do the actual look up
+			if (!char.IsLetter(identifier[0]) || !char.IsDigit(identifier[identifier.Length - 1]))
+			{
+				return false;
+			}
 
-			return false;
+			var prefixLength = identifier.Length - 1;
+			// Starting at length - 2 because length - 1 is already known to be a digit
+			for (var i = identifier.Length - 2; i >= 0; i--)
+			{
+				if (char.IsDigit(identifier[i]))
+				{
+					continue;
+				}
+
+				prefixLength = i + 1;
+				break;
+			}
+
+			return uint.TryParse(identifier.Substring(prefixLength), out emoteBits) && _twitchCheermoteDataProvider.TryGetCheermote(identifier.Substring(0, prefixLength), userId, emoteBits, out cheermoteData);
 		}
 
 		internal bool TryGetThirdPartyEmote(string identifier, string userId, out ChatResourceData? customEmote)
