@@ -25,30 +25,32 @@ namespace CatCore.Services.Twitch.Media
 			_channelBadges = new Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>>();
 		}
 
-		internal async Task<bool> TryRequestGlobalResources()
+		internal async Task TryRequestGlobalResources()
 		{
 			var globalBadges = await _twitchHelixApiService.GetGlobalBadges().ConfigureAwait(false);
 			if (globalBadges == null)
 			{
-				return false;
+				return;
 			}
 
 			_globalBadges = ParseBadgeData("TwitchGlobalBadge_", globalBadges.Value.Data);
-
-			return true;
 		}
 
-		internal async Task<bool> TryRequestChannelResources(string userId)
+		internal async Task TryRequestChannelResources(string userId)
 		{
 			var channelBadges = await _twitchHelixApiService.GetBadgesForChannel(userId).ConfigureAwait(false);
 			if (channelBadges == null)
 			{
-				return false;
+				return;
 			}
 
 			_channelBadges[userId] = ParseBadgeData("TwitchChannelBadge_" + userId, channelBadges.Value.Data);
+		}
 
-			return true;
+		internal void ReleaseAllResources()
+		{
+			_globalBadges = new Dictionary<string, TwitchBadge>();
+			_channelBadges.Clear();
 		}
 
 		internal void ReleaseChannelResources(string userId)
@@ -56,7 +58,7 @@ namespace CatCore.Services.Twitch.Media
 			_channelBadges.Remove(userId);
 		}
 
-		private ReadOnlyDictionary<string, TwitchBadge> ParseBadgeData(string identifierPrefix, List<BadgeData> badgeData)
+		private static ReadOnlyDictionary<string, TwitchBadge> ParseBadgeData(string identifierPrefix, List<BadgeData> badgeData)
 		{
 			var parsedTwitchBadges = new Dictionary<string, TwitchBadge>();
 
@@ -64,7 +66,7 @@ namespace CatCore.Services.Twitch.Media
 			{
 				foreach (var badgeVersion in badge.Versions)
 				{
-					var simpleIdentifier = badge.SetId + badgeVersion.Id;
+					var simpleIdentifier = badge.SetId + "/" + badgeVersion.Id;
 					parsedTwitchBadges.Add(simpleIdentifier, new TwitchBadge(identifierPrefix + simpleIdentifier, badge.SetId, badgeVersion.ImageUrl4x));
 				}
 			}

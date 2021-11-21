@@ -26,7 +26,7 @@ namespace CatCore.Services.Twitch.Media
 	// https://api.betterttv.net/3/cached/frankerfacez/emotes/global
 	// https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${currentChannel.id}
 	//
-	// Emote CDN format
+	// BTTV Emote CDN format (version is either 1x, 2x or 3x)
 	//http://cdn.betterttv.net/emote/${emoteId}/${version}
 	public class BttvDataProvider
 	{
@@ -61,61 +61,43 @@ namespace CatCore.Services.Twitch.Media
 			_channelFfzData = new Dictionary<string, IReadOnlyDictionary<string, ChatResourceData>>();
 		}
 
-		internal async Task<bool> TryRequestGlobalResources()
-		{
-			return (await Task.WhenAll(TryRequestGlobalBttvResources(), TryRequestGlobalFfzResources()).ConfigureAwait(false)).All(result => result);
-		}
-
-		internal async Task<bool> TryRequestChannelResources(string userId)
-		{
-			return (await Task.WhenAll(TryRequestBttvChannelResources(userId), TryRequestFfzChannelResources(userId)).ConfigureAwait(false)).All(result => result);
-		}
-
-		private async Task<bool> TryRequestGlobalBttvResources()
+		internal async Task TryRequestGlobalBttvResources()
 		{
 			try
 			{
 				var (success, bttvGlobalData) = await GetAsync(BTTV_API_BASEURL + "emotes/global", BttvSerializerContext.Default.IReadOnlyListBttvEmote).ConfigureAwait(false);
 				if (!success)
 				{
-					return false;
+					return;
 				}
 
 				_globalBttvData = ParseBttvEmoteData(bttvGlobalData!, "BTTVGlobalEmote");
-
-				return true;
 			}
 			catch (Exception ex)
 			{
 				_logger.Warning(ex, "Something went wrong while trying to fetch the global BTTV emotes");
-
-				return false;
 			}
 		}
 
-		private async Task<bool> TryRequestBttvChannelResources(string userId)
+		internal async Task TryRequestBttvChannelResources(string userId)
 		{
 			try
 			{
 				var (success, bttvChannelData) = await GetAsync(BTTV_API_BASEURL + "users/twitch/" + userId, BttvSerializerContext.Default.BttvChannelData).ConfigureAwait(false);
 				if (!success)
 				{
-					return false;
+					return;
 				}
 
 				_channelBttvData[userId] = ParseBttvEmoteData(bttvChannelData.ChannelEmotes.Concat<BttvEmoteBase>(bttvChannelData.SharedEmotes), "BTTVChannelEmote");
-
-				return true;
 			}
 			catch (Exception ex)
 			{
 				_logger.Warning(ex, "Something went wrong while trying to fetch the BTTV channel emotes for channel {ChannelId}", userId);
-
-				return false;
 			}
 		}
 
-		private async Task<bool> TryRequestGlobalFfzResources()
+		internal async Task TryRequestGlobalFfzResources()
 		{
 			try
 			{
@@ -123,22 +105,21 @@ namespace CatCore.Services.Twitch.Media
 					await GetAsync(BTTV_API_BASEURL + "frankerfacez/emotes/global", BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
 				if (!success)
 				{
-					return false;
+					return;
 				}
 
-				_globalFfzData = ParseFfzEmoteData(ffzGlobalData!, "FFZGlobalEmote");
-
-				return true;
+				if (ffzGlobalData!.Any())
+				{
+					_globalFfzData = ParseFfzEmoteData(ffzGlobalData!, "FFZGlobalEmote");
+				}
 			}
 			catch (Exception ex)
 			{
 				_logger.Warning(ex, "Something went wrong while trying to fetch the global FFZ emotes");
-
-				return false;
 			}
 		}
 
-		private async Task<bool> TryRequestFfzChannelResources(string userId)
+		internal async Task TryRequestFfzChannelResources(string userId)
 		{
 			try
 			{
@@ -146,18 +127,17 @@ namespace CatCore.Services.Twitch.Media
 					await GetAsync(BTTV_API_BASEURL + "frankerfacez/users/twitch/" + userId, BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
 				if (!success)
 				{
-					return false;
+					return;
 				}
 
-				_channelFfzData[userId] = ParseFfzEmoteData(ffzChannelData!, "FFZChannelEmote");
-
-				return true;
+				if (ffzChannelData!.Any())
+				{
+					_channelFfzData[userId] = ParseFfzEmoteData(ffzChannelData!, "FFZChannelEmote");
+				}
 			}
 			catch (Exception ex)
 			{
 				_logger.Warning(ex, "Something went wrong while trying to fetch the FFZ channel emotes for channel {ChannelId}", userId);
-
-				return false;
 			}
 		}
 
