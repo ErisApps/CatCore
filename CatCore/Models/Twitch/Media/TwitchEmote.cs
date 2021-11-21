@@ -12,26 +12,41 @@ namespace CatCore.Models.Twitch.IRC
 		public int EndIndex { get; }
 		public string Url { get; }
 		public bool Animated { get; }
+		public uint Bits { get; }
+		public string? Color { get; }
 
 		public TwitchEmote(string id, string name, int startIndex, int endIndex, string url)
 		{
-			Id = "TwitchEmote_" + id;
+			Id = id;
 			Name = name;
 			StartIndex = startIndex;
 			EndIndex = endIndex;
 			Url = url;
 			Animated = false;
+			Bits = 0;
 		}
 
-		// TODO: figure out a way to pass on animated urls when available?
 		public TwitchEmote(string id, string name, int startIndex, int endIndex, string url, bool animated)
 		{
-			Id = "TwitchEmote_" + id;
+			Id = id;
 			Name = name;
 			StartIndex = startIndex;
 			EndIndex = endIndex;
 			Url = url;
 			Animated = animated;
+			Bits = 0;
+		}
+
+		public TwitchEmote(string id, string name, int startIndex, int endIndex, string url, bool animated, uint bits, string color)
+		{
+			Id = id;
+			Name = name;
+			StartIndex = startIndex;
+			EndIndex = endIndex;
+			Url = url;
+			Animated = animated;
+			Bits = bits;
+			Color = color;
 		}
 	}
 }

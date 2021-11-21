@@ -220,15 +220,22 @@ namespace CatCore.Services.Twitch.Media
 			_channelFfzData.Remove(userId);
 		}
 
-		public bool TryGetEmote(string identifier, string userId, out ChatResourceData? customEmote)
+		public bool TryGetBttvEmote(string identifier, string userId, out ChatResourceData? customEmote)
 		{
-			if (_channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out customEmote) ||
-			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out customEmote))
+			if (_globalBttvData.TryGetValue(identifier, out customEmote) ||
+			    _channelBttvData.TryGetValue(userId, out var userSpecificBttvEmotes) && userSpecificBttvEmotes.TryGetValue(identifier, out customEmote))
 			{
 				return true;
 			}
 
-			if (_globalBttvData.TryGetValue(identifier, out customEmote) || _globalFfzData.TryGetValue(identifier, out customEmote))
+			customEmote = null;
+			return false;
+		}
+
+		public bool TryGetFfzEmote(string identifier, string userId, out ChatResourceData? customEmote)
+		{
+			if (_globalFfzData.TryGetValue(identifier, out customEmote) ||
+			    _channelFfzData.TryGetValue(userId, out var userSpecificFfzEmotes) && userSpecificFfzEmotes.TryGetValue(identifier, out customEmote))
 			{
 				return true;
 			}

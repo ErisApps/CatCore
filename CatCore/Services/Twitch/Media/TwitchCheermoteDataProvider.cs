@@ -14,16 +14,16 @@ namespace CatCore.Services.Twitch.Media
 		private readonly ILogger _logger;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
-		private IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>> _globalCheermotes;
-		private readonly Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>>> _channelCheermotes;
+		private IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>> _globalCheermotes;
+		private readonly Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>> _channelCheermotes;
 
 		public TwitchCheermoteDataProvider(ILogger logger, ITwitchHelixApiService twitchHelixApiService)
 		{
 			_logger = logger;
 			_twitchHelixApiService = twitchHelixApiService;
 
-			_globalCheermotes = new ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>>(new Dictionary<string, IReadOnlyList<TwitchCheermote>>());
-			_channelCheermotes = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>>>();
+			_globalCheermotes = new ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>(new Dictionary<string, IReadOnlyList<TwitchCheermoteData>>());
+			_channelCheermotes = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>>();
 		}
 
 		internal async Task TryRequestGlobalResources()
@@ -48,28 +48,28 @@ namespace CatCore.Services.Twitch.Media
 			_channelCheermotes[userId] = ParseCheermoteData(channelCheermotes.Value.Data.Where(x => x.Type == CheermoteType.ChannelCustom));
 		}
 
-		private ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>> ParseCheermoteData(IEnumerable<CheermoteGroupData> cheermoteGroupData)
+		private ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>> ParseCheermoteData(IEnumerable<CheermoteGroupData> cheermoteGroupData)
 		{
-			var parsedCheermotes = new Dictionary<string, IReadOnlyList<TwitchCheermote>>();
+			var parsedCheermotes = new Dictionary<string, IReadOnlyList<TwitchCheermoteData>>();
 
 			foreach (var cheermoteData in cheermoteGroupData)
 			{
-				var cheermoteTiers = new List<TwitchCheermote>();
+				var cheermoteTiers = new List<TwitchCheermoteData>();
 				foreach (var cheermoteTier in cheermoteData.Tiers.OrderBy(x => x.MinBits))
 				{
 					var url = cheermoteTier.Images.Dark.Animated.Size4;
-					cheermoteTiers.Add(new TwitchCheermote(cheermoteData.Prefix + cheermoteTier.MinBits, url, true, cheermoteTier.MinBits, cheermoteTier.Color, cheermoteTier.CanCheer));
+					cheermoteTiers.Add(new TwitchCheermoteData(cheermoteData.Prefix + cheermoteTier.MinBits, url, true, cheermoteTier.MinBits, cheermoteTier.Color, cheermoteTier.CanCheer));
 				}
 
 				parsedCheermotes[cheermoteData.Prefix] = cheermoteTiers;
 			}
 
-			return new ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>>(parsedCheermotes);
+			return new ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>(parsedCheermotes);
 		}
 
 		internal void ReleaseAllResources()
 		{
-			_globalCheermotes = new Dictionary<string, IReadOnlyList<TwitchCheermote>>();
+			_globalCheermotes = new Dictionary<string, IReadOnlyList<TwitchCheermoteData>>();
 			_channelCheermotes.Clear();
 		}
 
@@ -78,7 +78,7 @@ namespace CatCore.Services.Twitch.Media
 			_channelCheermotes.Remove(userId);
 		}
 
-		public bool TryGetCheermote(string identifier, string userId, uint minBits, out TwitchCheermote? cheermote)
+		public bool TryGetCheermote(string identifier, string userId, uint minBits, out TwitchCheermoteData? cheermote)
 		{
 			if (_channelCheermotes.TryGetValue(userId, out var channelBadges) && channelBadges.TryGetValue(identifier, out var cheermoteTiers))
 			{
@@ -96,7 +96,7 @@ namespace CatCore.Services.Twitch.Media
 			return false;
 		}
 
-		private static TwitchCheermote GetCheermoteTier(IReadOnlyList<TwitchCheermote> tiers, uint numBits)
+		private static TwitchCheermoteData GetCheermoteTier(IReadOnlyList<TwitchCheermoteData> tiers, uint numBits)
 		{
 			for (var i = 1; i < tiers.Count; i++)
 			{

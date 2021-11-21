@@ -2,7 +2,7 @@
 
 namespace CatCore.Models.Twitch.Media
 {
-	public sealed class TwitchCheermote : IChatResourceData
+	public sealed class TwitchCheermoteData : IChatResourceData
 	{
 		private const string TYPE = "TwitchCheermote";
 
@@ -15,7 +15,7 @@ namespace CatCore.Models.Twitch.Media
 		public bool CanCheer { get; }
 		public string Type => TYPE;
 
-		public TwitchCheermote(string name, string url, bool isAnimated, uint minBits, string color, bool canCheer)
+		public TwitchCheermoteData(string name, string url, bool isAnimated, uint minBits, string color, bool canCheer)
 		{
 			Id = Type + "_" + name;
 			Name = name;
