@@ -112,6 +112,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		// TODO: mark method as internal
+		// ReSharper disable once CognitiveComplexity
 		private async Task Start(bool force = false)
 		{
 			if (!force && (_initSemaphoreSlim.CurrentCount == 0 || _kittenWebSocketProvider.IsConnected))

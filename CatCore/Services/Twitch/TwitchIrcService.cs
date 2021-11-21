@@ -40,7 +40,7 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchUserStateTrackerService _userStateTrackerService;
 		private readonly TwitchMediaDataProvider _twitchMediaDataProvider;
 
-		private readonly char[] _ircMessageSeparator = {'\r', '\n'};
+		private readonly char[] _ircMessageSeparator = { '\r', '\n' };
 
 		private readonly Dictionary<string, string> _channelNameToChannelIdDictionary;
 
