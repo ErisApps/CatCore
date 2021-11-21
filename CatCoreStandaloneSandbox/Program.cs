@@ -405,7 +405,7 @@ namespace CatCoreStandaloneSandbox
 			}
 		}
 
-		private static async Task CustomEmoteMetadataFetchingTesting()
+		private static void CustomEmoteMetadataFetchingTesting()
 		{
 			// BTTV
 			// https://api.betterttv.net/3/cached/emotes/global
