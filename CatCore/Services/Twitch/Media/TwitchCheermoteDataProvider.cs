@@ -26,30 +26,26 @@ namespace CatCore.Services.Twitch.Media
 			_channelCheermotes = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>>>();
 		}
 
-		internal async Task<bool> TryRequestGlobalResources()
+		internal async Task TryRequestGlobalResources()
 		{
 			var globalCheermotes = await _twitchHelixApiService.GetCheermotes().ConfigureAwait(false);
 			if (globalCheermotes == null)
 			{
-				return false;
+				return;
 			}
 
 			_globalCheermotes = ParseCheermoteData(globalCheermotes.Value.Data);
-
-			return true;
 		}
 
-		internal async Task<bool> TryRequestChannelResources(string userId)
+		internal async Task TryRequestChannelResources(string userId)
 		{
 			var channelCheermotes = await _twitchHelixApiService.GetCheermotes(userId).ConfigureAwait(false);
 			if (channelCheermotes == null)
 			{
-				return false;
+				return;
 			}
 
 			_channelCheermotes[userId] = ParseCheermoteData(channelCheermotes.Value.Data.Where(x => x.Type == CheermoteType.ChannelCustom));
-
-			return true;
 		}
 
 		private ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermote>> ParseCheermoteData(IEnumerable<CheermoteGroupData> cheermoteGroupData)

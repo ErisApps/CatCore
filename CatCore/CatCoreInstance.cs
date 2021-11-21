@@ -14,6 +14,7 @@ using CatCore.Services.Interfaces;
 using CatCore.Services.Multiplexer;
 using CatCore.Services.Twitch;
 using CatCore.Services.Twitch.Interfaces;
+using CatCore.Services.Twitch.Media;
 using DryIoc;
 using JetBrains.Annotations;
 using Serilog;
@@ -125,6 +126,8 @@ namespace CatCore
 			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
 			_container.RegisterInitializer<IKittenApiService>((service, _) => service.Initialize());
 
+			_container.Register<BttvDataProvider>(Reuse.Singleton);
+
 			// Register Twitch-specific services
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
 			// .GetAwaiter().GetResult() is being used on the Initialize method to ensure the user is actually logged in when credentials are present
@@ -134,6 +137,10 @@ namespace CatCore
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
 			_container.Register<ITwitchRoomStateTrackerService, TwitchRoomStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchUserStateTrackerService, TwitchUserStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			_container.Register<TwitchBadgeDataProvider>(Reuse.Singleton);
+			_container.Register<TwitchCheermoteDataProvider>(Reuse.Singleton);
+			_container.Register<TwitchMediaDataProvider>(Reuse.Singleton);
+			_container.RegisterInitializer<TwitchMediaDataProvider>(((provider, _) => provider.Initialize()));
 			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
 			_container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,

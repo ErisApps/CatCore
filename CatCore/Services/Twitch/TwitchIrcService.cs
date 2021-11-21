@@ -12,6 +12,7 @@ using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
+using CatCore.Services.Twitch.Media;
 using Serilog;
 
 namespace CatCore.Services.Twitch
@@ -36,6 +37,7 @@ namespace CatCore.Services.Twitch
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
 		private readonly ITwitchRoomStateTrackerService _roomStateTrackerService;
 		private readonly ITwitchUserStateTrackerService _userStateTrackerService;
+		private readonly TwitchMediaDataProvider _twitchMediaDataProvider;
 
 		private readonly char[] _ircMessageSeparator = {'\r', '\n'};
 
@@ -52,7 +54,7 @@ namespace CatCore.Services.Twitch
 
 		public TwitchIrcService(ILogger logger, IKittenWebSocketProvider kittenWebSocketProvider, IKittenPlatformActiveStateManager activeStateManager, IKittenSettingsService settingsService,
 			ITwitchAuthService twitchAuthService, ITwitchChannelManagementService twitchChannelManagementService, ITwitchRoomStateTrackerService roomStateTrackerService,
-			ITwitchUserStateTrackerService userStateTrackerService)
+			ITwitchUserStateTrackerService userStateTrackerService, TwitchMediaDataProvider twitchMediaDataProvider)
 		{
 			_logger = logger;
 			_kittenWebSocketProvider = kittenWebSocketProvider;
@@ -62,6 +64,7 @@ namespace CatCore.Services.Twitch
 			_twitchChannelManagementService = twitchChannelManagementService;
 			_roomStateTrackerService = roomStateTrackerService;
 			_userStateTrackerService = userStateTrackerService;
+			_twitchMediaDataProvider = twitchMediaDataProvider;
 
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
@@ -339,7 +342,6 @@ namespace CatCore.Services.Twitch
 			TwitchUser twitchUser;
 			if (wasSendByLibrary)
 			{
-
 				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? string.Empty,
 					_twitchAuthService.LoggedInUser?.LoginName ?? string.Empty,
 					selfDisplayName ?? string.Empty,
@@ -450,7 +452,8 @@ namespace CatCore.Services.Twitch
 				message = string.Empty;
 			}
 
-			var emotes = ExtractEmoteInfo(message, messageMeta);
+			var emotes = message.Length > 0 ? ExtractEmoteInfo(message, messageMeta) : new List<IChatEmote>(0);
+
 
 			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
