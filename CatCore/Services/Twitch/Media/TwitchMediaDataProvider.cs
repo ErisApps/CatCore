@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CatCore.Models.Config;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
+using CatCore.Models.Twitch.IRC;
 using CatCore.Models.Twitch.Media;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -199,6 +200,11 @@ namespace CatCore.Services.Twitch.Media
 			_twitchBadgeDataProvider.ReleaseChannelResources(userId);
 			_twitchCheermoteDataProvider.ReleaseChannelResources(userId);
 			_bttvDataProvider.ReleaseChannelResources(userId);
+		}
+
+		internal bool TryGetBadge(string identifier, string userId, out TwitchBadge? badge)
+		{
+			return _twitchBadgeDataProvider.TryGetBadge(identifier, userId, out badge);
 		}
 
 		// TODO: Verify this implementation actually works...

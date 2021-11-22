@@ -343,6 +343,29 @@ namespace CatCore.Services.Twitch
 			TwitchUser twitchUser;
 			if (wasSendByLibrary)
 			{
+				var badgeEntries = new List<IChatBadge>();
+				if (globalUserState?.Badges != null)
+				{
+					foreach (var badgeIdentifier in globalUserState.Badges.Split(','))
+					{
+						if (_twitchMediaDataProvider.TryGetBadge(badgeIdentifier, channelId, out var badge))
+						{
+							badgeEntries.Add(badge!);
+						}
+					}
+				}
+
+				if (userState?.Badges != null)
+				{
+					foreach (var badgeIdentifier in userState.Badges.Split(','))
+					{
+						if (_twitchMediaDataProvider.TryGetBadge(badgeIdentifier, channelId, out var badge))
+						{
+							badgeEntries.Add(badge!);
+						}
+					}
+				}
+
 				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? string.Empty,
 					_twitchAuthService.LoggedInUser?.LoginName ?? string.Empty,
 					selfDisplayName ?? string.Empty,
@@ -351,7 +374,8 @@ namespace CatCore.Services.Twitch
 					userState?.IsBroadcaster ?? false,
 					userState?.IsSubscriber ?? false,
 					userState?.IsTurbo ?? false,
-					userState?.IsVip ?? false);
+					userState?.IsVip ?? false,
+					badgeEntries.AsReadOnly());
 
 				messageId = messageMeta![IrcMessageTags.ID]!;
 				bits = 0;
@@ -368,6 +392,7 @@ namespace CatCore.Services.Twitch
 				bool isTurbo;
 				bool isVip;
 
+				List<IChatBadge> badgeEntries;
 
 				if (messageMeta != null)
 				{
@@ -393,6 +418,15 @@ namespace CatCore.Services.Twitch
 						isSubscriber = (badgesString.Contains("subscriber/")) || (badgesString.Contains("founder/"));
 						isTurbo = badgesString.Contains("turbo/");
 						isVip = badgesString.Contains("vip/");
+
+						badgeEntries = new List<IChatBadge>();
+						foreach (var badgeIdentifier in badgesString.Split(','))
+						{
+							if (_twitchMediaDataProvider.TryGetBadge(badgeIdentifier, channelId, out var badge))
+							{
+								badgeEntries.Add(badge!);
+							}
+						}
 					}
 					else
 					{
@@ -401,6 +435,8 @@ namespace CatCore.Services.Twitch
 						isSubscriber = false;
 						isTurbo = false;
 						isVip = false;
+
+						badgeEntries = new List<IChatBadge>(0);
 					}
 
 					messageId = messageMeta.TryGetValue(IrcMessageTags.ID, out var msgId) ? msgId : Guid.NewGuid().ToString();
@@ -416,6 +452,7 @@ namespace CatCore.Services.Twitch
 					isSubscriber = false;
 					isTurbo = false;
 					isVip = false;
+					badgeEntries = new List<IChatBadge>(0);
 
 					messageId = Guid.NewGuid().ToString();
 					bits = 0;
@@ -429,7 +466,8 @@ namespace CatCore.Services.Twitch
 					isBroadcaster,
 					isSubscriber,
 					isTurbo,
-					isVip
+					isVip,
+					badgeEntries.AsReadOnly()
 				);
 			}
 

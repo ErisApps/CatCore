@@ -1,4 +1,5 @@
-﻿using CatCore.Models.Shared;
+﻿using System.Collections.ObjectModel;
+using CatCore.Models.Shared;
 using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.IRC
@@ -32,7 +33,11 @@ namespace CatCore.Models.Twitch.IRC
 		[PublicAPI]
 		public bool IsVip { get; internal set; }
 
-		public TwitchUser(string id, string userName, string displayName, string color, bool isModerator, bool isBroadcaster, bool isSubscriber, bool isTurbo, bool isVip)
+		[PublicAPI]
+		public ReadOnlyCollection<IChatBadge> Badges { get; }
+
+		public TwitchUser(string id, string userName, string displayName, string color, bool isModerator, bool isBroadcaster, bool isSubscriber, bool isTurbo, bool isVip,
+			ReadOnlyCollection<IChatBadge> badges)
 		{
 			Id = id;
 			UserName = userName;
@@ -43,6 +48,7 @@ namespace CatCore.Models.Twitch.IRC
 			IsSubscriber = isSubscriber;
 			IsTurbo = isTurbo;
 			IsVip = isVip;
+			Badges = badges;
 		}
 	}
 }
