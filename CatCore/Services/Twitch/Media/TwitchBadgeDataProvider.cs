@@ -74,7 +74,7 @@ namespace CatCore.Services.Twitch.Media
 			return new ReadOnlyDictionary<string, TwitchBadge>(parsedTwitchBadges);
 		}
 
-		public bool TryGetBadge(out TwitchBadge? badge, string identifier, string userId)
+		public bool TryGetBadge(string identifier, string userId, out TwitchBadge? badge)
 		{
 			if (_channelBadges.TryGetValue(userId, out var channelBadges) && channelBadges.TryGetValue(identifier, out badge))
 			{
