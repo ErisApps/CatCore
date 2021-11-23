@@ -5,12 +5,14 @@
 		public const string VIDEO_PLAYBACK = "video-playback-by-id";
 		public const string FOLLOWING = "following";
 		public const string POLLS = "polls";
+		public const string PREDICTIONS = "predictions-channel-v1";
 		public const string CHANNEL_POINTS_CHANNEL_V1 = "channel-points-channel-v1";
 
-		public static string FormatVideoPlaybackTopic(string channelId) => VIDEO_PLAYBACK + "." + channelId;
-		public static string FormatFollowingTopic(string channelId) => FOLLOWING + "." + channelId;
-		public static string FormatPollsTopic(string channelId) => POLLS + "." + channelId;
-		public static string FormatChannelPointsChannelV1Topic(string channelId) => CHANNEL_POINTS_CHANNEL_V1 + "." + channelId;
+		public static string FormatVideoPlaybackTopic(string channelId) => VIDEO_PLAYBACK + '.' + channelId;
+		public static string FormatFollowingTopic(string channelId) => FOLLOWING + '.' + channelId;
+		public static string FormatPollsTopic(string channelId) => POLLS + '.' + channelId;
+		public static string FormatPredictionsTopic(string channelId) => PREDICTIONS + '.' + channelId;
+		public static string FormatChannelPointsChannelV1Topic(string channelId) => CHANNEL_POINTS_CHANNEL_V1 + '.' + channelId;
 
 		internal static class VideoPlaybackSubTopics
 		{

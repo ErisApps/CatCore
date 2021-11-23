@@ -14,6 +14,7 @@ using CatCore.Models.Twitch.PubSub.Requests;
 using CatCore.Models.Twitch.PubSub.Responses;
 using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
+using CatCore.Models.Twitch.PubSub.Responses.Predictions;
 using CatCore.Models.Twitch.PubSub.Responses.VideoPlayback;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
@@ -94,6 +95,7 @@ namespace CatCore.Services.Twitch
 
 		internal event Action<string, Follow>? OnFollow;
 		internal event Action<string, PollData>? OnPoll;
+		internal event Action<string, PredictionData>? OnPrediction;
 		internal event Action<string, RewardRedeemedData>? OnRewardRedeemed;
 
 		private async void TwitchAuthServiceOnOnCredentialsChanged()
@@ -111,7 +113,6 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		// TODO: mark method as internal
 		// ReSharper disable once CognitiveComplexity
 		private async Task Start(bool force = false)
 		{
@@ -410,6 +411,7 @@ namespace CatCore.Services.Twitch
 				PubSubTopics.VIDEO_PLAYBACK => PubSubTopics.FormatVideoPlaybackTopic(_channelId),
 				PubSubTopics.FOLLOWING => PubSubTopics.FormatFollowingTopic(_channelId),
 				PubSubTopics.POLLS => PubSubTopics.FormatPollsTopic(_channelId),
+				PubSubTopics.PREDICTIONS => PubSubTopics.FormatPredictionsTopic(_channelId),
 				PubSubTopics.CHANNEL_POINTS_CHANNEL_V1 => PubSubTopics.FormatChannelPointsChannelV1Topic(_channelId),
 				_ => throw new NotSupportedException()
 			};
@@ -515,6 +517,16 @@ namespace CatCore.Services.Twitch
 					var pollData = pollsDocument.GetProperty("data").GetProperty("poll").Deserialize(TwitchPubSubSerializerContext.Default.PollData);
 
 					OnPoll?.Invoke(_channelId, pollData);
+
+					break;
+				}
+				case PubSubTopics.PREDICTIONS:
+				{
+					var predictionsDocument = JsonDocument.Parse(message).RootElement;
+					// var internalType = predictionsDocument.GetProperty("type").GetString()!;
+					var predictionData = predictionsDocument.GetProperty("data").GetProperty("event").Deserialize(TwitchPubSubSerializerContext.Default.PredictionData);
+
+					OnPrediction?.Invoke(_channelId, predictionData);
 
 					break;
 				}
