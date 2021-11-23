@@ -7,6 +7,7 @@ using CatCore.Models.Twitch.PubSub;
 using CatCore.Models.Twitch.PubSub.Responses;
 using CatCore.Models.Twitch.PubSub.Responses.ChannelPointsChannelV1;
 using CatCore.Models.Twitch.PubSub.Responses.Polls;
+using CatCore.Models.Twitch.PubSub.Responses.Predictions;
 using CatCore.Models.Twitch.PubSub.Responses.VideoPlayback;
 
 namespace CatCore.Services.Twitch
@@ -312,6 +313,42 @@ namespace CatCore.Services.Twitch
 				if (_pollCallbackRegistrations.TryRemove(value, out _) && _pollCallbackRegistrations.IsEmpty)
 				{
 					UnregisterTopicWhenNeeded(PubSubTopics.POLLS);
+				}
+			}
+		}
+
+		#endregion
+
+		#region prediction
+
+		private readonly ConcurrentDictionary<Action<string, PredictionData>, bool> _predictionsCallbackRegistrations = new();
+
+		private void NotifyOnPrediction(string channelId, PredictionData rewardRedeemedData)
+		{
+			foreach (var action in _predictionsCallbackRegistrations.Keys)
+			{
+				action(channelId, rewardRedeemedData);
+			}
+		}
+
+		public event Action<string, PredictionData> OnPrediction
+		{
+			add
+			{
+				if (_predictionsCallbackRegistrations.TryAdd(value, false))
+				{
+					RegisterTopicWhenNeeded(PubSubTopics.PREDICTIONS);
+				}
+				else
+				{
+					_logger.Warning("Callback was already registered");
+				}
+			}
+			remove
+			{
+				if (_predictionsCallbackRegistrations.TryRemove(value, out _) && _predictionsCallbackRegistrations.IsEmpty)
+				{
+					UnregisterTopicWhenNeeded(PubSubTopics.PREDICTIONS);
 				}
 			}
 		}
