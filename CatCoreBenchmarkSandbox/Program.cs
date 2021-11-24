@@ -28,6 +28,8 @@ namespace CatCoreBenchmarkSandbox
 					.WithRuntime(ClrRuntime.Net472))
 				.AddJob(Job.Default
 					.WithRuntime(CoreRuntime.Core50))
+				.AddJob(Job.Default
+					.WithRuntime(CoreRuntime.Core60))
 				.AddJob(MonoRuntimes
 					.Select(runtimeEntry => Job.Default.WithRuntime(runtimeEntry))
 					.ToArray())
