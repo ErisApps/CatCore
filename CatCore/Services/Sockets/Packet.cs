@@ -11,44 +11,51 @@ namespace CatCore.Services.Sockets.Packets
 	/// </summary>
 	public abstract class Packet
 	{
-		// Force packet name to be compile time constant
+		// Force packet name to be runtime constant
 		public string PacketName => GetType().Name;
 
-
-		/// This is probably overkill but WHO CARES? WHY WOULD ANYONE CARE BECAUSE IT'S ASYNC SO IT MUST BE FAST!
-		/// FAST LIKE FAST AND FURIOUS! IDK I NEVER WATCHED THE MOVIES
-		public static async Task<Packet?> GetPacketFromJson(string json)
+		public static Packet? GetPacketFromJson(string json)
 		{
 			if (string.IsNullOrEmpty(json))
 			{
 				return null;
 			}
 
-			return await Task.Run((() =>
+			var jsonNode = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+
+			if (jsonNode == null)
 			{
-				var jsonNode = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+				return null;
+			}
 
-				if (jsonNode == null)
-				{
-					return null;
-				}
+			if (!jsonNode.TryGetValue(nameof(PacketName), out var packetNameElm))
+			{
+				return null;
+			}
 
-				if (!jsonNode.TryGetValue(nameof(PacketName), out var packetNameElm))
-				{
-					return null;
-				}
+			var packetName = packetNameElm.GetString();
 
-				var packetName = packetNameElm.GetString();
+			if (packetName == null)
+			{
+				return null;
+			}
 
-				if (packetName == null)
-				{
-					return null;
-				}
+			var type = GetPacketTypeByName(packetName);
+			return type == null ? null : JsonSerializer.Deserialize(json, type) as Packet;
+		}
 
-				var type = GetPacketTypeByName(packetName!);
-
-				return type == null ? null : JsonSerializer.Deserialize(json, type!) as Packet;
-			}));
+		public static Packet? TryGetPacketFromJson(string json, out Exception? exception)
+		{
+			exception = null;
+			try
+			{
+				return GetPacketFromJson(json);
+			}
+			catch (Exception e)
+			{
+				exception = e;
+				return null;
+			}
 		}
 
 		private static Type? GetPacketTypeByName(string name)

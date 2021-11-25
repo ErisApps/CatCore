@@ -169,11 +169,11 @@ namespace CatCore
 					Log.Logger.Information($"Client connected from {clientSocket.WorkSocket.RemoteEndPoint} and {clientSocket.Uuid}");
 				};
 
-				socket.OnReceive += (clientSocket, data) =>
+				socket.OnReceive += (clientSocket, data, str) =>
 				{
-					Log.Logger.Information($"Received from {clientSocket.Uuid}: {data.ReceivedDataStr}");
+					Log.Logger.Information($"Received from {clientSocket.Uuid}: {str}");
 
-					var _ = clientSocket.QueueSend(new RespondHello(data.ReceivedDataStr.ToString()));
+					clientSocket.QueueSend(new RespondHello(str));
 				};
 
 				socket.OnDisconnect += clientSocket =>

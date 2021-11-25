@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Sockets;
+using CatCore.Services.Sockets.Packets;
 using Serilog;
 
 namespace CatCore.Services
@@ -33,7 +34,7 @@ namespace CatCore.Services
 
 #pragma warning disable 649
 		public event Action<ClientSocket>? OnConnect;
-		public event Action<ClientSocket, ReceivedData>? OnReceive;
+		public event Action<ClientSocket, Packet?, string>? OnReceive;
 		public event Action<ClientSocket>? OnDisconnect;
 #pragma warning restore 649
 
@@ -63,7 +64,7 @@ namespace CatCore.Services
 			{
 				_logger.Information($"Binding to port {localEndPoint.Address.MapToIPv4()}:{localEndPoint.Port}");
 				listener.Bind(localEndPoint);
-				listener.Listen(20); //back log is amount of clients allowed to wait
+				listener.Listen(2); //back log is amount of clients allowed to wait
 
 				// Set the event to nonsignaled state.
 				_allDone = NewSemaphore();
@@ -86,7 +87,7 @@ namespace CatCore.Services
 			}
 			catch (Exception e)
 			{
-				_logger.Fatal(e.Message, e,ToString());
+				_logger.Error(e, "Failed to start Kitty socket listening server");
 			}
 
 			_isServerRunning = false;
@@ -120,9 +121,17 @@ namespace CatCore.Services
 			OnConnect?.Invoke(clientSocket);
 		}
 
-		private void HandleRead(ClientSocket clientSocket, ReceivedData receivedData)
+		private void HandleRead(ClientSocket clientSocket, string receivedData)
 		{
-			OnReceive?.Invoke(clientSocket, receivedData);
+			var p = Packet.TryGetPacketFromJson(receivedData, out _);
+
+			if (p is null)
+			{
+				Log.Logger.Warning($"Unable to parse packet from {clientSocket.Uuid}, type is unknown");
+				// return;
+			}
+
+			OnReceive?.Invoke(clientSocket, p, receivedData);
 		}
 
 
@@ -160,7 +169,7 @@ namespace CatCore.Services
 				}
 				catch (Exception e)
 				{
-					_logger.Error(e.Message, e.ToString());
+					_logger.Error(e, "Failed to start Kitty socket server");
 				}
 			});
 		}
