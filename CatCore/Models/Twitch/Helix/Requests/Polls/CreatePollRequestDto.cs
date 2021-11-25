@@ -15,7 +15,7 @@ namespace CatCore.Models.Twitch.Helix.Requests.Polls
 		public List<PollChoice> Choices { get; }
 
 		[JsonPropertyName("duration")]
-		public int Duration { get; }
+		public uint Duration { get; }
 
 		[JsonPropertyName("bits_voting_enabled")]
 		public bool? BitsVotingEnabled { get; }
@@ -29,7 +29,7 @@ namespace CatCore.Models.Twitch.Helix.Requests.Polls
 		[JsonPropertyName("channel_points_per_vote")]
 		public uint? ChannelPointsPerVote { get; }
 
-		public CreatePollRequestDto(string broadcasterId, string title, List<PollChoice> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
+		public CreatePollRequestDto(string broadcasterId, string title, List<PollChoice> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null)
 		{
 			BroadcasterId = broadcasterId;
