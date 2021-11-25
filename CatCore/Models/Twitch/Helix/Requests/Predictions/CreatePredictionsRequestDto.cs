@@ -15,9 +15,9 @@ namespace CatCore.Models.Twitch.Helix.Requests.Predictions
 		public List<Outcome> Choices { get; }
 
 		[JsonPropertyName("prediction_window")]
-		public int Duration { get; }
+		public uint Duration { get; }
 
-		public CreatePredictionsRequestDto(string broadcasterId, string title, List<Outcome> choices, int duration)
+		public CreatePredictionsRequestDto(string broadcasterId, string title, List<Outcome> choices, uint duration)
 		{
 			BroadcasterId = broadcasterId;
 			Title = title;
