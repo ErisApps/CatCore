@@ -1,6 +1,6 @@
 ﻿namespace CatCore.Models.Twitch.IRC
 {
-	public enum MessageSendingRateLimit
+	internal enum MessageSendingRateLimit
 	{
 		/// <summary>
 		/// Applies to everyone who doesn't have broadcaster/moderator permissions in the channel to which the message will be send
