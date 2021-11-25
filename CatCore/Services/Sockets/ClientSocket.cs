@@ -197,19 +197,6 @@ namespace CatCore.Services.Sockets
 				return;
 			}
 
-			try
-			{
-				if (WorkSocket.Connected)
-				{
-					WorkSocket.Disconnect(true);
-					WorkSocket.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				Console.Error.WriteLine(e);
-			}
-
 			_socketStream.Dispose();
 
 			_onClose.Invoke(this);
