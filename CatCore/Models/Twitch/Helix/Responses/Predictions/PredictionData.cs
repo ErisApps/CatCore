@@ -40,20 +40,14 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 		public DateTimeOffset CreatedAt { get; }
 
 		[JsonPropertyName("ended_at")]
-		public string EndedAtRaw { get; }
-
-		[JsonIgnore]
-		public DateTimeOffset? EndedAt => DateTimeOffset.TryParse(EndedAtRaw, out var endedAt) ? endedAt : null;
+		public DateTimeOffset? EndedAt { get; }
 
 		[JsonPropertyName("locked_at")]
-		public string LockedAtRaw { get; }
-
-		[JsonIgnore]
-		public DateTimeOffset? LockedAt => DateTimeOffset.TryParse(LockedAtRaw, out var lockedAt) ? lockedAt : null;
+		public DateTimeOffset? LockedAt { get; }
 
 		[JsonConstructor]
 		public PredictionData(string id, string broadcasterId, string broadcasterName, string broadcasterLogin, string title, string winningOutcomeId, IReadOnlyList<Outcome> outcomes, uint duration,
-			PredictionStatus status, DateTimeOffset createdAt, string endedAtRaw, string lockedAtRaw)
+			PredictionStatus status, DateTimeOffset createdAt, DateTimeOffset? endedAt, DateTimeOffset? lockedAt)
 		{
 			Id = id;
 			BroadcasterId = broadcasterId;
@@ -65,8 +59,8 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 			Duration = duration;
 			Status = status;
 			CreatedAt = createdAt;
-			EndedAtRaw = endedAtRaw;
-			LockedAtRaw = lockedAtRaw;
+			EndedAt = endedAt;
+			LockedAt = lockedAt;
 		}
 	}
 }

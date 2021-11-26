@@ -49,14 +49,11 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 		public DateTimeOffset StartedAt { get; }
 
 		[JsonPropertyName("ended_at")]
-		public string EndedAtRaw { get; }
-
-		[JsonIgnore]
-		public DateTimeOffset? EndedAt => DateTimeOffset.TryParse(EndedAtRaw, out var endedAt) ? endedAt : null;
+		public DateTimeOffset? EndedAt { get; }
 
 		[JsonConstructor]
 		public PollData(string id, string broadcasterId, string broadcasterName, string broadcasterLogin, string title, IReadOnlyList<PollChoice> choices, bool bitsVotingEnabled, uint bitsPerVote,
-			bool channelPointsVotingEnabled, uint channelPointsPerVote, PollStatus status, uint duration, DateTimeOffset startedAt, string endedAtRaw)
+			bool channelPointsVotingEnabled, uint channelPointsPerVote, PollStatus status, uint duration, DateTimeOffset startedAt, DateTimeOffset? endedAt)
 		{
 			Id = id;
 			BroadcasterId = broadcasterId;
@@ -71,7 +68,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 			Status = status;
 			Duration = duration;
 			StartedAt = startedAt;
-			EndedAtRaw = endedAtRaw;
+			EndedAt = endedAt;
 		}
 	}
 }
