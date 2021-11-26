@@ -8,10 +8,10 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 		public string UserId { get; }
 
 		[JsonPropertyName("user_login")]
-		public string UserLogin { get; }
+		public string LoginName { get; }
 
 		[JsonPropertyName("user_name")]
-		public string UserName { get; }
+		public string DisplayName { get; }
 
 		[JsonPropertyName("channel_points_used")]
 		public uint ChannelPointsUsed { get; }
@@ -20,11 +20,11 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 		public uint ChannelPointsWon { get; }
 
 		[JsonConstructor]
-		public Predictor(string userId, string userLogin, string userName, uint channelPointsUsed, uint channelPointsWon)
+		public Predictor(string userId, string loginName, string displayName, uint channelPointsUsed, uint channelPointsWon)
 		{
 			UserId = userId;
-			UserLogin = userLogin;
-			UserName = userName;
+			LoginName = loginName;
+			DisplayName = displayName;
 			ChannelPointsUsed = channelPointsUsed;
 			ChannelPointsWon = channelPointsWon;
 		}
