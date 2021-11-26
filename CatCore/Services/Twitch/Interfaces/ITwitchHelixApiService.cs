@@ -83,7 +83,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
+		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null);
 
 		/// <summary>
@@ -133,7 +133,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-prediction">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, int duration, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken? cancellationToken = null);
 
 		/// <summary>
 		/// Lock, resolve, or cancel a Channel Points Prediction. Active Predictions can be updated to be <see cref="PredictionStatus.Locked"/>, <see cref="PredictionStatus.Resolved"/>,

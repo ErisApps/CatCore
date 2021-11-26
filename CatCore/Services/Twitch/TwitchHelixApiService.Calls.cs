@@ -167,7 +167,7 @@ namespace CatCore.Services.Twitch
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, int duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
+		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
@@ -317,7 +317,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, int duration, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken? cancellationToken = null)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
