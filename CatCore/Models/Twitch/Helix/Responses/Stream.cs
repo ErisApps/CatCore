@@ -13,10 +13,10 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public string UserId { get; }
 
 		[JsonPropertyName("user_login")]
-		public string UserLogin { get; }
+		public string LoginName { get; }
 
 		[JsonPropertyName("user_name")]
-		public string UserName { get; }
+		public string DisplayName { get; }
 
 		[JsonPropertyName("game_id")]
 		public string GameId { get; }
@@ -49,13 +49,13 @@ namespace CatCore.Models.Twitch.Helix.Responses
 		public bool IsMature { get; }
 
 		[JsonConstructor]
-		public Stream(string id, string userId, string userLogin, string userName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
+		public Stream(string id, string userId, string loginName, string displayName, string gameId, string gameName, string type, string title, uint viewerCount, DateTimeOffset startedAt,
 			string language, string thumbnailUrl, IReadOnlyList<string> tagIds, bool isMature)
 		{
 			Id = id;
 			UserId = userId;
-			UserLogin = userLogin;
-			UserName = userName;
+			LoginName = loginName;
+			DisplayName = displayName;
 			GameId = gameId;
 			GameName = gameName;
 			Type = type;
