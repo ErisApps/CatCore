@@ -18,13 +18,12 @@ namespace CatCore.Models.Api.Responses
 		public bool ParseTwitchEmotes { get; }
 		public bool ParseCheermotes { get; }
 
-
 		public TwitchStateResponseDto(bool isValid, ValidationResponse? loggedInUser, List<UserData> channelData, TwitchConfig twitchConfig)
 		{
 			LoggedIn = isValid;
 
 			OwnChannelEnabled = twitchConfig.OwnChannelEnabled;
-			ChannelData  = channelData
+			ChannelData = channelData
 				.Select(x => new TwitchChannelData(x.ProfileImageUrl, x.DisplayName, x.LoginName, x.UserId, x.LoginName == loggedInUser?.LoginName))
 				.OrderByDescending(channel => channel.IsSelf)
 				.ThenBy(channel => channel.DisplayName)
