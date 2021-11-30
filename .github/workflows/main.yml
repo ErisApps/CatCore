@@ -4,9 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
-    paths:
-      - 'CatCore/**'
-      - '.github/workflows/main.yml'
   pull_request:
     branches: [ main ]
     paths:
