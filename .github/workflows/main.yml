@@ -21,7 +21,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 6.0.x
     - name: Removed .example suffix from Constants implementation
       run: find ~ -type f -name Constants.user.cs.example -execdir mv Constants.user.cs.example Constants.user.cs \;
     - name: Find and Replace - Insert CatCore Auth Server URI
