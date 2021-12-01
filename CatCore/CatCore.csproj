@@ -70,7 +70,6 @@
 		</PackageReference>
 	</ItemGroup>
 
-<!--    <Import Project="ILRepack.targets" />-->
-    <Import Project="ILRepack2.targets" />
+	<Import Project="ILRepack.targets" />
 
 </Project>

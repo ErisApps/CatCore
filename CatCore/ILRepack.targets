@@ -1,63 +1,73 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
-		<PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13">
+		<PackageReference Include="ILRepack" Version="2.*">
 			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
-	<UsingTask TaskName="ILRepack" AssemblyFile="ILRepack.MSBuild.Task.dll"/>
-
-	<Target Name="ILRepack" AfterTargets="Build" Condition="'$(Configuration)' != 'Debug'">
-		<Message Text="ILRepacking..." Importance="high"/>
+	<Target Name="ILRepack"
+			AfterTargets="Build"
+			Condition="'$(SkipILRepack)' != 'true'">
 
 		<PropertyGroup>
-			<RepackPDB>false</RepackPDB>
 			<WorkingDirectory>$(ProjectDir)$(OutputPath)</WorkingDirectory>
-		</PropertyGroup>
-
-		<PropertyGroup Condition="'$(OS)'=='Windows_NT'">
-			<RepackPDB>true</RepackPDB>
+			<ILRepackOutputDir>Merged\</ILRepackOutputDir>
+			<ILRepackOutput>$(ILRepackOutputDir)$(AssemblyName).dll</ILRepackOutput>
 		</PropertyGroup>
 
 		<ItemGroup>
-			<InputAssemblies Include="$(TargetPath)"/>
+			<RepackInputAssemblies Include="$(TargetPath)"/>
 
-			<InputAssemblies Include="CatCore.Shared.dll"/>
-			<InputAssemblies Include="CatCore.Twemoji.dll"/>
-			<InputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
-			<InputAssemblies Include="Polly.dll"/>
-			<InputAssemblies Include="Serilog.dll"/>
-			<InputAssemblies Include="Serilog.Sinks.Async.dll"/>
-			<InputAssemblies Include="System.Buffers.dll"/>
-			<InputAssemblies Include="System.Memory.dll"/>
-			<InputAssemblies Include="System.Net.Http.Json.dll"/>
-			<InputAssemblies Include="System.Numerics.Vectors.dll"/>
-			<InputAssemblies Include="System.Reactive.dll"/>
-			<InputAssemblies Include="System.Runtime.CompilerServices.Unsafe.dll"/>
-			<InputAssemblies Include="System.Text.Encodings.Web.dll"/>
-			<InputAssemblies Include="System.Text.Json.dll"/>
-			<InputAssemblies Include="System.Threading.Channels.dll"/>
-			<InputAssemblies Include="System.Threading.Tasks.Extensions.dll"/>
-			<InputAssemblies Include="Websocket.Client.dll"/>
+			<RepackInputAssemblies Include="CatCore.Shared.dll"/>
+			<RepackInputAssemblies Include="CatCore.Twemoji.dll"/>
+			<RepackInputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
+			<RepackInputAssemblies Include="Polly.dll"/>
+			<RepackInputAssemblies Include="Serilog.dll"/>
+			<RepackInputAssemblies Include="Serilog.Sinks.Async.dll"/>
+			<RepackInputAssemblies Include="System.Buffers.dll"/>
+			<RepackInputAssemblies Include="System.Memory.dll"/>
+			<RepackInputAssemblies Include="System.Net.Http.Json.dll"/>
+			<RepackInputAssemblies Include="System.Numerics.Vectors.dll"/>
+			<RepackInputAssemblies Include="System.Reactive.dll"/>
+			<RepackInputAssemblies Include="System.Runtime.CompilerServices.Unsafe.dll"/>
+			<RepackInputAssemblies Include="System.Text.Encodings.Web.dll"/>
+			<RepackInputAssemblies Include="System.Text.Json.dll"/>
+			<RepackInputAssemblies Include="System.Threading.Channels.dll"/>
+			<RepackInputAssemblies Include="System.Threading.Tasks.Extensions.dll"/>
+			<RepackInputAssemblies Include="Websocket.Client.dll"/>
 		</ItemGroup>
 
-		<ILRepack
-			Parallel="true"
-			Internalize="true"
-			InternalizeExcludeAssemblies="@(DoNotInternalizeAssemblies)"
-			MainAssembly="$(AssemblyName).dll"
-			OutputAssembly="$(WorkingDirectory)Merged\$(AssemblyName).dll"
-			InputAssemblies="@(InputAssemblies)"
-			OutputType="Dll"
-			Verbose="true"
-			DebugInfo="$(RepackPDB)"
-			WorkingDirectory="$(WorkingDirectory)"
-			AllowDuplicateResources="true"/>
+		<!-- ReferencePath contains actual files which can be referenced, we need directories -->
+		<ItemGroup>
+			<!-- Transform each entry into its directory -->
+			<_ReferenceDirsDupl Include="@(ReferencePath->'%(RelativeDir)')" />
+		</ItemGroup>
+		<!-- De-duplicate the directories for sanity -->
+		<RemoveDuplicates Inputs="@(_ReferenceDirsDupl)">
+			<Output TaskParameter="Filtered" ItemName="_ReferenceDirs" />
+		</RemoveDuplicates>
+
+		<Message Importance="low" Text="referencedirs @(_ReferenceDirs)" />
+
+		<ItemGroup>
+			<_ILRCmdArg Include="-union"/>
+			<_ILRCmdArg Include="-parallel"/>
+			<_ILRCmdArg Include="-internalize"/>
+			<_ILRCmdArg Include="-renameInternalized"/>
+			<_ILRCmdArg Include="-lib:%(_ReferenceDirs.Identity)" Condition="'$(OS)' != 'Windows_NT'" />
+			<_ILRCmdArg Include="-xmldocs"/>
+			<_ILRCmdArg Include="-out:$(ILRepackOutput)"/>
+			<_ILRCmdArg Include="%(RepackInputAssemblies.Identity)"/>
+		</ItemGroup>
+
+		<Exec ConsoleToMsBuild="true"
+			  WorkingDirectory="$(WorkingDirectory)"
+			  Command="$(ILRepack) @(_ILRCmdArg->'&quot;%(Identity)&quot;', ' ')"/>
 
 		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).dll" DestinationFiles="$(WorkingDirectory)$(AssemblyName).dll"/>
 		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).pdb" DestinationFiles="$(WorkingDirectory)$(AssemblyName).pdb" Condition="Exists('$(WorkingDirectory)Merged\$(AssemblyName).pdb')"/>
-		<Message Text="OS is $(OS), repacked PDB available: $(RepackPDB)" Importance="high"/>
+
 	</Target>
 </Project>
