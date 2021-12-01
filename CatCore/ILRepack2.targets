@@ -39,11 +39,24 @@
 			<RepackInputAssemblies Include="Websocket.Client.dll"/>
 		</ItemGroup>
 
+		<!-- ReferencePath contains actual files which can be referenced, we need directories -->
 		<ItemGroup>
-<!--			<_ILRCmdArg Include="-union"/>-->
+			<!-- Transform each entry into its directory -->
+			<_ReferenceDirsDupl Include="@(ReferencePath->'%(RelativeDir)')" />
+		</ItemGroup>
+		<!-- De-duplicate the directories for sanity -->
+		<RemoveDuplicates Inputs="@(_ReferenceDirsDupl)">
+			<Output TaskParameter="Filtered" ItemName="_ReferenceDirs" />
+		</RemoveDuplicates>
+
+		<Message Importance="low" Text="referencedirs @(_ReferenceDirs)" />
+
+		<ItemGroup>
+			<_ILRCmdArg Include="-union"/>
 			<_ILRCmdArg Include="-parallel"/>
 			<_ILRCmdArg Include="-internalize"/>
 			<_ILRCmdArg Include="-renameInternalized"/>
+			<_ILRCmdArg Include="-lib:%(_ReferenceDirs.Identity)" Condition="'$(OS)' != 'Windows_NT'" />
 			<_ILRCmdArg Include="-xmldocs"/>
 			<_ILRCmdArg Include="-out:$(ILRepackOutput)"/>
 			<_ILRCmdArg Include="%(RepackInputAssemblies.Identity)"/>
