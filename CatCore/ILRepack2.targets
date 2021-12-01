@@ -7,15 +7,13 @@
 		</PackageReference>
 	</ItemGroup>
 
-
-
 	<Target Name="ILRepacker"
 			AfterTargets="Build"
 			Condition="'$(SkipILRepack)' != 'true'">
 
 		<PropertyGroup>
 			<WorkingDirectory>$(ProjectDir)$(OutputPath)</WorkingDirectory>
-			<ILRepackOutputDir>ilrepack\</ILRepackOutputDir>
+			<ILRepackOutputDir>Merged\</ILRepackOutputDir>
 			<ILRepackOutput>$(ILRepackOutputDir)$(AssemblyName).dll</ILRepackOutput>
 		</PropertyGroup>
 
@@ -42,7 +40,7 @@
 		</ItemGroup>
 
 		<ItemGroup>
-			<_ILRCmdArg Include="-union"/>
+<!--			<_ILRCmdArg Include="-union"/>-->
 			<_ILRCmdArg Include="-parallel"/>
 			<_ILRCmdArg Include="-internalize"/>
 			<_ILRCmdArg Include="-renameInternalized"/>
