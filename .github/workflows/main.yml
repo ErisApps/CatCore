@@ -3,11 +3,11 @@ name: Build CatCore
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: '**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'CatCore/**'
+      - 'CatCore*/**'
       - '.github/workflows/main.yml'
 
 jobs:
