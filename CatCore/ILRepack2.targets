@@ -7,7 +7,7 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<Target Name="ILRepacker"
+	<Target Name="ILRepack"
 			AfterTargets="Build"
 			Condition="'$(SkipILRepack)' != 'true'">
 
