@@ -7,6 +7,10 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<SkipILRepack>true</SkipILRepack>
+	</PropertyGroup>
+
 	<Target Name="ILRepack"
 			AfterTargets="Build"
 			Condition="'$(SkipILRepack)' != 'true'">
