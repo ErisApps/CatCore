@@ -14,7 +14,7 @@
 		<GenerateManifest>True</GenerateManifest>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' OR $(DefineConstants.Contains('CIBuild'))">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<DisableCopyToPlugins>true</DisableCopyToPlugins>
 		<DisableZipRelease>true</DisableZipRelease>
@@ -24,15 +24,6 @@
 		<ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
 		<DisableCopyToPlugins>true</DisableCopyToPlugins>
 		<DisableZipRelease>true</DisableZipRelease>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
-		<DisableCopyToPlugins>True</DisableCopyToPlugins>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(NCrunch)' == '1'">
-		<DisableCopyToPlugins>True</DisableCopyToPlugins>
-		<DisableZipRelease>True</DisableZipRelease>
 	</PropertyGroup>
 
 	<!-- Properties must be set in a target because AssemblyName isn't set immediately -->
