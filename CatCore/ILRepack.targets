@@ -7,13 +7,9 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<SkipILRepack>true</SkipILRepack>
-	</PropertyGroup>
-
 	<Target Name="ILRepack"
 			AfterTargets="Build"
-			Condition="'$(SkipILRepack)' != 'true'">
+			BeforeTargets="BSMT_AfterBuild">
 
 		<PropertyGroup>
 			<WorkingDirectory>$(ProjectDir)$(OutputPath)</WorkingDirectory>
@@ -69,9 +65,6 @@
 		<Exec ConsoleToMsBuild="true"
 			  WorkingDirectory="$(WorkingDirectory)"
 			  Command="$(ILRepack) @(_ILRCmdArg->'&quot;%(Identity)&quot;', ' ')"/>
-
-		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).dll" DestinationFiles="$(WorkingDirectory)$(AssemblyName).dll"/>
-		<Copy SourceFiles="$(WorkingDirectory)Merged\$(AssemblyName).pdb" DestinationFiles="$(WorkingDirectory)$(AssemblyName).pdb" Condition="Exists('$(WorkingDirectory)Merged\$(AssemblyName).pdb')"/>
 
 	</Target>
 </Project>
