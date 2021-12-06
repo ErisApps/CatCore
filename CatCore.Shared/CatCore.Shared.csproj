@@ -4,7 +4,8 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>9</LangVersion>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+		<DebugType>full</DebugType>
+	</PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="System.Text.Json" Version="6.0.0" />
