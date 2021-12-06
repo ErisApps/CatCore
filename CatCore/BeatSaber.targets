@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This file contains project properties used by the build. -->
+<Project>
+	<ItemGroup>
+		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<ImportBSMTTargets>True</ImportBSMTTargets>
+		<BSMTProjectType>BSIPA</BSMTProjectType>
+		<GenerateManifest>True</GenerateManifest>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<DisableCopyToPlugins>true</DisableCopyToPlugins>
+		<DisableZipRelease>true</DisableZipRelease>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NCrunch)' == '1'">
+		<ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+		<DisableCopyToPlugins>true</DisableCopyToPlugins>
+		<DisableZipRelease>true</DisableZipRelease>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
+		<DisableCopyToPlugins>True</DisableCopyToPlugins>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NCrunch)' == '1'">
+		<DisableCopyToPlugins>True</DisableCopyToPlugins>
+		<DisableZipRelease>True</DisableZipRelease>
+	</PropertyGroup>
+
+	<!-- Properties must be set in a target because AssemblyName isn't set immediately -->
+	<Target Name="SetManifestInfo" BeforeTargets="BSMT_BeforeBuild">
+		<Message Text="OutputAssemblyName: $(OutputAssemblyName)" Importance="high"/>
+		<Message Text="AssemblyName: $(AssemblyName)" Importance="high"/>
+
+		<!-- Used when skipping ILRepack step -->
+		<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+			<OutputCopy Include="$(OutDir)$(AssemblyName).dll" OutputPath="Libs\$(AssemblyName).dll"/>
+			<OutputCopy Include="$(OutDir)$(AssemblyName).pdb" OutputPath="Libs\$(AssemblyName).pdb"/>
+		</ItemGroup>
+
+		<!-- Used when ILRepack step is being used, copy from Merged sub directory -->
+		<ItemGroup Condition="'$(Configuration)' != 'Debug'">
+			<OutputCopy Include="$(OutDir)Merged\$(AssemblyName).dll" OutputPath="Libs\$(AssemblyName).dll"/>
+			<OutputCopy Include="$(OutDir)Merged\$(AssemblyName).pdb" OutputPath="Libs\$(AssemblyName).pdb"/>
+		</ItemGroup>
+
+		<!-- Manifest path stays the same regardless of whether ILRepack step is being used or not -->
+		<ItemGroup>
+			<OutputCopy Include="$(OutDir)$(AssemblyName).manifest" OutputPath="Plugins\$(AssemblyName).manifest"/>
+		</ItemGroup>
+
+		<PropertyGroup Condition="'$(GenerateManifest)' == 'True'">
+			<RequiresBsipa>false</RequiresBsipa>
+			<PluginId>$(AssemblyName)</PluginId>
+			<PluginName>$(AssemblyName)</PluginName>
+
+			<GameVersion>1.18.3</GameVersion>
+			<ProjectSource>https://github.com/ErisApps/CatCore</ProjectSource>
+			<Donate>https://www.patreon.com/erisapps</Donate>
+			<!--<PluginIcon>Path/to/icon.png</PluginIcon>-->
+			<!-- Namespace of [Plugin] class if not root. -->
+			<!--<PluginHint>BSLibSDKGenerated.Namespace</PluginHint>-->
+			<!-- Path to existing manifest file to use as a base, if any -->
+		</PropertyGroup>
+
+		<ItemGroup>
+			<RequiredFile Include="Libs/$(AssemblyName).dll"/>
+			<ConflictsWith Include="ChatCore" Version="*"/>
+			<LoadBefore Include="ChatCore"/>
+		</ItemGroup>
+	</Target>
+
+	<Import Project="ILRepack.targets" Condition="'$(Configuration)' != 'Debug'" />
+</Project>

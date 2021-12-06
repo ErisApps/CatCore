@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
+	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<OutputType>library</OutputType>
 		<LangVersion>9</LangVersion>
-        <Nullable>enable</Nullable>
+		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Configurations>Debug;Develop;Release</Configurations>
-    </PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<Configurations>Debug;Develop;Release</Configurations>
+	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' != 'Release' ">
 		<DebugType>full</DebugType>
@@ -18,13 +18,10 @@
 		<DebugType>pdbonly</DebugType>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
-		<DisableCopyToPlugins>True</DisableCopyToPlugins>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(NCrunch)' == '1'">
-		<DisableCopyToPlugins>True</DisableCopyToPlugins>
-		<DisableZipRelease>True</DisableZipRelease>
+	<PropertyGroup>
+		<Description>CatCore is a .NET Standard 2.0 library which provides a shared connection to mods and other applications for Twitch (and other future streaming platforms).</Description>
+		<Authors>Eris</Authors>
+		<Version>0.0.1-alpha</Version>
 	</PropertyGroup>
 
     <ItemGroup>
@@ -53,23 +50,12 @@
 	<Import Project="..\CatCore.Twemoji.SourceGeneration\CatCore.Twemoji.SourceGeneration.props" />
 
     <ItemGroup>
+		<EmbeddedResource Include="Resources\index.html" />
 		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="Emojis">
 			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
 		</AdditionalFiles>
-		<EmbeddedResource Include="Resources\index.html" />
-		<None Include="CatCore.csproj.user" />
-		<None Include="manifest.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
     </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="1.4.3">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
-	<Import Project="ILRepack.targets" />
+	<Import Project="BeatSaber.targets" />
 
 </Project>
