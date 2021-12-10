@@ -82,6 +82,8 @@ namespace CatCore.Services.Twitch
 		public event Action<TwitchChannel>? OnLeaveChannel;
 		public event Action<TwitchChannel>? OnRoomStateChanged;
 		public event Action<TwitchMessage>? OnMessageReceived;
+		public event Action<TwitchChannel, string>? OnMessageDeleted;
+		public event Action<TwitchChannel, string?>? OnChatCleared;
 
 		public void SendMessage(TwitchChannel channel, string message)
 		{
@@ -303,10 +305,24 @@ namespace CatCore.Services.Twitch
 					_userStateTrackerService.UpdateGlobalUserState(messageMeta);
 
 					break;
-				case TwitchIrcCommands.CLEARCHAT:
-					break;
 				case TwitchIrcCommands.CLEARMSG:
+				{
+					if (_channelNameToChannelIdDictionary.TryGetValue(channelName!, out var channelId) && messageMeta!.TryGetValue(IrcMessageTags.TARGET_MSG_ID, out var deletedMessageId))
+					{
+						OnMessageDeleted?.Invoke(new TwitchChannel(this, channelId, channelName!), deletedMessageId);
+					}
+
 					break;
+				}
+				case TwitchIrcCommands.CLEARCHAT:
+				{
+					if (_channelNameToChannelIdDictionary.TryGetValue(channelName!, out var channelId))
+					{
+						OnChatCleared?.Invoke(new TwitchChannel(this, channelId, channelName!), message);
+					}
+
+					break;
+				}
 				case TwitchIrcCommands.RECONNECT:
 					_ = ((ITwitchIrcService) this).Start().ConfigureAwait(false);
 					break;

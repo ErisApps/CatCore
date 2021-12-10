@@ -90,6 +90,10 @@ namespace CatCore.Services.Multiplexer
 					=> Get()?.OnLeaveChannel?.Invoke(From(arg1), MultiplexedChannel.From<TChannel, TMsg>(arg2));
 				internal void OnTextMessageReceived(TService arg1, TMsg arg2)
 					=> Get()?.OnTextMessageReceived?.Invoke(From(arg1), MultiplexedMessage.From<TMsg, TChannel>(arg2));
+				internal void OnMessageDeleted(TService arg1, TChannel arg2, string arg3)
+					=> Get()?.OnMessageDeleted?.Invoke(From(arg1), MultiplexedChannel.From<TChannel, TMsg>(arg2), arg3);
+				internal void OnChatCleared(TService arg1, TChannel arg2, string? arg3)
+					=> Get()?.OnChatCleared?.Invoke(From(arg1), MultiplexedChannel.From<TChannel, TMsg>(arg2), arg3);
 			}
 		}
 
@@ -99,6 +103,8 @@ namespace CatCore.Services.Multiplexer
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnRoomStateUpdated;
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnLeaveChannel;
 		public event Action<MultiplexedPlatformService, MultiplexedMessage>? OnTextMessageReceived;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel, string>? OnMessageDeleted;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel, string?>? OnChatCleared;
 
 		private readonly Info _info;
 		private readonly object _service;
