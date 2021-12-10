@@ -12,6 +12,8 @@ namespace CatCore.Services.Twitch.Interfaces
 		event Action<TwitchChannel>? OnLeaveChannel;
 		event Action<TwitchChannel>? OnRoomStateChanged;
 		event Action<TwitchMessage>? OnMessageReceived;
+		event Action<TwitchChannel, string>? OnMessageDeleted;
+		event Action<TwitchChannel, string?>? OnChatCleared;
 
 		void SendMessage(TwitchChannel channel, string message);
 

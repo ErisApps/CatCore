@@ -18,6 +18,8 @@ namespace CatCore.Services.Multiplexer
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnJoinChannel;
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnLeaveChannel;
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnRoomStateUpdated;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel, string>? OnMessageDeleted;
+		public event Action<MultiplexedPlatformService, MultiplexedChannel, string?>? OnChatCleared;
 
 		public ChatServiceMultiplexer(ILogger logger, IList<MultiplexedPlatformService> platformServices)
 		{
@@ -32,6 +34,8 @@ namespace CatCore.Services.Multiplexer
 				platformService.OnLeaveChannel += ChatServiceOnLeaveChannel;
 				platformService.OnRoomStateUpdated += ChatServiceOnRoomStateUpdated;
 				platformService.OnTextMessageReceived += ChatServiceOnTextMessageReceived;
+				platformService.OnMessageDeleted += ChatServiceOnMessageDeleted;
+				platformService.OnChatCleared += ChatServiceOnChatCleared;
 			}
 
 			_twitchPlatformService = platformServices.Select(s => s.Underlying).OfType<ITwitchService>().First();
@@ -70,6 +74,16 @@ namespace CatCore.Services.Multiplexer
 		private void ChatServiceOnTextMessageReceived(MultiplexedPlatformService scv, MultiplexedMessage message)
 		{
 			OnTextMessageReceived?.Invoke(scv, message);
+		}
+
+		private void ChatServiceOnMessageDeleted(MultiplexedPlatformService scv, MultiplexedChannel channel, string deletedMessageId)
+		{
+			OnMessageDeleted?.Invoke(scv, channel, deletedMessageId);
+		}
+
+		private void ChatServiceOnChatCleared(MultiplexedPlatformService scv, MultiplexedChannel channel, string? username)
+		{
+			OnChatCleared?.Invoke(scv, channel, username);
 		}
 	}
 }

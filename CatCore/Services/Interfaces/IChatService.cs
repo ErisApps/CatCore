@@ -37,5 +37,15 @@ namespace CatCore.Services.Interfaces
 		/// Callback that occurs when a text message is received
 		/// </summary>
 		public event Action<TChat, TMessage>? OnTextMessageReceived;
+
+		/// <summary>
+		/// Callback that occurs when a chat message gets deleted
+		/// </summary>
+		public event Action<TChat, TChannel, string> OnMessageDeleted;
+
+		/// <summary>
+		/// Callback that occurs when the chat of a particular channel or all messages of a user in a channel gets cleared
+		/// </summary>
+		public event Action<TChat, TChannel, string?>? OnChatCleared;
 	}
 }

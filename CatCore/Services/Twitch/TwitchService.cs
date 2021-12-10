@@ -68,6 +68,8 @@ namespace CatCore.Services.Twitch
 		public event Action<ITwitchService, TwitchChannel>? OnLeaveChannel;
 		public event Action<ITwitchService, TwitchChannel>? OnRoomStateUpdated;
 		public event Action<ITwitchService, TwitchMessage>? OnTextMessageReceived;
+		public event Action<ITwitchService, TwitchChannel, string>? OnMessageDeleted;
+		public event Action<ITwitchService, TwitchChannel, string?>? OnChatCleared;
 
 		public void SendMessage(TwitchChannel channel, string message)
 		{
@@ -85,6 +87,8 @@ namespace CatCore.Services.Twitch
 			_twitchIrcService.OnLeaveChannel += TwitchIrcServiceOnLeaveChannel;
 			_twitchIrcService.OnRoomStateChanged += TwitchIrcServiceOnRoomStateChanged;
 			_twitchIrcService.OnMessageReceived += TwitchIrcServiceOnMessageReceived;
+			_twitchIrcService.OnMessageDeleted += TwitchIrcServiceOnMessageDeleted;
+			_twitchIrcService.OnChatCleared += TwitchIrcServiceOnChatCleared;
 		}
 
 		private void DeregisterInternalEventHandlers()
@@ -96,6 +100,8 @@ namespace CatCore.Services.Twitch
 			_twitchIrcService.OnLeaveChannel -= TwitchIrcServiceOnLeaveChannel;
 			_twitchIrcService.OnRoomStateChanged -= TwitchIrcServiceOnRoomStateChanged;
 			_twitchIrcService.OnMessageReceived -= TwitchIrcServiceOnMessageReceived;
+			_twitchIrcService.OnMessageDeleted -= TwitchIrcServiceOnMessageDeleted;
+			_twitchIrcService.OnChatCleared -= TwitchIrcServiceOnChatCleared;
 		}
 
 		private void TwitchAuthServiceOnCredentialsChanged()
@@ -126,6 +132,16 @@ namespace CatCore.Services.Twitch
 		private void TwitchIrcServiceOnMessageReceived(TwitchMessage message)
 		{
 			OnTextMessageReceived?.Invoke(this, message);
+		}
+
+		private void TwitchIrcServiceOnMessageDeleted(TwitchChannel channel, string deletedMessageId)
+		{
+			OnMessageDeleted?.Invoke(this, channel, deletedMessageId);
+		}
+
+		private void TwitchIrcServiceOnChatCleared(TwitchChannel channel, string? username)
+		{
+			OnChatCleared?.Invoke(this, channel, username);
 		}
 	}
 }
