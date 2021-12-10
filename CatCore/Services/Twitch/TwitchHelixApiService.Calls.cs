@@ -15,12 +15,13 @@ using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
 using CatCore.Models.Twitch.Helix.Responses.Predictions;
 using CatCore.Models.Twitch.Shared;
+using CatCore.Services.Twitch.Interfaces;
 using Outcome = CatCore.Models.Twitch.Helix.Requests.Predictions.Outcome;
 using PollChoice = CatCore.Models.Twitch.Helix.Requests.Polls.PollChoice;
 
 namespace CatCore.Services.Twitch
 {
-	public sealed partial class TwitchHelixApiService
+	public sealed partial class TwitchHelixApiService : ITwitchHelixApiService
 	{
 		/// <inheritdoc />
 		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)

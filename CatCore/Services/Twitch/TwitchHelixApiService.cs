@@ -15,7 +15,7 @@ using Serilog;
 
 namespace CatCore.Services.Twitch
 {
-	public sealed partial class TwitchHelixApiService : ITwitchHelixApiService
+	public sealed partial class TwitchHelixApiService
 	{
 		private const string TWITCH_HELIX_BASEURL = "https://api.twitch.tv/helix/";
 
