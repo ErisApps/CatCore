@@ -2,7 +2,7 @@
 <!-- This file contains project properties used by the build. -->
 <Project>
 	<ItemGroup>
-		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta3">
+		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -57,7 +57,6 @@
 			<PluginId>$(AssemblyName)</PluginId>
 			<PluginName>$(AssemblyName)</PluginName>
 
-			<GameVersion>1.18.3</GameVersion>
 			<ProjectSource>https://github.com/ErisApps/CatCore</ProjectSource>
 			<Donate>https://www.patreon.com/erisapps</Donate>
 			<!--<PluginIcon>Path/to/icon.png</PluginIcon>-->
