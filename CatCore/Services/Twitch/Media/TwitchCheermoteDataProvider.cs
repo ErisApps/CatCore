@@ -5,21 +5,18 @@ using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Media;
 using CatCore.Services.Twitch.Interfaces;
-using Serilog;
 
 namespace CatCore.Services.Twitch.Media
 {
 	public class TwitchCheermoteDataProvider
 	{
-		private readonly ILogger _logger;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
 		private IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>> _globalCheermotes;
 		private readonly Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>> _channelCheermotes;
 
-		public TwitchCheermoteDataProvider(ILogger logger, ITwitchHelixApiService twitchHelixApiService)
+		public TwitchCheermoteDataProvider(ITwitchHelixApiService twitchHelixApiService)
 		{
-			_logger = logger;
 			_twitchHelixApiService = twitchHelixApiService;
 
 			_globalCheermotes = new ReadOnlyDictionary<string, IReadOnlyList<TwitchCheermoteData>>(new Dictionary<string, IReadOnlyList<TwitchCheermoteData>>());

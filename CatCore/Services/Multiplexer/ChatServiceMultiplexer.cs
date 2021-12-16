@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
-using Serilog;
 
 namespace CatCore.Services.Multiplexer
 {
 	public sealed class ChatServiceMultiplexer : IChatService<MultiplexedPlatformService, MultiplexedChannel, MultiplexedMessage>
 	{
-		private readonly ILogger _logger;
 		private readonly ITwitchService _twitchPlatformService;
 
 		public event Action<MultiplexedPlatformService>? OnAuthenticatedStateChanged;
@@ -21,10 +19,8 @@ namespace CatCore.Services.Multiplexer
 		public event Action<MultiplexedPlatformService, MultiplexedChannel, string>? OnMessageDeleted;
 		public event Action<MultiplexedPlatformService, MultiplexedChannel, string?>? OnChatCleared;
 
-		public ChatServiceMultiplexer(ILogger logger, IList<MultiplexedPlatformService> platformServices)
+		public ChatServiceMultiplexer(IList<MultiplexedPlatformService> platformServices)
 		{
-			_logger = logger;
-
 			foreach (var platformService in platformServices)
 			{
 				// TODO: Register to all event handlers of IChatService
@@ -41,10 +37,7 @@ namespace CatCore.Services.Multiplexer
 			_twitchPlatformService = platformServices.Select(s => s.Underlying).OfType<ITwitchService>().First();
 		}
 
-		public ITwitchService GetTwitchPlatformService()
-		{
-			return _twitchPlatformService;
-		}
+		public ITwitchService GetTwitchPlatformService() => _twitchPlatformService;
 
 		private void ChatServiceOnAuthenticatedStateChanged(MultiplexedPlatformService scv)
 		{

@@ -4,17 +4,14 @@ using System.Threading.Tasks;
 using CatCore.Models.Config;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
-using CatCore.Models.Twitch.IRC;
 using CatCore.Models.Twitch.Media;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
-using Serilog;
 
 namespace CatCore.Services.Twitch.Media
 {
 	internal class TwitchMediaDataProvider : INeedInitialization
 	{
-		private readonly ILogger _logger;
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
 		private readonly ITwitchChannelManagementService _twitchChannelManagementService;
@@ -26,11 +23,10 @@ namespace CatCore.Services.Twitch.Media
 		private bool _bttvEnabled;
 		private bool _ffzEnabled;
 
-		public TwitchMediaDataProvider(ILogger logger, IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService,
+		public TwitchMediaDataProvider(IKittenSettingsService kittenSettingsService, ITwitchAuthService twitchAuthService,
 			ITwitchChannelManagementService twitchChannelManagementService, TwitchBadgeDataProvider twitchBadgeDataProvider, TwitchCheermoteDataProvider twitchCheermoteDataProvider,
 			BttvDataProvider bttvDataProvider)
 		{
-			_logger = logger;
 			_kittenSettingsService = kittenSettingsService;
 			_twitchAuthService = twitchAuthService;
 			_twitchChannelManagementService = twitchChannelManagementService;
