@@ -4,21 +4,18 @@ using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Media;
 using CatCore.Services.Twitch.Interfaces;
-using Serilog;
 
 namespace CatCore.Services.Twitch.Media
 {
 	public class TwitchBadgeDataProvider
 	{
-		private readonly ILogger _logger;
 		private readonly ITwitchHelixApiService _twitchHelixApiService;
 
 		private IReadOnlyDictionary<string, TwitchBadge> _globalBadges;
 		private readonly Dictionary<string, IReadOnlyDictionary<string, TwitchBadge>> _channelBadges;
 
-		public TwitchBadgeDataProvider(ILogger logger, ITwitchHelixApiService twitchHelixApiService)
+		public TwitchBadgeDataProvider(ITwitchHelixApiService twitchHelixApiService)
 		{
-			_logger = logger;
 			_twitchHelixApiService = twitchHelixApiService;
 
 			_globalBadges = new ReadOnlyDictionary<string, TwitchBadge>(new Dictionary<string, TwitchBadge>());
@@ -67,7 +64,7 @@ namespace CatCore.Services.Twitch.Media
 				foreach (var badgeVersion in badge.Versions)
 				{
 					var simpleIdentifier = badge.SetId + "/" + badgeVersion.Id;
-					parsedTwitchBadges.Add(simpleIdentifier, new TwitchBadge(identifierPrefix + simpleIdentifier, badge.SetId, badgeVersion.ImageUrl4x));
+					parsedTwitchBadges.Add(simpleIdentifier, new TwitchBadge(identifierPrefix + simpleIdentifier, badge.SetId, badgeVersion.ImageUrl4X));
 				}
 			}
 
