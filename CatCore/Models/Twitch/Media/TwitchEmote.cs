@@ -1,7 +1,7 @@
 using CatCore.Models.Shared;
 using JetBrains.Annotations;
 
-namespace CatCore.Models.Twitch.IRC
+namespace CatCore.Models.Twitch.Media
 {
 	public sealed class TwitchEmote : IChatEmote
 	{

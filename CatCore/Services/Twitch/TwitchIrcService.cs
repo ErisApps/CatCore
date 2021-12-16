@@ -11,6 +11,7 @@ using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
 using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
+using CatCore.Models.Twitch.Media;
 using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using CatCore.Services.Twitch.Media;
