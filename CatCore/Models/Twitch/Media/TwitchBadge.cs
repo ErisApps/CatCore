@@ -1,6 +1,6 @@
 ﻿using CatCore.Models.Shared;
 
-namespace CatCore.Models.Twitch.IRC
+namespace CatCore.Models.Twitch.Media
 {
 	public class TwitchBadge : IChatBadge
 	{

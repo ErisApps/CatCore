@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
-using CatCore.Models.Twitch.IRC;
+using CatCore.Models.Twitch.Media;
 using CatCore.Services.Twitch.Interfaces;
 using Serilog;
 
