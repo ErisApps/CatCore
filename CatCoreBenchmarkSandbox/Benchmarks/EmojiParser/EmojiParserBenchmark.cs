@@ -57,12 +57,10 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.EmojiParser
 						Id = $"Emoji_{foundEmojiLeaf.Key}",
 						Name = foundEmojiLeaf.Key,
 						StartIndex = i,
-						EndIndex = i + foundEmojiLeaf.Depth,
+						EndIndex = i += foundEmojiLeaf.Depth,
 						Uri = foundEmojiLeaf.Url,
 						IsAnimated = false
 					});
-
-					i += foundEmojiLeaf.Depth;
 				}
 			}
 
