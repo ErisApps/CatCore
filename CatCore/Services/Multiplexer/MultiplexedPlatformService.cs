@@ -51,6 +51,8 @@ namespace CatCore.Services.Multiplexer
 				svc.OnRoomStateUpdated += host.OnRoomStateUpdated;
 				svc.OnLeaveChannel += host.OnLeaveChannel;
 				svc.OnTextMessageReceived += host.OnTextMessageReceived;
+				svc.OnMessageDeleted += host.OnMessageDeleted;
+				svc.OnChatCleared += host.OnChatCleared;
 			}
 
 			public override void Unsubscribe(object o, object eventHost)
@@ -63,6 +65,8 @@ namespace CatCore.Services.Multiplexer
 				svc.OnRoomStateUpdated -= host.OnRoomStateUpdated;
 				svc.OnLeaveChannel -= host.OnLeaveChannel;
 				svc.OnTextMessageReceived -= host.OnTextMessageReceived;
+				svc.OnMessageDeleted -= host.OnMessageDeleted;
+				svc.OnChatCleared -= host.OnChatCleared;
 			}
 
 			private static MultiplexedPlatformService From(TService service)
