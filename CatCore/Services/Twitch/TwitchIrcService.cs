@@ -581,8 +581,7 @@ namespace CatCore.Services.Twitch
 				var foundEmojiLeaf = Twemoji.Emojis.EmojiReferenceData.LookupLeaf(message, i);
 				if (foundEmojiLeaf != null)
 				{
-					emotes.Add(new Emoji(foundEmojiLeaf.Key, foundEmojiLeaf.Key, i, i + foundEmojiLeaf.Depth, foundEmojiLeaf.Url));
-					i += foundEmojiLeaf.Depth;
+					emotes.Add(new Emoji(foundEmojiLeaf.Key, foundEmojiLeaf.Key, i, i += foundEmojiLeaf.Depth, foundEmojiLeaf.Url));
 				}
 			}
 		}
