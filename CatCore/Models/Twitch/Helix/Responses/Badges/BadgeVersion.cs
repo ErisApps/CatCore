@@ -8,21 +8,21 @@ namespace CatCore.Models.Twitch.Helix.Responses.Badges
 		public string Id { get; }
 
 		[JsonPropertyName("image_url_1x")]
-		public string ImageUrl1x { get; }
+		public string ImageUrl1X { get; }
 
 		[JsonPropertyName("image_url_2x")]
-		public string ImageUrl2x { get; }
+		public string ImageUrl2X { get; }
 
 		[JsonPropertyName("image_url_4x")]
-		public string ImageUrl4x { get; }
+		public string ImageUrl4X { get; }
 
 		[JsonConstructor]
 		public BadgeVersion(string id, string imageUrl1X, string imageUrl2X, string imageUrl4X)
 		{
 			Id = id;
-			ImageUrl1x = imageUrl1X;
-			ImageUrl2x = imageUrl2X;
-			ImageUrl4x = imageUrl4X;
+			ImageUrl1X = imageUrl1X;
+			ImageUrl2X = imageUrl2X;
+			ImageUrl4X = imageUrl4X;
 		}
 	}
 }
