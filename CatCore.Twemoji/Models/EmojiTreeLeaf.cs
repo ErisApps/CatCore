@@ -1,6 +1,6 @@
 namespace CatCore.Twemoji.Models
 {
-	public class EmojiTreeLeaf : IEmojiTreeLeaf
+	public sealed class EmojiTreeLeaf : IEmojiTreeLeaf
 	{
 		public string Key { get; }
 		public int Depth { get; }
