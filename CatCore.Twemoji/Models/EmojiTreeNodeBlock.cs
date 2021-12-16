@@ -1,6 +1,6 @@
 namespace CatCore.Twemoji.Models
 {
-	public class EmojiTreeNodeBlock : EmojiTreeNodeBase, IEmojiTreeLeaf
+	public sealed class EmojiTreeNodeBlock : EmojiTreeNodeBase, IEmojiTreeLeaf
 	{
 #pragma warning disable CS8766
 		public string? Key { get; internal set; }
