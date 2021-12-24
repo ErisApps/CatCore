@@ -35,11 +35,13 @@
 		<ItemGroup Condition="'$(Configuration)' == 'Debug'">
 			<OutputCopy Include="$(OutDir)$(AssemblyName).dll" OutputPath="Libs\$(AssemblyName).dll"/>
 			<OutputCopy Include="$(OutDir)$(AssemblyName).pdb" OutputPath="Libs\$(AssemblyName).pdb"/>
+			<OutputCopy Include="$(OutDir)$(AssemblyName).xml" OutputPath="Libs\$(AssemblyName).xml"/>
 		</ItemGroup>
 
 		<!-- Used when ILRepack step is being used, copy from Merged sub directory -->
 		<ItemGroup Condition="'$(Configuration)' != 'Debug'">
 			<OutputCopy Include="$(OutDir)Merged\$(AssemblyName).dll" OutputPath="Libs\$(AssemblyName).dll"/>
+			<OutputCopy Include="$(OutDir)Merged\$(AssemblyName).xml" OutputPath="Libs\$(AssemblyName).xml"/>
 		</ItemGroup>
 
 		<!-- PDB will only be available when ILRepacking on Windows  -->
