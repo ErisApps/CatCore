@@ -39,9 +39,9 @@ jobs:
             -   name: Removed .example suffix from Constants implementation
                 run: find ~ -type f -name Constants.user.cs.example -execdir mv Constants.user.cs.example Constants.user.cs \;
             -   name: Find and Replace - Insert CatCore Auth Server URI
-                run: find ~ -type f -name Constants.user.cs -exec sed -i 's/ {{ CATCORE_AUTH_SERVER_URI }} /${{ secrets.CATCORE_AUTH_SERVER_URI }}/g' {} \;
+                run: find ~ -type f -name Constants.user.cs -exec sed -i 's| {{ CATCORE_AUTH_SERVER_URI }} |${{ secrets.CATCORE_AUTH_SERVER_URI }}|' {} \;
             -   name: Find and Replace - Insert Twitch Client Id
-                run: find ~ -type f -name Constants.user.cs -exec sed -i 's/ {{ TWITCH_CLIENT_ID }} /${{ secrets.TWITCH_CLIENT_ID }}/g' {} \;
+                run: find ~ -type f -name Constants.user.cs -exec sed -i 's| {{ TWITCH_CLIENT_ID }} |${{ secrets.TWITCH_CLIENT_ID }}|' {} \;
             -   name: Build
                 id: Build
                 run: dotnet build CatCore --configuration Release
