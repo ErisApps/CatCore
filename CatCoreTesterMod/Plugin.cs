@@ -7,7 +7,7 @@ using SiraUtil.Zenject;
 
 namespace CatCoreTesterMod
 {
-	[Plugin(RuntimeOptions.DynamicInit)]
+	[Plugin(RuntimeOptions.DynamicInit), NoEnableDisable]
 	internal class Plugin
 	{
 		[Init]
@@ -27,12 +27,6 @@ namespace CatCoreTesterMod
 					CustomLogLevel.Critical => Logger.Level.Critical,
 					_ => Logger.Level.Debug
 				}, $"{context} | {message}")));
-		}
-
-		[OnEnable, OnDisable]
-		public void OnState()
-		{
-			/* Plugin State Changed */
 		}
 	}
 }
