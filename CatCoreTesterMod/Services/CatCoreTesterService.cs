@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using CatCore;
-using SiraUtil.Tools;
+using SiraUtil.Logging;
 using SiraUtil.Zenject;
 using Zenject;
 
@@ -27,7 +27,7 @@ namespace CatCoreTesterMod.Services
 			}
 			else
 			{
-				_logger.Warning("Something went wrong while trying to fetch the info of the requested user.");
+				_logger.Warn("Something went wrong while trying to fetch the info of the requested user.");
 			}
 		}
 	}
