@@ -5,9 +5,9 @@
 	"author": "Eris",
 	"version": "0.0.1-alpha",
 	"description": "A simple mod that has the sole purpose of testing CatCore in Beat Saber",
-	"gameVersion": "1.18.1",
+	"gameVersion": "1.19.0",
 	"dependsOn": {
-		"BSIPA": "^4.2.0",
+		"BSIPA": "^4.2.1",
 		"SiraUtil": "^3.0.3",
 		"CatCore": "^0.0.1-alpha"
 	}
