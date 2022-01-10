@@ -22,6 +22,7 @@
 
 			<RepackInputAssemblies Include="CatCore.Shared.dll"/>
 			<RepackInputAssemblies Include="CatCore.Twemoji.dll"/>
+			<RepackInputAssemblies Include="DryIoc.dll"/>
 			<RepackInputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
 			<RepackInputAssemblies Include="Polly.dll"/>
 			<RepackInputAssemblies Include="Serilog.dll"/>
