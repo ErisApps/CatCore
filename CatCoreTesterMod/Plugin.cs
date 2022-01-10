@@ -13,7 +13,9 @@ namespace CatCoreTesterMod
 		[Init]
 		public Plugin(Logger logger, Zenjector zenjector)
 		{
-			zenjector.OnApp<CatCoreInstaller>().WithParameters(logger, CatCoreInstance.Create((level, context, message) => logger
+			zenjector.UseLogger(logger);
+
+			zenjector.Install<CatCoreInstaller>(Location.App, CatCoreInstance.Create((level, context, message) => logger
 				.GetChildLogger("CatCore")
 				.Log(level switch
 				{
