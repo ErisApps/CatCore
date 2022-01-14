@@ -6,7 +6,7 @@ namespace CatCore
 
 	internal abstract class ConstantsBase
 	{
-		internal static string InternalApiServerUri => "http://localhost:8338/";
+		internal static string InternalApiServerUri => "http://*:8338/";
 
 		internal abstract string CatCoreAuthServerUri { get; }
 
