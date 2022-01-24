@@ -24,7 +24,7 @@ namespace CatCore.Services.Twitch
 	public sealed partial class TwitchHelixApiService : ITwitchHelixApiService
 	{
 		/// <inheritdoc />
-		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken cancellationToken = default)
 		{
 			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "users");
 
@@ -70,7 +70,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken cancellationToken = default)
 		{
 			if (!string.IsNullOrWhiteSpace(description) && description!.Length > 140)
 			{
@@ -83,7 +83,7 @@ namespace CatCore.Services.Twitch
 
 		/// <inheritdoc />
 		public Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 			{
@@ -121,7 +121,7 @@ namespace CatCore.Services.Twitch
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -169,7 +169,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
-			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null)
+			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -245,7 +245,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -272,7 +272,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -318,7 +318,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -363,7 +363,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -393,7 +393,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken cancellationToken = default)
 		{
 			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "bits/cheermotes");
 			if (!string.IsNullOrWhiteSpace(userId))
@@ -405,13 +405,13 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken cancellationToken = default)
 		{
 			return GetAsync(TWITCH_HELIX_BASEURL + "chat/badges/global", TwitchHelixSerializerContext.Default.ResponseBaseBadgeData, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null)
+		public Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken cancellationToken = default)
 		{
 			if (string.IsNullOrWhiteSpace(userId))
 			{
@@ -422,7 +422,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = _twitchAuthService.LoggedInUser;
 			if (loggedInUser == null)
@@ -458,7 +458,7 @@ namespace CatCore.Services.Twitch
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
-			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null)
+			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken cancellationToken = default)
 		{
 			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "streams");
 
@@ -544,13 +544,13 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken cancellationToken = default)
 		{
 			return GetAsync(TWITCH_HELIX_BASEURL + "chat/emotes/global", TwitchHelixSerializerContext.Default.ResponseBaseWithTemplateGlobalEmote, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken? cancellationToken = null)
+		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken cancellationToken = default)
 		{
 			if (string.IsNullOrWhiteSpace(userId))
 			{
