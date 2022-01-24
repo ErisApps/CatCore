@@ -24,7 +24,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <returns>Response containing userdata</returns>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-users">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates a marker in the stream of a user specified by user ID.
@@ -38,7 +38,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <returns>Response containing data regarding the created stream marker.</returns>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-stream-marker">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Returns a list of channels (users who have streamed within the past 6 months) that match the query via channel name or description either entirely or partially.
@@ -53,7 +53,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#search-channels">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
-			CancellationToken? cancellationToken = null);
+			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
@@ -66,7 +66,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-polls">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Create a poll for a specific Twitch channel.
@@ -84,7 +84,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
-			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken? cancellationToken = null);
+			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// End a poll that is currently active.
@@ -101,7 +101,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-poll">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Get information about all Channel Points Predictions or specific Channel Points Predictions for a Twitch channel.
@@ -116,7 +116,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-predictions">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
-			CancellationToken? cancellationToken = null);
+			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Create a Channel Points Prediction for a specific Twitch channel.
@@ -133,7 +133,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-prediction">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Lock, resolve, or cancel a Channel Points Prediction. Active Predictions can be updated to be <see cref="PredictionStatus.Locked"/>, <see cref="PredictionStatus.Resolved"/>,
@@ -153,7 +153,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-prediction">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Retrieves the list of available Cheermotes, animated emotes to which viewers can assign Bits, to cheer in chat.
@@ -164,7 +164,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <returns>Response containing data of cheermotes</returns>
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-cheermotes">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets a list of chat badges that can be used in chat for any channel.
@@ -172,7 +172,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of globally available custom chat badges</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken? cancellationToken = null);
+		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets a list of custom chat badges that can be used in chat for the specified channel. This includes <a href="https://help.twitch.tv/s/article/subscriber-badge-guide">subscriber badges</a>
@@ -182,7 +182,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of custom chat badges</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken? cancellationToken = null);
+		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets information about active streams belonging to channels that the authenticated user follows. Streams are returned sorted by number of current viewers, in descending order.
@@ -195,7 +195,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-followed-streams">Check out the Twitch API Reference docs.</a></remarks>
-		Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken? cancellationToken = null);
+		Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets information about active streams. Streams are returned sorted by number of current viewers, in descending order.
@@ -217,7 +217,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
-			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken? cancellationToken = null);
+			string? continuationCursorBefore = null, string? continuationCursorAfter = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets all <a href="https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes/">global emotes</a>. Global emotes are Twitch-created emoticons that users can use in any Twitch chat.
@@ -225,7 +225,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of globally available chat emotes</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-emotes">Check out the Twitch API Reference docs.</a></remarks>
-		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken? cancellationToken = null);
+		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets all emotes that the specified Twitch channel created. Broadcasters create these custom emotes for users who subscribe to or follow the channel, or cheer Bits in the channel’s chat
@@ -238,6 +238,6 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of custom chat emotes</returns>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
-		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken? cancellationToken = null);
+		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken cancellationToken = default);
 	}
 }

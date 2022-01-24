@@ -74,7 +74,7 @@ namespace CatCore.Services.Twitch
 			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy, exceptionRetryPolicy);
 		}
 
-		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null) where TResponse : struct
+		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default) where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -98,13 +98,13 @@ namespace CatCore.Services.Twitch
 			try
 			{
 				using var httpResponseMessage = await _combinedHelixPolicy
-					.ExecuteAsync(() => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? CancellationToken.None)).ConfigureAwait(false);
+					.ExecuteAsync(ct => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct), cancellationToken).ConfigureAwait(false);
 				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
 				{
 					return null;
 				}
 
-				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
+				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
@@ -114,21 +114,21 @@ namespace CatCore.Services.Twitch
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null)
+		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
 			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethod.Post, url, body, jsonResponseTypeInfo, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
+		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken? cancellationToken = null)
+		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
 			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethodPatch, url, body, jsonResponseTypeInfo, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken? cancellationToken = null) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
+		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
 
 		private async Task<TResponse?> CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod httpMethod, string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo,
-			CancellationToken? cancellationToken = null) where TResponse : struct
+			CancellationToken cancellationToken = default) where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -156,18 +156,18 @@ namespace CatCore.Services.Twitch
 
 			try
 			{
-				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async () =>
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async ct =>
 				{
 					using var jsonContent = JsonContent.Create(body);
 					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
-					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default).ConfigureAwait(false);
-				}).ConfigureAwait(false);
+					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+				}, cancellationToken).ConfigureAwait(false);
 				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
 				{
 					return null;
 				}
 
-				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken ?? default).ConfigureAwait(false);
+				return await httpResponseMessage.Content.ReadFromJsonAsync(jsonResponseTypeInfo, cancellationToken).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
@@ -176,7 +176,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		private async Task<bool> CallEndpointWithBodyNoBody<TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken? cancellationToken = null)
+		private async Task<bool> CallEndpointWithBodyNoBody<TBody>(HttpMethod httpMethod, string url, TBody body, CancellationToken cancellationToken = default)
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -204,12 +204,12 @@ namespace CatCore.Services.Twitch
 
 			try
 			{
-				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async () =>
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async ct =>
 				{
 					using var jsonContent = JsonContent.Create(body);
 					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
-					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken ?? default).ConfigureAwait(false);
-				}).ConfigureAwait(false);
+					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+				}, cancellationToken).ConfigureAwait(false);
 				return httpResponseMessage?.IsSuccessStatusCode ?? false;
 			}
 			catch (Exception ex)
