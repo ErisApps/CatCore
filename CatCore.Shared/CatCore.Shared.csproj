@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.Text.Json" Version="6.0.1" />
+      <PackageReference Include="System.Text.Json" Version="6.0.2-mauipre.1.22054.8" />
     </ItemGroup>
 
 </Project>
