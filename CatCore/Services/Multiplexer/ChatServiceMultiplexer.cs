@@ -10,13 +10,28 @@ namespace CatCore.Services.Multiplexer
 	{
 		private readonly ITwitchService _twitchPlatformService;
 
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService>? OnAuthenticatedStateChanged;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService>? OnChatConnected;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedMessage>? OnTextMessageReceived;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnJoinChannel;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnLeaveChannel;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedChannel>? OnRoomStateUpdated;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedChannel, string>? OnMessageDeleted;
+
+		/// <inheritdoc />
 		public event Action<MultiplexedPlatformService, MultiplexedChannel, string?>? OnChatCleared;
 
 		public ChatServiceMultiplexer(IList<MultiplexedPlatformService> platformServices)
@@ -37,6 +52,10 @@ namespace CatCore.Services.Multiplexer
 			_twitchPlatformService = platformServices.Select(s => s.Underlying).OfType<ITwitchService>().First();
 		}
 
+		/// <summary>
+		/// Returns the Twitch service. Gives access to Twitch-specific features.
+		/// </summary>
+		/// <returns>Returns the Twitch service</returns>
 		public ITwitchService GetTwitchPlatformService() => _twitchPlatformService;
 
 		private void ChatServiceOnAuthenticatedStateChanged(MultiplexedPlatformService scv)
