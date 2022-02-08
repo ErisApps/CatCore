@@ -168,7 +168,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnViewCountUpdated));
 				}
 			}
 			remove
@@ -191,7 +191,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnStreamUp));
 				}
 			}
 			remove
@@ -214,7 +214,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnStreamDown));
 				}
 			}
 			remove
@@ -237,7 +237,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnCommercial));
 				}
 			}
 			remove
@@ -274,7 +274,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnFollow));
 				}
 			}
 			remove
@@ -311,7 +311,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnPoll));
 				}
 			}
 			remove
@@ -348,7 +348,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnPrediction));
 				}
 			}
 			remove
@@ -385,7 +385,7 @@ namespace CatCore.Services.Twitch
 				}
 				else
 				{
-					_logger.Warning("Callback was already registered");
+					_logger.Warning("Callback was already registered for EventHandler {Name}", nameof(OnRewardRedeemed));
 				}
 			}
 			remove
