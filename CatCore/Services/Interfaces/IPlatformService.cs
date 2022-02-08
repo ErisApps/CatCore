@@ -12,7 +12,14 @@ namespace CatCore.Services.Interfaces
 		internal Task Start();
 		internal Task Stop();
 
+		/// <summary>
+		/// Indicates whether the user is authenticated for this service
+		/// </summary>
 		bool LoggedIn { get; }
+
+		/// <summary>
+		/// Returns the default channel for this service
+		/// </summary>
 		TChannel? DefaultChannel { get; }
 	}
 }
