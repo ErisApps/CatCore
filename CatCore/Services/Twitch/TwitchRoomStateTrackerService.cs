@@ -16,6 +16,7 @@ namespace CatCore.Services.Twitch
 			_roomStates = new ConcurrentDictionary<string, TwitchRoomState>();
 		}
 
+		/// <inheritdoc />
 		public TwitchRoomState? GetRoomState(string channelName)
 		{
 			return _roomStates.TryGetValue(channelName, out var roomState) ? roomState : null;
