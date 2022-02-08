@@ -157,6 +157,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, ViewCountUpdate> OnViewCountUpdated
 		{
 			add
@@ -179,6 +180,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, StreamUp> OnStreamUp
 		{
 			add
@@ -201,6 +203,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, StreamDown> OnStreamDown
 		{
 			add
@@ -223,6 +226,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, Commercial> OnCommercial
 		{
 			add
@@ -259,6 +263,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, Follow> OnFollow
 		{
 			add
@@ -295,6 +300,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, PollData> OnPoll
 		{
 			add
@@ -331,6 +337,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, PredictionData> OnPrediction
 		{
 			add
@@ -367,6 +374,7 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
+		/// <inheritdoc />
 		public event Action<string, RewardRedeemedData> OnRewardRedeemed
 		{
 			add
