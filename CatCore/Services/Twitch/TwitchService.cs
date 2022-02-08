@@ -33,10 +33,19 @@ namespace CatCore.Services.Twitch
 			_twitchChannelManagementService = twitchChannelManagementService;
 		}
 
+		/// <inheritdoc />
 		public ITwitchPubSubServiceManager GetPubSubService() => _twitchPubSubServiceManager;
+
+		/// <inheritdoc />
 		public ITwitchHelixApiService GetHelixApiService() => _twitchHelixApiService;
+
+		/// <inheritdoc />
 		public ITwitchRoomStateTrackerService GetRoomStateTrackerService() => _twitchRoomStateTrackerService;
+
+		/// <inheritdoc />
 		public ITwitchUserStateTrackerService GetUserStateTrackerService() => _twitchUserStateTrackerService;
+
+		/// <inheritdoc />
 		public ITwitchChannelManagementService GetChannelManagementService() => _twitchChannelManagementService;
 
 		async Task IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>.Start()
@@ -59,16 +68,34 @@ namespace CatCore.Services.Twitch
 			await _twitchPubSubServiceManager.Stop();
 		}
 
+		/// <inheritdoc />
 		public bool LoggedIn => _twitchAuthService.HasTokens && _twitchAuthService.TokenIsValid;
+
+		/// <inheritdoc />
 		public TwitchChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
 
+		/// <inheritdoc />
 		public event Action<ITwitchService>? OnAuthenticatedStateChanged;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService>? OnChatConnected;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchChannel>? OnJoinChannel;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchChannel>? OnLeaveChannel;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchChannel>? OnRoomStateUpdated;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchMessage>? OnTextMessageReceived;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchChannel, string>? OnMessageDeleted;
+
+		/// <inheritdoc />
 		public event Action<ITwitchService, TwitchChannel, string?>? OnChatCleared;
 
 		public void SendMessage(TwitchChannel channel, string message)
