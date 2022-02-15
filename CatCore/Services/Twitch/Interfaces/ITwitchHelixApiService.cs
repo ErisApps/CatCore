@@ -121,7 +121,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <summary>
 		/// Create a Channel Points Prediction for a specific Twitch channel.
 		/// </summary>
-		/// <param name="title">Title for the Prediction.</param>
+		/// <param name="title">Title for the Prediction. May not exceed a length of 45 characters.</param>
 		/// <param name="outcomes">
 		/// Array of outcome objects with titles for the Prediction. Array size must be 2.
 		/// The first outcome object is the “blue” outcome and the second outcome object is the “pink” outcome when viewing the Prediction on Twitch.
