@@ -149,7 +149,7 @@ namespace CatCore.Services.Twitch.Media
 			{
 				if (CheckIfAnimated(emote, out var isAnimated))
 				{
-					parsedEmotes.Add(emote.Code, new ChatResourceData(type + "_" + emote.Id, emote.Code, "https://cdn.betterttv.net/emote/" + emote.Id + "/3x", isAnimated, type));
+					parsedEmotes[emote.Code] = new ChatResourceData(type + "_" + emote.Id, emote.Code, "https://cdn.betterttv.net/emote/" + emote.Id + "/3x", isAnimated, type);
 				}
 			}
 
@@ -169,7 +169,7 @@ namespace CatCore.Services.Twitch.Media
 					continue;
 				}
 
-				parsedEmotes.Add(emote.Code, new ChatResourceData(type + "_" + emote.Id, emote.Code, preferredUrl, false, type));
+				parsedEmotes[emote.Code] = new ChatResourceData(type + "_" + emote.Id, emote.Code, preferredUrl, false, type);
 			}
 
 			return new ReadOnlyDictionary<string, ChatResourceData>(parsedEmotes);
