@@ -34,14 +34,12 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 				var startPosition = endPosition;
 				while (endPosition + 1 < rawMessagesAsSpan.Length)
 				{
-					if (rawMessagesAsSpan[endPosition] != '\r' && rawMessagesAsSpan[endPosition + 1] != '\n')
-					{
-						endPosition++;
-					}
-					else
+					if (rawMessagesAsSpan[endPosition] == '\r' && rawMessagesAsSpan[endPosition + 1] == '\n')
 					{
 						break;
 					}
+
+					endPosition++;
 				}
 
 				IrcExtensions.New.ParseIrcMessage(rawMessagesAsSpan.Slice(startPosition, endPosition - startPosition), out var tags, out var prefix, out var commandType, out var channelName,
