@@ -14,7 +14,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 		private readonly char[] _ircMessageSeparator = { '\r', '\n' };
 
 		[Benchmark(Baseline = true)]
-		public void OldBenchmark()
+		public void IntermediateStringSplitBenchmark()
 		{
 			var messages = RawIrcMultiMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var messageInternal in messages)
@@ -25,7 +25,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 		}
 
 		[Benchmark]
-		public void NewBenchmark()
+		public void InlineSpanBasedSplitBenchmark()
 		{
 			var rawMessagesAsSpan = RawIrcMultiMessage.AsSpan();
 			var endPosition = 0;

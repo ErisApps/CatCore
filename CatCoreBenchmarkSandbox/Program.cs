@@ -39,7 +39,7 @@ namespace CatCoreBenchmarkSandbox
 				.AddLogger(ConsoleLogger.Default)
 				.AddExporter(BenchmarkReportExporter.Default, HtmlExporter.Default, MarkdownExporter.Console);
 
-			BenchmarkRunner.Run<Benchmarks.EmojiParser.EmojiParserBenchmark>(benchmarkConfiguration);
+			BenchmarkRunner.Run<Benchmarks.TwitchIRCMessageDeconstruction.TwitchIrcMultiMessageCompoundDeconstructionBenchmark>(benchmarkConfiguration);
 		}
 	}
 }
