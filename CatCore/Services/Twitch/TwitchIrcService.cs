@@ -185,23 +185,36 @@ namespace CatCore.Services.Twitch
 			MessageReceivedHandlerInternal(message);
 		}
 
-		// TODO: Investigate possibility to split a message string into ReadOnlySpans<char> or ReadOnlyMemory<char> types instead of strings
-		// This would prevents unnecessary heap allocations which might in turn improve the throughput
-		// TODO: Remove debug stopwatches when said optimisation has been done
+		// TODO: Remove debug stopwatches when optimisations have been done
 		private void MessageReceivedHandlerInternal(string rawMessage, bool sendBySelf = false)
 		{
 #if !RELEASE
 			var stopwatch = new System.Diagnostics.Stopwatch();
 			stopwatch.Start();
+
+			uint messageCount = 0;
 #endif
 
-			var messages = rawMessage.Split(_ircMessageSeparator, StringSplitOptions.RemoveEmptyEntries);
-			foreach (var messageInternal in messages)
+			var rawMessageAsSpan = rawMessage.AsSpan();
+			var endPosition = 0;
+			do
 			{
+				var startPosition = endPosition;
+				while (endPosition + 1 < rawMessageAsSpan.Length)
+				{
+					if (rawMessageAsSpan[endPosition] == '\r' && rawMessageAsSpan[endPosition + 1] == '\n')
+					{
+						break;
+					}
+
+					endPosition++;
+				}
+
 				// Handle IRC messages here
-				IrcExtensions.ParseIrcMessage(messageInternal, out var tags, out var prefix, out var commandType, out var channelName, out var message);
+				IrcExtensions.ParseIrcMessage(rawMessageAsSpan.Slice(startPosition, endPosition - startPosition), out var tags, out var prefix, out var commandType, out var channelName, out var message);
+
 #if DEBUG
-				_logger.Verbose("{MessageTemplate}", messageInternal);
+				_logger.Verbose("{MessageTemplate}", rawMessageAsSpan.Slice(startPosition, endPosition - startPosition).ToString());
 
 				_logger.Verbose("Tags count: {Tags}", tags?.Count.ToString() ?? "N/A");
 				_logger.Verbose("Prefix: {Prefix}", prefix ?? "N/A");
@@ -212,11 +225,17 @@ namespace CatCore.Services.Twitch
 #endif
 
 				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
-			}
+
+#if !RELEASE
+				messageCount++;
+#endif
+
+				endPosition += 2;
+			} while (endPosition < rawMessageAsSpan.Length);
 
 #if !RELEASE
 			stopwatch.Stop();
-			_logger.Information("Handling of {MessageCount} took {ElapsedTime} ticks", messages.Length, stopwatch.ElapsedTicks);
+			_logger.Information("Handling of {MessageCount} took {ElapsedTime} ticks", messageCount, stopwatch.ElapsedTicks);
 #endif
 		}
 
