@@ -7,7 +7,7 @@ namespace CatCore.Helpers
 	internal static class IrcExtensions
 	{
 		// ReSharper disable once CognitiveComplexity
-		internal static void ParseIrcMessage(string messageInternal, out ReadOnlyDictionary<string, string>? tags, out string? prefix, out string commandType, out string? channelName,
+		internal static void ParseIrcMessage(ReadOnlySpan<char> messageAsSpan, out ReadOnlyDictionary<string, string>? tags, out string? prefix, out string commandType, out string? channelName,
 			out string? message)
 		{
 			// Null-ing this here as I can't do that in the method signature
@@ -21,8 +21,6 @@ namespace CatCore.Helpers
 
 			var position = 0;
 			int nextSpacePosition;
-
-			var messageAsSpan = messageInternal.AsSpan();
 
 			void SkipToNextNonSpaceCharacter(ref ReadOnlySpan<char> msg)
 			{

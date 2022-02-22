@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CatCore.Helpers;
@@ -113,7 +114,7 @@ namespace CatCoreTests
 			// NOP
 
 			// Act
-			IrcExtensions.ParseIrcMessage(inputData, out var tags, out var prefix, out var commandType, out var channelName, out var message);
+			IrcExtensions.ParseIrcMessage(inputData.AsSpan(), out var tags, out var prefix, out var commandType, out var channelName, out var message);
 
 			// Assert
 			tags.Should().BeEquivalentTo(expectedTags);
