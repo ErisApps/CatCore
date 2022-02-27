@@ -180,8 +180,9 @@ namespace CatCore.Services
 
 					response.ContentEncoding = Encoding.UTF8;
 					response.ContentType = "application/json";
+					var loggedInUserInfo = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 					await JsonSerializer
-						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.TokenIsValid, _twitchAuthService.LoggedInUser, userInfos, _settingsService.Config.TwitchConfig))
+						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.TokenIsValid, loggedInUserInfo, userInfos, _settingsService.Config.TwitchConfig))
 						.ConfigureAwait(false);
 
 					return true;

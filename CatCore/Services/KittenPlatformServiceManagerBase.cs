@@ -81,7 +81,7 @@ namespace CatCore.Services
 
 		public void Dispose()
 		{
-			if(IsRunning)
+			if (IsRunning)
 			{
 				// TODO: figure out how you want to handle this
 				_ = Stop(null!);

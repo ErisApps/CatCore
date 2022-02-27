@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Exceptions;
 using CatCore.Helpers.JSON;
 using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
@@ -121,15 +122,15 @@ namespace CatCore.Services.Twitch
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
+		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
-			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "polls?broadcaster_id=" +loggedInUser.Value.UserId);
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "polls?broadcaster_id=" + loggedInUser.Value.UserId);
 			if (pollIds != null && pollIds.Any())
 			{
 				if (pollIds.Count > 100)
@@ -163,18 +164,18 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append("&after=").Append(continuationCursor);
 			}
 
-			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPollData, cancellationToken);
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPollData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
+		public async Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var userId = loggedInUser.Value.UserId;
@@ -241,16 +242,16 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
 			var body = new CreatePollRequestDto(userId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
-			return PostAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
+			return await PostAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken cancellationToken = default)
+		public async Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var userId = loggedInUser.Value.UserId;
@@ -266,18 +267,18 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPollRequestDto(userId, pollId, pollStatus);
-			return PatchAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken);
+			return await PatchAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
-		public Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
+		public async Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
 			CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "predictions?broadcaster_id=" + loggedInUser.Value.UserId);
@@ -314,16 +315,16 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append("&after=").Append(continuationCursor);
 			}
 
-			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPredictionData, cancellationToken);
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationPredictionData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken cancellationToken = default)
+		public async Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var userId = loggedInUser.Value.UserId;
@@ -359,16 +360,16 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreatePredictionsRequestDto(userId, title, predictionOutcomes, duration);
-			return PostAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
+			return await PostAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken cancellationToken = default)
+		public async Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var userId = loggedInUser.Value.UserId;
@@ -389,7 +390,7 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPredictionRequestDto(userId, predictionId, predictionStatus, winningOutcomeId);
-			return PatchAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken);
+			return await PatchAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -422,12 +423,12 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
+		public async Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
-			var loggedInUser = _twitchAuthService.LoggedInUser;
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
 			if (loggedInUser == null)
 			{
-				throw new Exception("The user wasn't logged in yet. Try again later.");
+				throw new TwitchNotAuthenticatedException();
 			}
 
 			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "streams/followed?user_id=" + loggedInUser.Value.UserId);
@@ -452,7 +453,7 @@ namespace CatCore.Services.Twitch
 				urlBuilder.Append($"&after={continuationCursor}");
 			}
 
-			return GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken);
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationStream, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />

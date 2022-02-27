@@ -33,7 +33,7 @@ namespace CatCore.Services.Twitch
 
 		private void SendListenRequestToAgentsInternal(string topic)
 		{
-			var selfUserId = _twitchAuthService.LoggedInUser?.UserId;
+			var selfUserId = _twitchAuthService.FetchLoggedInUserInfo()?.UserId;
 			if (CanRegisterTopicOnAllChannels(topic))
 			{
 				foreach (var twitchPubSubServiceExperimentalAgent in _activePubSubConnections)
@@ -49,7 +49,7 @@ namespace CatCore.Services.Twitch
 
 		private void SendAllCurrentTopicsToAgentInternal(string channelId, TwitchPubSubServiceExperimentalAgent agent)
 		{
-			var isSelfAgent =  _twitchAuthService.LoggedInUser?.UserId == channelId;
+			var isSelfAgent =  _twitchAuthService.FetchLoggedInUserInfo()?.UserId == channelId;
 			using var _ = Synchronization.Lock(_topicRegistrationLocker);
 			foreach (var topic in _topicsWithRegisteredCallbacks)
 			{
@@ -90,7 +90,7 @@ namespace CatCore.Services.Twitch
 
 		private void SendUnlistenRequestToAgentsInternal(string topic)
 		{
-			var selfUserId = _twitchAuthService.LoggedInUser?.UserId;
+			var selfUserId = _twitchAuthService.FetchLoggedInUserInfo()?.UserId;
 			if (CanRegisterTopicOnAllChannels(topic))
 			{
 				foreach (var twitchPubSubServiceExperimentalAgent in _activePubSubConnections)

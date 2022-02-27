@@ -137,12 +137,13 @@ namespace CatCore.Services.Twitch
 					return;
 				}
 
-				if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
+				if (!_twitchAuthService.HasTokens)
 				{
 					return;
 				}
 
-				if (!(_twitchAuthService.TokenIsValid || await _twitchAuthService.RefreshTokens().ConfigureAwait(false)))
+				var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
+				if (loggedInUser == null)
 				{
 					return;
 				}
