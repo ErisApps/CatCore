@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CatCore.Models.Credentials;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.Helix.Responses;
@@ -31,14 +32,19 @@ namespace CatCore.Services.Twitch
 
 		public TwitchChannel? GetOwnChannel()
 		{
-			var self = _twitchAuthService.LoggedInUser;
+			if (_twitchAuthService.Status != AuthenticationStatus.Authenticated)
+			{
+				return null;
+			}
+
+			var self = _twitchAuthService.FetchLoggedInUserInfo();
 			return self != null && _kittenSettingsService.Config.TwitchConfig.OwnChannelEnabled ? CreateChannel(self.Value.UserId, self.Value.LoginName) : null;
 		}
 
 		public List<string> GetAllActiveChannelIds(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new List<string>();
-			var self = _twitchAuthService.LoggedInUser;
+			var self = _twitchAuthService.FetchLoggedInUserInfo();
 			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
 			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
@@ -54,7 +60,7 @@ namespace CatCore.Services.Twitch
 		public List<string> GetAllActiveLoginNames(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new List<string>();
-			var self = _twitchAuthService.LoggedInUser;
+			var self = _twitchAuthService.FetchLoggedInUserInfo();
 			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
 			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
@@ -70,7 +76,7 @@ namespace CatCore.Services.Twitch
 		public ReadOnlyDictionary<string, string> GetAllActiveChannelsAsDictionary(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new Dictionary<string, string>();
-			var self = _twitchAuthService.LoggedInUser;
+			var self = _twitchAuthService.FetchLoggedInUserInfo();
 			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
 			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
@@ -89,7 +95,7 @@ namespace CatCore.Services.Twitch
 		public List<TwitchChannel> GetAllActiveChannels(bool includeSelfRegardlessOfState = false)
 		{
 			var allChannels = new List<TwitchChannel>();
-			var self = _twitchAuthService.LoggedInUser;
+			var self = _twitchAuthService.FetchLoggedInUserInfo();
 			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
 			if (self != null && (twitchConfig.OwnChannelEnabled || includeSelfRegardlessOfState))
@@ -121,10 +127,11 @@ namespace CatCore.Services.Twitch
 
 			var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
 
-			if (_twitchAuthService.LoggedInUser != null && twitchConfig.OwnChannelEnabled != ownChannelActive)
+			var loggedInUserInfo = _twitchAuthService.FetchLoggedInUserInfo();
+			if (loggedInUserInfo != null && twitchConfig.OwnChannelEnabled != ownChannelActive)
 			{
 				twitchConfig.OwnChannelEnabled = ownChannelActive;
-				(ownChannelActive ? enabledChannels : disabledChannels).Add(_twitchAuthService.LoggedInUser.Value.UserId, _twitchAuthService.LoggedInUser.Value.LoginName);
+				(ownChannelActive ? enabledChannels : disabledChannels).Add(loggedInUserInfo.Value.UserId, loggedInUserInfo.Value.LoginName);
 			}
 
 			var twitchChannelData = twitchConfig.AdditionalChannelsData;

@@ -99,12 +99,13 @@ namespace CatCore.Services.Twitch
 
 		async Task ITwitchIrcService.Start()
 		{
-			if (!_twitchAuthService.HasTokens || !_twitchAuthService.LoggedInUser.HasValue)
+			if (!_twitchAuthService.HasTokens)
 			{
 				return;
 			}
 
-			if (!(_twitchAuthService.TokenIsValid || await _twitchAuthService.RefreshTokens().ConfigureAwait(false)))
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
+			if (loggedInUser == null)
 			{
 				return;
 			}
@@ -167,7 +168,7 @@ namespace CatCore.Services.Twitch
 			_kittenWebSocketProvider.SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
 
 			_kittenWebSocketProvider.SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
-			_kittenWebSocketProvider.SendMessage($"NICK {_twitchAuthService.LoggedInUser?.LoginName ?? "."}");
+			_kittenWebSocketProvider.SendMessage($"NICK {_twitchAuthService.FetchLoggedInUserInfo()?.LoginName ?? "."}");
 		}
 
 		private void DisconnectHappenedHandler()
@@ -284,7 +285,7 @@ namespace CatCore.Services.Twitch
 				case IrcCommands.JOIN:
 				{
 					_ = prefix.ParsePrefix(out _, out _, out var username, out _);
-					if (_twitchAuthService.LoggedInUser?.LoginName == username)
+					if (_twitchAuthService.FetchLoggedInUserInfo()?.LoginName == username)
 					{
 						OnJoinChannel?.Invoke(new TwitchChannel(this, _channelNameToChannelIdDictionary[channelName!], channelName!));
 					}
@@ -294,7 +295,7 @@ namespace CatCore.Services.Twitch
 				case IrcCommands.PART:
 				{
 					_ = prefix.ParsePrefix(out _, out _, out var username, out _);
-					if (_twitchAuthService.LoggedInUser?.LoginName == username)
+					if (_twitchAuthService.FetchLoggedInUserInfo()?.LoginName == username)
 					{
 						var channelId = _channelNameToChannelIdDictionary[channelName!];
 						OnLeaveChannel?.Invoke(new TwitchChannel(this, channelId, channelName!));
@@ -368,7 +369,7 @@ namespace CatCore.Services.Twitch
 			var globalUserState = _userStateTrackerService.GlobalUserState;
 			var userState = _userStateTrackerService.GetUserState(channelId);
 
-			var selfDisplayName = globalUserState?.DisplayName ?? _twitchAuthService.LoggedInUser?.LoginName;
+			var selfDisplayName = globalUserState?.DisplayName ?? _twitchAuthService.FetchLoggedInUserInfo()?.LoginName;
 
 			_ = prefix.ParsePrefix(out var isServer, out _, out var username, out var hostname);
 
@@ -400,8 +401,8 @@ namespace CatCore.Services.Twitch
 					}
 				}
 
-				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.LoggedInUser?.UserId ?? string.Empty,
-					_twitchAuthService.LoggedInUser?.LoginName ?? string.Empty,
+				twitchUser = new TwitchUser(globalUserState?.UserId ?? _twitchAuthService.FetchLoggedInUserInfo()?.UserId ?? string.Empty,
+					_twitchAuthService.FetchLoggedInUserInfo()?.LoginName ?? string.Empty,
 					selfDisplayName ?? string.Empty,
 					globalUserState?.Color ?? "#ffffff",
 					userState?.IsModerator ?? false,
@@ -763,7 +764,7 @@ namespace CatCore.Services.Twitch
 
 		private MessageSendingRateLimit GetRateLimit(string channelId)
 		{
-			if (_twitchAuthService.LoggedInUser?.UserId == channelId)
+			if (_twitchAuthService.FetchLoggedInUserInfo()?.UserId == channelId)
 			{
 				return MessageSendingRateLimit.Relaxed;
 			}
