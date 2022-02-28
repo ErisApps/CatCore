@@ -207,11 +207,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			using var responseMessage = await _exceptionRetryPolicy
-				.ExecuteAsync(() =>
+				.ExecuteAsync(async () =>
 				{
 					using var requestMessage = new HttpRequestMessage(HttpMethod.Get, TWITCH_AUTH_BASEURL + "validate");
 					requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-					return _twitchAuthClient.SendAsync(requestMessage);
+					return await _twitchAuthClient.SendAsync(requestMessage).ConfigureAwait(false);
 				})
 				.ConfigureAwait(false);
 
