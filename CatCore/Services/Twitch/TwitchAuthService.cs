@@ -145,14 +145,19 @@ namespace CatCore.Services.Twitch
 						_logger.Information("Refreshing tokens");
 						await RefreshTokens().ConfigureAwait(false);
 					}
+
+					return _loggedInUser;
 				}
 				catch (HttpRequestException ex)
 				{
 					_logger.Error(ex, "An error occurred while trying to validate/refresh the Twitch tokens. Make sure an active internet connection is available");
 				}
 			}
+			else
+			{
+				_logger.Warning("No Twitch Credentials present");
+			}
 
-			_logger.Warning("No Twitch Credentials present");
 			return null;
 		}
 
