@@ -130,8 +130,6 @@ namespace CatCore
 
 			// Register Twitch-specific services
 			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
-			// .GetAwaiter().GetResult() is being used on the Initialize method to ensure the user is actually logged in when credentials are present
-			// _container.RegisterInitializer<ITwitchAuthService>((service, _) => service.Initialize().GetAwaiter().GetResult());
 			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
