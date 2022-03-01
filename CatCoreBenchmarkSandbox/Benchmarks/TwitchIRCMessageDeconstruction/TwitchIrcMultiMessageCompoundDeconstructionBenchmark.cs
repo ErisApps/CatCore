@@ -5,6 +5,8 @@ using BenchmarkDotNet.Attributes;
 
 namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 {
+	[MemoryDiagnoser]
+	[CategoriesColumn, AllStatisticsColumn, BaselineColumn, MinColumn, Q1Column, MeanColumn, Q3Column, MaxColumn, MedianColumn]
 	public class TwitchIrcMultiMessageCompoundDeconstructionBenchmark
 	{
 		[Params(
