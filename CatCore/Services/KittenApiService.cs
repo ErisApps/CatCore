@@ -176,11 +176,10 @@ namespace CatCore.Services
 
 					return true;
 				case "state" when request.HttpMethod == "GET":
-					var userInfos = await _twitchChannelManagementService.GetAllChannelsEnriched().ConfigureAwait(false);
-
 					response.ContentEncoding = Encoding.UTF8;
 					response.ContentType = "application/json";
 					var loggedInUserInfo = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
+					var userInfos = await _twitchChannelManagementService.GetAllChannelsEnriched().ConfigureAwait(false);
 					await JsonSerializer
 						.SerializeAsync(response.OutputStream, new TwitchStateResponseDto(_twitchAuthService.TokenIsValid, loggedInUserInfo, userInfos, _settingsService.Config.TwitchConfig))
 						.ConfigureAwait(false);
