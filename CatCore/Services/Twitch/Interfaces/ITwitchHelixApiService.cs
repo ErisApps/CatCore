@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Exceptions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
@@ -22,6 +23,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="loginNames">List of login names of the users for which you want to request data</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing userdata</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-users">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<UserData>?> FetchUserInfo(string[]? userIds = null, string[]? loginNames = null, CancellationToken cancellationToken = default);
@@ -36,6 +38,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="description">Description of or comments on the marker. Max length is 140 characters.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data regarding the created stream marker.</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-stream-marker">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<CreateStreamMarkerData>?> CreateStreamMarker(string userId, string? description = null, CancellationToken cancellationToken = default);
@@ -50,6 +53,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing channels matching the provided query</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#search-channels">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<ChannelData>?> SearchChannels(string query, uint? limit = null, bool? liveOnly = null, string? continuationCursor = null,
@@ -63,7 +67,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of 0, 1 or more more polls</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-polls">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default);
@@ -80,7 +84,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="channelPointsPerVote">Number of Channel Points required to vote once with Channel Points. Minimum: 1. Maximum: 1000000.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of the newly created poll</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
@@ -98,7 +102,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// </param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of the ended poll</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-poll">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PollData>?> EndPoll(string pollId, PollStatus pollStatus, CancellationToken cancellationToken = default);
@@ -112,7 +116,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of 0, 1 or more more predictions</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-predictions">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<PredictionData>?> GetPredictions(List<string>? predictionIds = null, uint? limit = null, string? continuationCursor = null,
@@ -130,7 +134,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="duration">Total duration for the Prediction (in seconds). Minimum: 1. Maximum: 1800.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of the newly created prediction</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-prediction">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PredictionData>?> CreatePrediction(string title, List<string> outcomes, uint duration, CancellationToken cancellationToken = default);
@@ -150,7 +154,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="winningOutcomeId">Id of the winning outcome for the Prediction. This parameter is required if <paramref name="predictionStatus" /> is being set to <see cref="PredictionStatus.Resolved"/>.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of the ended prediction</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#end-prediction">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<PredictionData>?> EndPrediction(string predictionId, PredictionStatus predictionStatus, string? winningOutcomeId = null, CancellationToken cancellationToken = default);
@@ -162,7 +166,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="userId">Id of the channel for which to retrieve Cheermotes. When no userId is passed or null, it will return all globally available Cheermotes.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of cheermotes</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-cheermotes">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<CheermoteGroupData>?> GetCheermotes(string? userId = null, CancellationToken cancellationToken = default);
 
@@ -171,6 +175,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// </summary>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of globally available custom chat badges</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetGlobalBadges(CancellationToken cancellationToken = default);
 
@@ -181,6 +186,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="userId">Id of the channel for which to retrieve the custom chat badges.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of custom chat badges</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBase<BadgeData>?> GetBadgesForChannel(string userId, CancellationToken cancellationToken = default);
 
@@ -192,7 +198,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="continuationCursor">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of 0, 1 or more more followed streams</returns>
-		/// <exception cref="Exception">Gets thrown when the user isn't logged in.</exception>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-followed-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetFollowedStreams(uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default);
@@ -214,6 +220,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="continuationCursorAfter">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of 0, 1 or more more active streams</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-streams">Check out the Twitch API Reference docs.</a></remarks>
 		Task<ResponseBaseWithPagination<Stream>?> GetStreams(string[]? userIds = null, string[]? loginNames = null, string[]? gameIds = null, string[]? languages = null, uint? limit = null,
@@ -224,6 +231,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// </summary>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of globally available chat emotes</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-global-emotes">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBaseWithTemplate<GlobalEmote>?> GetGlobalEmotes(CancellationToken cancellationToken = default);
 
@@ -237,6 +245,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="userId">Id of the channel for which to retrieve the custom chat emotes.</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Response containing data of custom chat emotes</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#get-channel-chat-badges">Check out the Twitch API Reference docs.</a></remarks>
 		public Task<ResponseBaseWithTemplate<ChannelEmote>?> GetChannelEmotes(string userId, CancellationToken cancellationToken = default);
 	}
