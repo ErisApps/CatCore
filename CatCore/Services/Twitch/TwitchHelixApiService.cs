@@ -7,7 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using CatCore.Exceptions;
 using CatCore.Helpers;
+using CatCore.Models.Twitch.OAuth;
 using CatCore.Services.Twitch.Interfaces;
 using Polly;
 using Polly.Wrap;
@@ -72,6 +74,12 @@ namespace CatCore.Services.Twitch
 			var bulkheadPolicy = Policy.BulkheadAsync<HttpResponseMessage>(4, 1000);
 
 			_combinedHelixPolicy = Policy.WrapAsync(bulkheadPolicy, enhanceYourCalmPolicy, reAuthPolicy, exceptionRetryPolicy);
+		}
+
+		private async Task<ValidationResponse> CheckUserLoggedIn()
+		{
+			var loggedInUser = await _twitchAuthService.FetchLoggedInUserInfoWithRefresh().ConfigureAwait(false);
+			return loggedInUser ?? throw new TwitchNotAuthenticatedException();
 		}
 
 		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default) where TResponse : struct
