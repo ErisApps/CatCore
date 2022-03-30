@@ -517,7 +517,7 @@ namespace CatCore.Services.Twitch
 				if (message.StartsWith("ACTION ", StringComparison.Ordinal))
 				{
 					isActionMessage = true;
-					message = message.AsSpan().Slice(8, message.Length - 9).ToString();
+					message = message.AsSpan(8, message.Length - 9).ToString();
 				}
 
 				if (selfDisplayName != null)

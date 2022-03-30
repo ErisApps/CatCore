@@ -25,7 +25,7 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.Miscellaneous
 		public bool SpanStartsWith()
 		{
 			const string ACTION = "ACTION ";
-			return Message.AsSpan().StartsWith(ACTION.AsSpan(), StringComparison.Ordinal);
+			return Message.AsSpan().StartsWith(ACTION, StringComparison.Ordinal);
 		}
 	}
 }
