@@ -368,7 +368,7 @@ namespace CatCore.Services.Twitch
 			{
 				_logger.Error("Couldn't properly handle incoming message due to null channelName. " +
 				              "Additional details: MessageMeta: {MessageMeta}; Prefix: {Prefix}; CommandType: {CommandType}; ChannelName: {ChannelName}; Message: {Message}",
-					messageMeta,
+					messageMeta?.ToPrettyString(),
 					prefix,
 					commandType,
 					channelName,
