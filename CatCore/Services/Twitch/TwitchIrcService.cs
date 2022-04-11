@@ -362,6 +362,20 @@ namespace CatCore.Services.Twitch
 		private void HandlePrivMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
 			bool wasSendByLibrary)
 		{
+			// Safe-guarding against issue where channelName happens to end up being NULL.
+			// Logging additional details in case it ever were to happen again
+			if (channelName == null)
+			{
+				_logger.Error("Couldn't properly handle incoming message due to null channelName. " +
+				              "Additional details: MessageMeta: {MessageMeta}; Prefix: {Prefix}; CommandType: {CommandType}; ChannelName: {ChannelName}; Message: {Message}",
+					messageMeta,
+					prefix,
+					commandType,
+					channelName,
+					message);
+				return;
+			}
+
 			// Determine channelId
 			var channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
 				? roomId
@@ -532,7 +546,6 @@ namespace CatCore.Services.Twitch
 
 			var emotes = message.Length > 0 ? ExtractEmoteInfo(message, messageMeta, channelId, bits) : new List<IChatEmote>(0);
 
-			// TODO: Implement emoji support
 			OnMessageReceived?.Invoke(new TwitchMessage(
 				messageId,
 				commandType is IrcCommands.NOTICE or TwitchIrcCommands.USERNOTICE,
