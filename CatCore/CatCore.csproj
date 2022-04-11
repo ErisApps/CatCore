@@ -35,7 +35,7 @@
 		<PackageReference Include="Polly" Version="7.2.3" />
 		<PackageReference Include="Serilog" Version="2.11.0-dev-01380" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-		<PackageReference Include="System.Net.Http.Json" Version="7.0.0-preview.1.22076.8" />
+		<PackageReference Include="System.Net.Http.Json" Version="7.0.0-preview.2.22152.2" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
 		<PackageReference Include="System.Text.Json" Version="7.0.0-preview.2.22152.2" />
 		<PackageReference Include="Websocket.Client" Version="4.4.43" />
