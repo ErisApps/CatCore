@@ -69,6 +69,8 @@ namespace CatCore
 			_instance.CreateLogger();
 			_instance.CreateContainer();
 
+			_instance.SpinUpApiAndPortalOnStartupIfRequired();
+
 			return _instance;
 		}
 
@@ -152,16 +154,6 @@ namespace CatCore
 			container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
 
 			_resolver = container.WithNoMoreRegistrationAllowed();
-
-			// Spin up internal web api service
-			_ = Task.Run(() =>
-			{
-				var globalConfig = _resolver.Resolve<IKittenSettingsService>().Config.GlobalConfig;
-				if (globalConfig.LaunchInternalApiOnStartup)
-				{
-					LaunchApiAndPortal(globalConfig.LaunchWebPortalOnStartup);
-				}
-			});
 		}
 
 		// TODO: handle all of the start/stop tasks
@@ -235,6 +227,19 @@ namespace CatCore
 		public void LaunchWebPortal()
 		{
 			_ = Task.Run(() => LaunchApiAndPortal(true));
+		}
+
+		private void SpinUpApiAndPortalOnStartupIfRequired()
+		{
+			// Spin up internal web api service
+			Task.Run(() =>
+			{
+				var globalConfig = _resolver.Resolve<IKittenSettingsService>().Config.GlobalConfig;
+				if (globalConfig.LaunchInternalApiOnStartup)
+				{
+					LaunchApiAndPortal(globalConfig.LaunchWebPortalOnStartup);
+				}
+			});
 		}
 
 		private void LaunchApiAndPortal(bool shouldLaunchPortal)
