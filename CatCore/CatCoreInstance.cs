@@ -35,7 +35,7 @@ namespace CatCore
 		private readonly MessageTemplateTextFormatter _logReceivedTextFormatter;
 		private readonly Version _version;
 
-		private Container? _container;
+		private IResolver? _resolver;
 
 		private CatCoreInstance()
 		{
@@ -98,63 +98,65 @@ namespace CatCore
 			Scope.WaitForScopedServiceIsCreatedTimeoutTicks = 60000;
 
 			// Create container
-			_container = new Container(rules => rules
+			var container = new Container(rules => rules
 				.WithTrackingDisposableTransients()
 				.WithoutThrowIfScopedOrSingletonHasTransientDependency()
 				.WithoutThrowOnRegisteringDisposableTransient());
 
-			_container.Use(_version);
-			_container.Register<ConstantsBase, Constants>(Reuse.Singleton);
-			_container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
-			_container.Register(Made.Of(_ => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
+			container.Use(_version);
+			container.Register<ConstantsBase, Constants>(Reuse.Singleton);
+			container.Register<ThreadSafeRandomFactory>(Reuse.Singleton);
+			container.Register(Made.Of(_ => ServiceInfo.Of<ThreadSafeRandomFactory>(), factory => factory.CreateNewRandom()));
 
 			// Default logger
-			_container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));
+			container.Register(Made.Of(() => Log.Logger), setup: Setup.With(condition: r => r.Parent.ImplementationType == null));
 
 			// Type dependent logger
-			_container.Register(
+			container.Register(
 				Made.Of(() => Log.ForContext(Arg.Index<Type>(0)), r => r.Parent.ImplementationType),
 				setup: Setup.With(condition: r => r.Parent.ImplementationType != null));
 
 			// Register internal standalone services
-			_container.Register<IKittenPlatformActiveStateManager, KittenPlatformActiveStateManager>(Reuse.Singleton);
-			_container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
-			_container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
-			_container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
-			_container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
-			_container.RegisterInitializer<IKittenSettingsService>((service, _) => service.Initialize());
-			_container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
-			_container.RegisterInitializer<IKittenApiService>((service, _) => service.Initialize());
+			container.Register<IKittenPlatformActiveStateManager, KittenPlatformActiveStateManager>(Reuse.Singleton);
+			container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
+			container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
+			container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
+			container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
+			container.RegisterInitializer<IKittenSettingsService>((service, _) => service.Initialize());
+			container.Register<IKittenApiService, KittenApiService>(Reuse.Singleton);
+			container.RegisterInitializer<IKittenApiService>((service, _) => service.Initialize());
 
-			_container.Register<BttvDataProvider>(Reuse.Singleton);
+			container.Register<BttvDataProvider>(Reuse.Singleton);
 
 			// Register Twitch-specific services
-			_container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
-			_container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
-			_container.Register<ITwitchRoomStateTrackerService, TwitchRoomStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<ITwitchUserStateTrackerService, TwitchUserStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.Register<TwitchBadgeDataProvider>(Reuse.Singleton);
-			_container.Register<TwitchCheermoteDataProvider>(Reuse.Singleton);
-			_container.Register<TwitchMediaDataProvider>(Reuse.Singleton);
-			_container.RegisterInitializer<TwitchMediaDataProvider>(((provider, _) => provider.Initialize()));
-			_container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
+			container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
+			container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
+			container.Register<ITwitchRoomStateTrackerService, TwitchRoomStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			container.Register<ITwitchUserStateTrackerService, TwitchUserStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			container.Register<TwitchBadgeDataProvider>(Reuse.Singleton);
+			container.Register<TwitchCheermoteDataProvider>(Reuse.Singleton);
+			container.Register<TwitchMediaDataProvider>(Reuse.Singleton);
+			container.RegisterInitializer<TwitchMediaDataProvider>(((provider, _) => provider.Initialize()));
+			container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
-			_container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,
+			container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,
 				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			_container.RegisterMany(new[] { typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager) }, typeof(TwitchServiceManager), Reuse.Singleton);
+			container.RegisterMany(new[] { typeof(IKittenPlatformServiceManagerBase), typeof(TwitchServiceManager) }, typeof(TwitchServiceManager), Reuse.Singleton);
 
 			// Register multiplexer services
-			_container.Register( // manually register Twitch service to multiplexer, TODO: make a general form of this for all IPlatformServices
+			container.Register( // manually register Twitch service to multiplexer, TODO: make a general form of this for all IPlatformServices
 				made: Made.Of(() => MultiplexedPlatformService.From<ITwitchService, TwitchChannel, TwitchMessage>(Arg.Of<ITwitchService>())));
-			_container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
-			_container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
+			container.Register<ChatServiceMultiplexer>(Reuse.Singleton);
+			container.Register<ChatServiceMultiplexerManager>(Reuse.Singleton);
+
+			_resolver = container.WithNoMoreRegistrationAllowed();
 
 			// Spin up internal web api service
 			_ = Task.Run(() =>
 			{
-				var globalConfig = _container.Resolve<IKittenSettingsService>().Config.GlobalConfig;
+				var globalConfig = _resolver.Resolve<IKittenSettingsService>().Config.GlobalConfig;
 				if (globalConfig.LaunchInternalApiOnStartup)
 				{
 					LaunchApiAndPortal(globalConfig.LaunchWebPortalOnStartup);
@@ -172,12 +174,12 @@ namespace CatCore
 		public ChatServiceMultiplexer RunAllServices()
 		{
 			using var __ = Synchronization.Lock(RunLocker);
-			if (_container == null)
+			if (_resolver == null)
 			{
 				throw new CatCoreNotInitializedException();
 			}
 
-			var multiplexerManager = _container.Resolve<ChatServiceMultiplexerManager>();
+			var multiplexerManager = _resolver.Resolve<ChatServiceMultiplexerManager>();
 			_ = multiplexerManager.Start(Assembly.GetCallingAssembly());
 			return multiplexerManager.GetMultiplexer();
 		}
@@ -192,7 +194,7 @@ namespace CatCore
 		public void StopAllServices()
 		{
 			using var __ = Synchronization.Lock(RunLocker);
-			_ = _container.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
+			_ = _resolver.Resolve<ChatServiceMultiplexerManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -203,12 +205,12 @@ namespace CatCore
 		public ITwitchService RunTwitchServices()
 		{
 			using var __ = Synchronization.Lock(RunLocker);
-			if (_container == null)
+			if (_resolver == null)
 			{
 				throw new CatCoreNotInitializedException();
 			}
 
-			var twitchServiceManager = _container.Resolve<TwitchServiceManager>();
+			var twitchServiceManager = _resolver.Resolve<TwitchServiceManager>();
 			_ = twitchServiceManager.Start(Assembly.GetCallingAssembly());
 			return twitchServiceManager.GetService();
 		}
@@ -223,7 +225,7 @@ namespace CatCore
 		public void StopTwitchServices()
 		{
 			using var __ = Synchronization.Lock(RunLocker);
-			_ = _container.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
+			_ = _resolver.Resolve<TwitchServiceManager>().Stop(Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -237,16 +239,16 @@ namespace CatCore
 
 		private void LaunchApiAndPortal(bool shouldLaunchPortal)
 		{
-			_ = _container.Resolve<IKittenApiService>();
+			_ = _resolver.Resolve<IKittenApiService>();
 			if (shouldLaunchPortal)
 			{
-				_container.Resolve<ILogger>().ForContext<CatCoreInstance>().Debug("Launching web portal");
-				_container.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
+				_resolver.Resolve<ILogger>().ForContext<CatCoreInstance>().Debug("Launching web portal");
+				_resolver.Resolve<IKittenBrowserLauncherService>().LaunchWebPortal();
 			}
 		}
 
 #if DEBUG
-		internal Container? Container => _container;
+		internal IResolver? Resolver => _resolver;
 #endif
 	}
 }
