@@ -56,7 +56,9 @@ namespace CatCore.Services
 					Directory.CreateDirectory(_pathProvider.DataPath);
 				}
 
-				File.WriteAllText(_credentialsFilePath, JsonSerializer.Serialize(Credentials, _jsonSerializerOptions));
+				using var fileStream = File.Open(_credentialsFilePath, FileMode.Create, FileAccess.Write);
+				JsonSerializer.Serialize(fileStream, Credentials, _jsonSerializerOptions);
+				fileStream.Flush(true);
 
 				OnCredentialsChanged?.Invoke();
 			}
@@ -94,8 +96,8 @@ namespace CatCore.Services
 					return;
 				}
 
-				var readAllText = File.ReadAllText(_credentialsFilePath);
-				Credentials = JsonSerializer.Deserialize<T>(readAllText, _jsonSerializerOptions) ?? new T();
+				using var fileStream = File.OpenRead(_credentialsFilePath);
+				Credentials = JsonSerializer.Deserialize<T>(fileStream, _jsonSerializerOptions) ?? new T();
 			}
 			catch (Exception e)
 			{
