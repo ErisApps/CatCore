@@ -2,14 +2,13 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-using CatCore.Helpers;
 using CatCore.Models.Credentials;
 using CatCore.Services.Interfaces;
 using Serilog;
 
 namespace CatCore.Services
 {
-	internal abstract class KittenCredentialsProvider<T> where T : class, ICredentials, new()
+	internal abstract class KittenCredentialsProvider<T> where T : class, ICredentials, IEquatable<T>, new()
 	{
 		private readonly SemaphoreSlim _locker = new(1, 1);
 
@@ -34,16 +33,15 @@ namespace CatCore.Services
 			_logger = logger;
 			_pathProvider = pathProvider;
 
-			_jsonSerializerOptions = new JsonSerializerOptions {WriteIndented = true};
+			_jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
 			_credentialsFilePath = Path.Combine(pathProvider.DataPath, CredentialsFilename);
 
 			// Initializing internally
 			Load();
-			Store();
 		}
 
-		protected void Store()
+		private void Store()
 		{
 			try
 			{
@@ -56,9 +54,7 @@ namespace CatCore.Services
 					Directory.CreateDirectory(_pathProvider.DataPath);
 				}
 
-				using var fileStream = File.Open(_credentialsFilePath, FileMode.Create, FileAccess.Write);
-				JsonSerializer.Serialize(fileStream, Credentials, _jsonSerializerOptions);
-				fileStream.Flush(true);
+				WriteToDiskNoSafeGuards(Credentials);
 
 				OnCredentialsChanged?.Invoke();
 			}
@@ -72,9 +68,15 @@ namespace CatCore.Services
 			}
 		}
 
-		protected IDisposable ChangeTransaction()
+		protected void UpdateCredentials(T credentials)
 		{
-			return WeakActionToken.Create(this, provider => provider.Store());
+			if (credentials == Credentials)
+			{
+				return;
+			}
+
+			Credentials = credentials;
+			Store();
 		}
 
 		private void Load()
@@ -92,7 +94,7 @@ namespace CatCore.Services
 
 				if (!File.Exists(_credentialsFilePath))
 				{
-					Credentials = new T();
+					WriteToDiskNoSafeGuards(Credentials = new T());
 					return;
 				}
 
@@ -102,12 +104,19 @@ namespace CatCore.Services
 			catch (Exception e)
 			{
 				_logger.Error(e, "An error occurred while trying to load the config for service {ServiceType}", ServiceType);
-				Credentials = new T();
+				WriteToDiskNoSafeGuards(Credentials = new T());
 			}
 			finally
 			{
 				_locker.Release();
 			}
+		}
+
+		private void WriteToDiskNoSafeGuards(T credentials)
+		{
+			using var fileStream = File.Open(_credentialsFilePath, FileMode.Create, FileAccess.Write);
+			JsonSerializer.Serialize(fileStream, credentials, _jsonSerializerOptions);
+			fileStream.Flush(true);
 		}
 	}
 }
