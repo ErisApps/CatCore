@@ -107,7 +107,7 @@ namespace CatCore.Services.Twitch
 		{
 			DeregisterInternalEventHandlers();
 
-			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnCredentialsChanged;
+			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnAuthenticatedStatusChanged;
 
 			_twitchIrcService.OnChatConnected += TwitchIrcServiceOnChatConnected;
 			_twitchIrcService.OnJoinChannel += TwitchIrcServiceOnJoinChannel;
@@ -120,7 +120,7 @@ namespace CatCore.Services.Twitch
 
 		private void DeregisterInternalEventHandlers()
 		{
-			_twitchAuthService.OnCredentialsChanged -= TwitchAuthServiceOnCredentialsChanged;
+			_twitchAuthService.OnAuthenticationStatusChanged -= TwitchAuthServiceOnAuthenticatedStatusChanged;
 
 			_twitchIrcService.OnChatConnected -= TwitchIrcServiceOnChatConnected;
 			_twitchIrcService.OnJoinChannel -= TwitchIrcServiceOnJoinChannel;
@@ -131,7 +131,7 @@ namespace CatCore.Services.Twitch
 			_twitchIrcService.OnChatCleared -= TwitchIrcServiceOnChatCleared;
 		}
 
-		private void TwitchAuthServiceOnCredentialsChanged()
+		private void TwitchAuthServiceOnAuthenticatedStatusChanged()
 		{
 			OnAuthenticatedStateChanged?.Invoke(this);
 		}
