@@ -99,7 +99,19 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		async Task ITwitchIrcService.Start()
+		Task ITwitchIrcService.Start()
+		{
+			_logger.Verbose("Start requested by service manager");
+			return StartInternal();
+		}
+
+		Task ITwitchIrcService.Stop()
+		{
+			_logger.Verbose("Stop requested by service manager");
+			return StopInternal();
+		}
+
+		private async Task StartInternal()
 		{
 			if (!_twitchAuthService.HasTokens)
 			{
@@ -124,9 +136,9 @@ namespace CatCore.Services.Twitch
 			await _kittenWebSocketProvider.Connect(TWITCH_IRC_ENDPOINT).ConfigureAwait(false);
 		}
 
-		async Task ITwitchIrcService.Stop()
+		private async Task StopInternal()
 		{
-			await _kittenWebSocketProvider.Disconnect("Requested by service manager").ConfigureAwait(false);
+			await _kittenWebSocketProvider.Disconnect().ConfigureAwait(false);
 
 			_kittenWebSocketProvider.ConnectHappened -= ConnectHappenedHandler;
 			_kittenWebSocketProvider.DisconnectHappened -= DisconnectHappenedHandler;
@@ -141,12 +153,13 @@ namespace CatCore.Services.Twitch
 			{
 				if (_activeStateManager.GetState(PlatformType.Twitch))
 				{
-					await ((ITwitchIrcService) this).Start().ConfigureAwait(false);
+					_logger.Verbose("(Re)start requested by credential changes");
+					await StartInternal().ConfigureAwait(false);
 				}
 			}
 			else
 			{
-				await ((ITwitchIrcService) this).Stop().ConfigureAwait(false);
+				await StopInternal().ConfigureAwait(false);
 			}
 		}
 
@@ -347,7 +360,8 @@ namespace CatCore.Services.Twitch
 					break;
 				}
 				case TwitchIrcCommands.RECONNECT:
-					_ = ((ITwitchIrcService) this).Start().ConfigureAwait(false);
+					_logger.Debug("Restart requested by RECONNECT message");
+					_ = StartInternal().ConfigureAwait(false);
 					break;
 				case TwitchIrcCommands.HOSTTARGET:
 					// NOP
