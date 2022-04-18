@@ -107,7 +107,7 @@ namespace CatCore.Services
 
 		private async Task ConnectHandler(WebSocketConnection webSocketConnection)
 		{
-			await Console.Error.WriteLineAsync(nameof(ConnectHandler));
+			_logger.Information(nameof(ConnectHandler));
 
 			if (ConnectHappened != null)
 			{
@@ -117,7 +117,7 @@ namespace CatCore.Services
 
 		private async Task DisconnectHandler()
 		{
-			await Console.Error.WriteLineAsync(nameof(DisconnectHandler));
+			_logger.Information(nameof(DisconnectHandler));
 
 			if (DisconnectHappened != null)
 			{
@@ -127,7 +127,7 @@ namespace CatCore.Services
 
 		private async Task MessageReceivedHandler(WebSocketConnection webSocketConnection, string message)
 		{
-			Console.WriteLine(nameof(MessageReceivedHandler));
+			_logger.Information(nameof(MessageReceivedHandler));
 
 			if (MessageReceived != null)
 			{
