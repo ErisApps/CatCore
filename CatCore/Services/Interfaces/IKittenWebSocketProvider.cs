@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CatCore.Helpers;
 
 namespace CatCore.Services.Interfaces
 {
@@ -8,11 +9,9 @@ namespace CatCore.Services.Interfaces
 		bool IsConnected { get; }
 		Task Connect(string uri);
 		Task Disconnect(string? reason = null);
-		void SendMessage(string message);
-		Task SendMessageInstant(string message);
 
-		event Action? ConnectHappened;
-		event Action? DisconnectHappened;
-		event Action<string>? MessageReceived;
+		event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection>? ConnectHappened;
+		event AsyncEventHandlerDefinitions.AsyncEventHandler? DisconnectHappened;
+		event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection, string>? MessageReceived;
 	}
 }

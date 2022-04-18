@@ -7,13 +7,14 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers;
+using CatCore.Services.Interfaces;
 using IWebsocketClientLite.PCL;
 using Serilog;
 using WebsocketClientLite.PCL;
 
 namespace CatCore.Services
 {
-	internal class KittenWebSocketProvider4
+	internal class KittenWebSocketProvider4 : IKittenWebSocketProvider
 	{
 		private readonly ILogger _logger;
 		private readonly SemaphoreSlim _connectionLocker = new(1, 1);

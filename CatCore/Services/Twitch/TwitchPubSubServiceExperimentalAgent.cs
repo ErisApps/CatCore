@@ -58,6 +58,7 @@ namespace CatCore.Services.Twitch
 
 		private readonly SemaphoreSlim _workerSemaphoreSlim = new(0, 1);
 
+		private WebSocketConnection? _webSocketConnection;
 		private CancellationTokenSource? _topicNegotiationQueueProcessorCancellationTokenSource;
 
 		private readonly Timer _pingTimer;
@@ -79,7 +80,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 
 			// TODO: Find a better way for this to ensure testability in the long run
-			_kittenWebSocketProvider = new KittenWebSocketProvider(_logger); // manual resolution
+			_kittenWebSocketProvider = new KittenWebSocketProvider4(_logger); // manual resolution
 
 			_pingTimer = new Timer { Interval = TWITCH_PUBSUB_PING_TIMER_DEFAULT_INTERVAL, AutoReset = false };
 			_pingTimer.Elapsed += PingTimerOnElapsed;
@@ -193,20 +194,25 @@ namespace CatCore.Services.Twitch
 			_pongTimer.Dispose();
 		}
 
-		private void ConnectHappenedHandler()
+		private Task ConnectHappenedHandler(WebSocketConnection webSocketConnection)
 		{
 			_pingTimer.Start();
 
 			_topicNegotiationQueueProcessorCancellationTokenSource?.Cancel();
 			_topicNegotiationQueueProcessorCancellationTokenSource = new CancellationTokenSource();
 
-			_ = Task.Run(() => ProcessQueuedTopicNegotiationMessage(_topicNegotiationQueueProcessorCancellationTokenSource.Token), _topicNegotiationQueueProcessorCancellationTokenSource.Token)
+			_webSocketConnection = webSocketConnection;
+			_ = Task.Run(() => ProcessQueuedTopicNegotiationMessage(webSocketConnection, _topicNegotiationQueueProcessorCancellationTokenSource.Token), _topicNegotiationQueueProcessorCancellationTokenSource.Token)
 				.ConfigureAwait(false);
+
+			return Task.CompletedTask;
 		}
 
-		private void DisconnectHappenedHandler()
+		private async Task DisconnectHappenedHandler()
 		{
-			using var wsStateChangeLock = Synchronization.Lock(_wsStateChangeSemaphoreSlim);
+			using var wsStateChangeLock = await Synchronization.LockAsync(_wsStateChangeSemaphoreSlim).ConfigureAwait(false);
+
+			_webSocketConnection = null;
 
 			_topicNegotiationQueueProcessorCancellationTokenSource?.Cancel();
 			_topicNegotiationQueueProcessorCancellationTokenSource = null;
@@ -231,7 +237,7 @@ namespace CatCore.Services.Twitch
 
 		// ReSharper disable once CognitiveComplexity
 		// ReSharper disable once CyclomaticComplexity
-		private void MessageReceivedHandler(string receivedMessage)
+		private Task MessageReceivedHandler(WebSocketConnection webSocketConnection, string receivedMessage)
 		{
 #if !RELEASE
 			var stopWatch = new System.Diagnostics.Stopwatch();
@@ -304,6 +310,8 @@ namespace CatCore.Services.Twitch
 			stopWatch.Stop();
 			_logger.Information("Handling of PubSub message took {ElapsedTime} ticks", stopWatch.ElapsedTicks);
 #endif
+
+			return Task.CompletedTask;
 		}
 
 		internal void RequestTopicListening(string topic)
@@ -350,7 +358,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		// ReSharper disable once CognitiveComplexity
-		private async Task ProcessQueuedTopicNegotiationMessage(CancellationToken cts)
+		private async Task ProcessQueuedTopicNegotiationMessage(WebSocketConnection webSocketConnection, CancellationToken cts)
 		{
 			bool CheckIfConsumable()
 			{
@@ -381,7 +389,7 @@ namespace CatCore.Services.Twitch
 					_logger.Information("Sending {Mode} request for topic {Topic} with nonce {Nonce}", mode, msg.topic, nonce);
 
 					// Send message
-					await _kittenWebSocketProvider.SendMessageInstant(jsonMessage).ConfigureAwait(false);
+					await webSocketConnection.SendMessage(jsonMessage).ConfigureAwait(false);
 				}
 			}
 
@@ -436,7 +444,7 @@ namespace CatCore.Services.Twitch
 
 			_hasPongBeenReceived = false;
 
-			_kittenWebSocketProvider.SendMessage(TWITCH_PUBSUB_PING_MESSAGE);
+			_webSocketConnection?.SendMessage(TWITCH_PUBSUB_PING_MESSAGE);
 		}
 
 		private async void PongTimerOnElapsed(object sender, ElapsedEventArgs _)
