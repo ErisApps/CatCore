@@ -23,6 +23,9 @@
 			<RepackInputAssemblies Include="CatCore.Shared.dll"/>
 			<RepackInputAssemblies Include="CatCore.Twemoji.dll"/>
 			<RepackInputAssemblies Include="DryIoc.dll"/>
+			<RepackInputAssemblies Include="HttpMachine.dll"/>
+			<RepackInputAssemblies Include="IHttpMachine.dll"/>
+			<RepackInputAssemblies Include="IWebsocketClientLite.PCL.dll"/>
 			<RepackInputAssemblies Include="Microsoft.Bcl.AsyncInterfaces.dll"/>
 			<RepackInputAssemblies Include="Polly.dll"/>
 			<RepackInputAssemblies Include="Serilog.dll"/>
@@ -35,9 +38,8 @@
 			<RepackInputAssemblies Include="System.Runtime.CompilerServices.Unsafe.dll"/>
 			<RepackInputAssemblies Include="System.Text.Encodings.Web.dll"/>
 			<RepackInputAssemblies Include="System.Text.Json.dll"/>
-			<RepackInputAssemblies Include="System.Threading.Channels.dll"/>
 			<RepackInputAssemblies Include="System.Threading.Tasks.Extensions.dll"/>
-			<RepackInputAssemblies Include="Websocket.Client.dll"/>
+			<RepackInputAssemblies Include="WebsocketClientLite.PCL.dll"/>
 		</ItemGroup>
 
 		<!-- ReferencePath contains actual files which can be referenced, we need directories -->
