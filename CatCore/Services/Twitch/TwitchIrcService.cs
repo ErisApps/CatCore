@@ -48,6 +48,7 @@ namespace CatCore.Services.Twitch
 		private readonly ConcurrentDictionary<string, long> _forcedSendChannelMessageSendDelays;
 		private readonly List<long> _messageSendTimestamps;
 
+		private readonly SemaphoreSlim _connectionLockerSemaphoreSlim = new(1, 1);
 		private readonly SemaphoreSlim _workerCanSleepSemaphoreSlim = new(1, 1);
 		private readonly SemaphoreSlim _workerSemaphoreSlim = new(0, 1);
 
@@ -114,6 +115,7 @@ namespace CatCore.Services.Twitch
 
 		private async Task StartInternal()
 		{
+			using var _ = await Synchronization.LockAsync(_connectionLockerSemaphoreSlim);
 			if (!_twitchAuthService.HasTokens)
 			{
 				return;
