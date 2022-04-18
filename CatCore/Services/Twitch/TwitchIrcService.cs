@@ -51,6 +51,7 @@ namespace CatCore.Services.Twitch
 		private readonly SemaphoreSlim _workerCanSleepSemaphoreSlim = new(1, 1);
 		private readonly SemaphoreSlim _workerSemaphoreSlim = new(0, 1);
 
+		private WebSocketConnection? _webSocketConnection;
 		private CancellationTokenSource? _messageQueueProcessorCancellationTokenSource;
 		private ValidationResponse? _loggedInUser;
 
@@ -169,40 +170,48 @@ namespace CatCore.Services.Twitch
 			{
 				foreach (var disabledChannel in e.DisabledChannels)
 				{
-					_kittenWebSocketProvider.SendMessage($"PART #{disabledChannel.Value}");
+					_webSocketConnection?.SendMessageFireAndForget($"PART #{disabledChannel.Value}");
 				}
 
 				foreach (var enabledChannel in e.EnabledChannels)
 				{
 					_channelNameToChannelIdDictionary[enabledChannel.Value] = enabledChannel.Key;
-					_kittenWebSocketProvider.SendMessage($"JOIN #{enabledChannel.Value}");
+					_webSocketConnection?.SendMessageFireAndForget($"JOIN #{enabledChannel.Value}");
 				}
 			}
 		}
 
-		private void ConnectHappenedHandler()
+		private async Task ConnectHappenedHandler(WebSocketConnection webSocketConnection)
 		{
-			_kittenWebSocketProvider.SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
+			_logger.Verbose("Twitch IRC Connect handler triggered");
+			await webSocketConnection.SendMessage("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
 
-			_kittenWebSocketProvider.SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
-			_kittenWebSocketProvider.SendMessage($"NICK {_loggedInUser?.LoginName ?? "."}");
+			await webSocketConnection.SendMessage($"PASS oauth:{_twitchAuthService.AccessToken}");
+			await webSocketConnection.SendMessage($"NICK {_loggedInUser?.LoginName ?? "."}");
+
+			_webSocketConnection = webSocketConnection;
 		}
 
-		private void DisconnectHappenedHandler()
+		private Task DisconnectHappenedHandler()
 		{
+			_webSocketConnection = null;
+
 			_messageQueueProcessorCancellationTokenSource?.Cancel();
 			_messageQueueProcessorCancellationTokenSource = null;
 
 			_channelNameToChannelIdDictionary.Clear();
+
+			return Task.CompletedTask;
 		}
 
-		private void MessageReceivedHandler(string message)
+		private Task MessageReceivedHandler(WebSocketConnection webSocketConnection, string message)
 		{
-			MessageReceivedHandlerInternal(message);
+			MessageReceivedHandlerInternal(webSocketConnection, message);
+			return Task.CompletedTask;
 		}
 
 		// TODO: Remove debug stopwatches when optimisations have been done
-		private void MessageReceivedHandlerInternal(string rawMessage, bool sendBySelf = false)
+		private void MessageReceivedHandlerInternal(WebSocketConnection webSocketConnection, string rawMessage, bool sendBySelf = false)
 		{
 #if !RELEASE
 			var stopwatch = new System.Diagnostics.Stopwatch();
@@ -240,7 +249,7 @@ namespace CatCore.Services.Twitch
 				_logger.Verbose("");
 #endif
 
-				HandleParsedIrcMessage(ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
+				HandleParsedIrcMessage(webSocketConnection, ref tags, ref prefix, ref commandType, ref channelName, ref message, sendBySelf);
 
 #if !RELEASE
 				messageCount++;
@@ -257,7 +266,7 @@ namespace CatCore.Services.Twitch
 
 		// ReSharper disable once CognitiveComplexity
 		// ReSharper disable once CyclomaticComplexity
-		private void HandleParsedIrcMessage(ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
+		private void HandleParsedIrcMessage(WebSocketConnection webSocketConnection, ref ReadOnlyDictionary<string, string>? messageMeta, ref string? prefix, ref string commandType, ref string? channelName, ref string? message,
 			bool wasSendByLibrary)
 		{
 			// Command official documentation: https://datatracker.ietf.org/doc/html/rfc1459 and https://datatracker.ietf.org/doc/html/rfc2812
@@ -267,20 +276,20 @@ namespace CatCore.Services.Twitch
 			switch (commandType)
 			{
 				case IrcCommands.PING:
-					_kittenWebSocketProvider.SendMessage($"{IrcCommands.PONG} :{message!}");
+					webSocketConnection.SendMessageFireAndForget($"{IrcCommands.PONG} :{message!}");
 					break;
 				case IrcCommands.RPL_ENDOFMOTD:
 					OnChatConnected?.Invoke();
 					foreach (var channel in _twitchChannelManagementService.GetAllActiveChannelsAsDictionary())
 					{
 						_channelNameToChannelIdDictionary[channel.Value] = channel.Key;
-						_kittenWebSocketProvider.SendMessage($"JOIN #{channel.Value}");
+						webSocketConnection.SendMessageFireAndForget($"JOIN #{channel.Value}");
 					}
 
 					_messageQueueProcessorCancellationTokenSource?.Cancel();
 					_messageQueueProcessorCancellationTokenSource = new CancellationTokenSource();
 
-					_ = Task.Run(() => ProcessQueuedMessage(_messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token);
+					_ = Task.Run(() => ProcessQueuedMessage(webSocketConnection, _messageQueueProcessorCancellationTokenSource.Token), _messageQueueProcessorCancellationTokenSource.Token);
 
 					break;
 				case IrcCommands.NOTICE:
@@ -694,7 +703,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		// ReSharper disable once CognitiveComplexity
-		private async Task ProcessQueuedMessage(CancellationToken cts)
+		private async Task ProcessQueuedMessage(WebSocketConnection webSocketConnection, CancellationToken cts)
 		{
 			long? GetTicksTillReset()
 			{
@@ -754,10 +763,10 @@ namespace CatCore.Services.Twitch
 					_ = _messageQueue.TryDequeue(out msg);
 
 					// Send message
-					await _kittenWebSocketProvider.SendMessageInstant(msg.message).ConfigureAwait(false);
+					await webSocketConnection.SendMessage(msg.message).ConfigureAwait(false);
 
 					// Forward to internal message-received handler
-					MessageReceivedHandlerInternal(msg.message, true);
+					MessageReceivedHandlerInternal(webSocketConnection, msg.message, true);
 
 					var ticksNow = DateTime.UtcNow.Ticks;
 					_messageSendTimestamps.Add(ticksNow);

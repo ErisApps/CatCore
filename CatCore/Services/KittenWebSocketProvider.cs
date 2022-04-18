@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Net.WebSockets;
 using System.Reactive.Linq;
 using System.Threading;
@@ -112,4 +112,4 @@ namespace CatCore.Services
 			MessageReceived?.Invoke(responseMessage.Text);
 		}
 	}
-}
+}*/
