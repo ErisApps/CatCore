@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,6 +139,7 @@ namespace CatCore.Services
 			}
 		}
 
+		// ReSharper disable once UnusedParameter.Local
 		private static TcpClient CreateTcpClient(Uri destination)
 		{
 			var lingerOptions = new LingerOption(false, 0);
@@ -176,5 +178,31 @@ namespace CatCore.Services
 			return socket;
 		}
 #endif
+	}
+
+	internal class WebSocketConnection
+	{
+		private readonly MessageWebsocketRx _wss;
+
+		public WebSocketConnection(MessageWebsocketRx websocketClient)
+		{
+			_wss = websocketClient;
+		}
+
+		private bool IsConnected => _wss.IsConnected;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void SendMessageFireAndForget(string message)
+		{
+			_ = SendMessage(message);
+		}
+
+		public async Task SendMessage(string message)
+		{
+			if (IsConnected)
+			{
+				await _wss.GetSender().SendText(message).ConfigureAwait(false);
+			}
+		}
 	}
 }
