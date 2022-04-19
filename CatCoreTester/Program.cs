@@ -130,10 +130,10 @@ namespace CatCoreTester
 			Console.WriteLine();
 
 #if DEBUG
-			var twitchAuthService = chatCoreInstance.Container!.Resolve<ITwitchAuthService>();
-			var twitchHelixApiService = chatCoreInstance.Container!.Resolve<ITwitchHelixApiService>();
+			var twitchAuthService = chatCoreInstance.Resolver!.Resolve<ITwitchAuthService>();
+			var twitchHelixApiService = chatCoreInstance.Resolver!.Resolve<ITwitchHelixApiService>();
 
-			async Task CheckTokenValidity()
+			/*async Task CheckTokenValidity()
 			{
 				var validationResponse = await twitchAuthService.ValidateAccessToken().ConfigureAwait(false);
 				Console.WriteLine(validationResponse != null ? $"Token valid until {validationResponse.Value.ExpiresIn}" : "Token has expired sadly...  D:");
@@ -141,7 +141,7 @@ namespace CatCoreTester
 			}
 
 			Console.WriteLine("Checking current access token status.");
-			await CheckTokenValidity().ConfigureAwait(false);
+			await CheckTokenValidity().ConfigureAwait(false);*/
 
 			var oldAccessToken = twitchAuthService.AccessToken;
 			//var oldRefreshToken = twitchAuthService.RefreshToken;
@@ -152,7 +152,7 @@ namespace CatCoreTester
 			Console.WriteLine();
 
 			Console.WriteLine("Checking new access token status.");
-			await CheckTokenValidity().ConfigureAwait(false);
+			// await CheckTokenValidity().ConfigureAwait(false);
 
 			Console.WriteLine("Requesting some data through Helix");
 			var userInfoResponse = await twitchHelixApiService.FetchUserInfo(loginNames: new[] {"realeris"}).ConfigureAwait(false);
