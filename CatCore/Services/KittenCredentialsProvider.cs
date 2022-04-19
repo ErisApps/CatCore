@@ -70,7 +70,7 @@ namespace CatCore.Services
 
 		protected void UpdateCredentials(T credentials)
 		{
-			if (credentials == Credentials)
+			if (credentials.Equals(Credentials))
 			{
 				return;
 			}
