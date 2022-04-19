@@ -35,6 +35,8 @@
 			<RepackInputAssemblies Include="System.Net.Http.Json.dll"/>
 			<RepackInputAssemblies Include="System.Numerics.Vectors.dll"/>
 			<RepackInputAssemblies Include="System.Reactive.dll"/>
+			<RepackInputAssemblies Include="System.Reflection.Emit.ILGeneration.dll"/>
+			<RepackInputAssemblies Include="System.Reflection.Emit.Lightweight.dll"/>
 			<RepackInputAssemblies Include="System.Runtime.CompilerServices.Unsafe.dll"/>
 			<RepackInputAssemblies Include="System.Text.Encodings.Web.dll"/>
 			<RepackInputAssemblies Include="System.Text.Json.dll"/>
