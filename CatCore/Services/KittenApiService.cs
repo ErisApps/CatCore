@@ -131,15 +131,12 @@ namespace CatCore.Services
 
 		private Task<bool> HandleApiRequest(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			switch (request.Url.Segments.ElementAtOrDefault(2))
+			return request.Url.Segments.ElementAtOrDefault(2) switch
 			{
-				case "twitch/":
-					return HandleTwitchApiRequests(request, response);
-				case "global/":
-					return HandleGlobalApiRequest(request, response);
-				default:
-					return Task.FromResult(false);
-			}
+				"twitch/" => HandleTwitchApiRequests(request, response),
+				"global/" => HandleGlobalApiRequest(request, response),
+				_ => Task.FromResult(false)
+			};
 		}
 
 		// ReSharper disable once CognitiveComplexity
@@ -158,6 +155,7 @@ namespace CatCore.Services
 						if (kvp[0] == "code")
 						{
 							code = kvp[1];
+							break;
 						}
 					}
 
