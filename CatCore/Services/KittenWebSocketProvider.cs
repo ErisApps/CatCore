@@ -63,12 +63,13 @@ namespace CatCore.Services
 
 			_connectObservable = websocketConnectionSubject
 				.Where(tuple => tuple.state == ConnectionStatus.WebsocketConnected)
+				.Do(_ => _logger.Debug("Connected to url: {Url}", url))
 				.Select(_ => Observable.FromAsync(async () => await ConnectHandler(wrapper)))
 				.Concat()
 				.Subscribe();
 			_disconnectObservable = websocketConnectionSubject
 				.Where(tuple => tuple.state is ConnectionStatus.Disconnected or ConnectionStatus.Aborted or ConnectionStatus.ConnectionFailed or ConnectionStatus.Close)
-				.Do(tuple => _logger.Warning("A disconnect occured ({State}) for url: {Url}", tuple.state, url))
+				.Do(tuple => _logger.Debug("A disconnect occured ({State}) for url: {Url}", tuple.state, url))
 				.Select(_ => Observable.FromAsync(() => Connect(url)))
 				.Concat()
 				.Subscribe();
@@ -111,8 +112,6 @@ namespace CatCore.Services
 
 		private async Task ConnectHandler(WebSocketConnection webSocketConnection)
 		{
-			_logger.Information(nameof(ConnectHandler));
-
 			if (ConnectHappened != null)
 			{
 				await ConnectHappened.Invoke(webSocketConnection);
@@ -121,8 +120,6 @@ namespace CatCore.Services
 
 		private async Task DisconnectHandler()
 		{
-			_logger.Information(nameof(DisconnectHandler));
-
 			if (DisconnectHappened != null)
 			{
 				await DisconnectHappened.Invoke();
@@ -131,8 +128,6 @@ namespace CatCore.Services
 
 		private async Task MessageReceivedHandler(WebSocketConnection webSocketConnection, string message)
 		{
-			_logger.Information(nameof(MessageReceivedHandler));
-
 			if (MessageReceived != null)
 			{
 				await MessageReceived.Invoke(webSocketConnection, message);
