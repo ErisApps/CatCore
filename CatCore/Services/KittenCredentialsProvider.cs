@@ -68,15 +68,16 @@ namespace CatCore.Services
 			}
 		}
 
+		// If credentials objects are deemed equal, then the credentials object is only updated in-memory, but not persisted to disk
 		protected void UpdateCredentials(T credentials)
 		{
-			if (credentials.Equals(Credentials))
-			{
-				return;
-			}
-
+			var shouldStore = !credentials.Equals(Credentials);
 			Credentials = credentials;
-			Store();
+
+			if (shouldStore)
+			{
+				Store();
+			}
 		}
 
 		private void Load()
