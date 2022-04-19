@@ -120,7 +120,7 @@ namespace CatCore
 
 			// Register internal standalone services
 			container.Register<IKittenPlatformActiveStateManager, KittenPlatformActiveStateManager>(Reuse.Singleton);
-			container.Register<IKittenWebSocketProvider, KittenWebSocketProvider4>(Reuse.Transient);
+			container.Register<IKittenWebSocketProvider, KittenWebSocketProvider>(Reuse.Transient);
 			container.Register<IKittenBrowserLauncherService, KittenBrowserLauncherService>(Reuse.Singleton);
 			container.Register<IKittenPathProvider, KittenPathProvider>(Reuse.Singleton);
 			container.Register<IKittenSettingsService, KittenSettingsService>(Reuse.Singleton);
