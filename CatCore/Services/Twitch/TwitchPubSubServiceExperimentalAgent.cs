@@ -80,7 +80,7 @@ namespace CatCore.Services.Twitch
 			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnOnCredentialsChanged;
 
 			// TODO: Find a better way for this to ensure testability in the long run
-			_kittenWebSocketProvider = new KittenWebSocketProvider4(_logger); // manual resolution
+			_kittenWebSocketProvider = new KittenWebSocketProvider(_logger); // manual resolution
 
 			_pingTimer = new Timer { Interval = TWITCH_PUBSUB_PING_TIMER_DEFAULT_INTERVAL, AutoReset = false };
 			_pingTimer.Elapsed += PingTimerOnElapsed;

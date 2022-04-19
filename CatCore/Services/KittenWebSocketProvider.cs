@@ -1,115 +1,180 @@
-﻿/*using System;
-using System.Net.WebSockets;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers;
 using CatCore.Services.Interfaces;
+using IWebsocketClientLite.PCL;
 using Serilog;
-using Websocket.Client;
-using Websocket.Client.Logging;
-using Websocket.Client.Models;
+using WebsocketClientLite.PCL;
+using WebsocketClientLite.PCL.CustomException;
 
 namespace CatCore.Services
 {
-	internal sealed class KittenWebSocketProvider : IKittenWebSocketProvider
+	internal class KittenWebSocketProvider : IKittenWebSocketProvider
 	{
 		private readonly ILogger _logger;
-		private readonly SemaphoreSlim _connectionLocker = new(1,1 );
+		private readonly SemaphoreSlim _connectionLocker = new(1, 1);
 
-		private WebsocketClient? _wss;
+		private TcpClient? _underlyingTcpClient;
+		private MessageWebsocketRx? _websocketClient;
 
-		private IDisposable? _reconnectHappenedSubscription;
-		private IDisposable? _disconnectionHappenedSubscription;
-		private IDisposable? _messageReceivedSubscription;
+		private IDisposable? _disposableWebsocketSubscription;
+		private IDisposable? _connectObservable;
+		private IDisposable? _disconnectObservable;
+		private IDisposable? _messageReceivedObservable;
 
-		public event Action? ConnectHappened;
-		public event Action? DisconnectHappened;
-		public event Action<string>? MessageReceived;
+		public event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection>? ConnectHappened;
+		public event AsyncEventHandlerDefinitions.AsyncEventHandler? DisconnectHappened;
+		public event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection, string>? MessageReceived;
+
+		public bool IsConnected => _websocketClient?.IsConnected ?? false;
 
 		public KittenWebSocketProvider(ILogger logger)
 		{
 			_logger = logger;
-
-			// Disable internal Websocket.Client logging
-			LogProvider.IsDisabled = true;
 		}
 
-		public bool IsConnected => _wss?.IsRunning ?? false;
-
-		public async Task Connect(string uri)
+		public async Task Connect(string url)
 		{
-			await Disconnect("Restarting websocket connection").ConfigureAwait(false);
+			await Disconnect().ConfigureAwait(false);
 
 			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
-			_wss = new WebsocketClient(new Uri(uri), () => new ClientWebSocket
+			var targetUri = new Uri(url);
+			_underlyingTcpClient = CreateTcpClient(targetUri);
+			_websocketClient = new MessageWebsocketRx(_underlyingTcpClient)
 			{
-				Options =
-				{
-					KeepAliveInterval = TimeSpan.Zero,
-#if !RELEASE
-					Proxy = SharedProxyProvider.PROXY
-#endif
-				}
-			})
-			{
-				ReconnectTimeout = TimeSpan.FromMinutes(10)
+				Headers = new Dictionary<string, string> { { "Pragma", "no-cache" }, { "Cache-Control", "no-cache" } }, TlsProtocolType = SslProtocols.Tls12
 			};
 
-			_reconnectHappenedSubscription = _wss.ReconnectionHappened.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(ReconnectHappenedHandler);
-			_disconnectionHappenedSubscription = _wss.DisconnectionHappened.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(DisconnectHappenedHandler);
-			_messageReceivedSubscription = _wss.MessageReceived.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance).Subscribe(MessageReceivedHandler);
+			var wrapper = new WebSocketConnection(_websocketClient);
 
-			await _wss.Start().ConfigureAwait(false);
+			var websocketConnectionObservable = _websocketClient
+				.WebsocketConnectWithStatusObservable(targetUri, timeout: TimeSpan.FromSeconds(15))
+				.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance)
+				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteTcpConnectException>(
+					_ => Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed)));
+			var websocketConnectionSubject = new Subject<(IDataframe? dataframe, ConnectionStatus state)>();
+
+			_connectObservable = websocketConnectionSubject
+				.Where(tuple => tuple.state == ConnectionStatus.WebsocketConnected)
+				.Select(_ => Observable.FromAsync(async () => await ConnectHandler(wrapper)))
+				.Concat()
+				.Subscribe();
+			_disconnectObservable = websocketConnectionSubject
+				.Where(tuple => tuple.state is ConnectionStatus.Disconnected or ConnectionStatus.Aborted or ConnectionStatus.ConnectionFailed or ConnectionStatus.Close)
+				.Do(tuple => _logger.Warning("A disconnect occured ({State}) for url: {Url}", tuple.state, url))
+				.Select(_ => Observable.FromAsync(() => Connect(url)))
+				.Concat()
+				.Subscribe();
+			_messageReceivedObservable = websocketConnectionSubject
+				.Where(tuple => tuple.state == ConnectionStatus.DataframeReceived && tuple.dataframe != null)
+				.Select(tuple => Observable.FromAsync(() => MessageReceivedHandler(wrapper, tuple.dataframe!.Message)))
+				.Concat()
+				.Subscribe();
+
+			websocketConnectionObservable.Subscribe(websocketConnectionSubject);
 		}
 
 		public async Task Disconnect(string? reason = null)
 		{
 			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
-			if (_wss?.IsStarted ?? false)
+			if (_websocketClient == null)
 			{
-				await _wss.Stop(WebSocketCloseStatus.NormalClosure, reason).ConfigureAwait(false);
-				_reconnectHappenedSubscription?.Dispose();
-				_disconnectionHappenedSubscription?.Dispose();
-				_messageReceivedSubscription?.Dispose();
-				_wss?.Dispose();
-				_wss = null;
+				return;
+			}
+
+			_disposableWebsocketSubscription?.Dispose();
+			_disposableWebsocketSubscription = null;
+
+			_connectObservable?.Dispose();
+			_connectObservable = null;
+
+			_disconnectObservable?.Dispose();
+			_disconnectObservable = null;
+
+			_messageReceivedObservable?.Dispose();
+			_messageReceivedObservable = null;
+
+			_underlyingTcpClient?.Close();
+			_underlyingTcpClient = null;
+
+			_websocketClient = null;
+
+			await DisconnectHandler().ConfigureAwait(false);
+		}
+
+		private async Task ConnectHandler(WebSocketConnection webSocketConnection)
+		{
+			_logger.Information(nameof(ConnectHandler));
+
+			if (ConnectHappened != null)
+			{
+				await ConnectHappened.Invoke(webSocketConnection);
 			}
 		}
 
-		public void SendMessage(string message)
+		private async Task DisconnectHandler()
 		{
-			if (IsConnected)
+			_logger.Information(nameof(DisconnectHandler));
+
+			if (DisconnectHappened != null)
 			{
-				_wss!.Send(message);
+				await DisconnectHappened.Invoke();
 			}
 		}
 
-		public async Task SendMessageInstant(string message)
+		private async Task MessageReceivedHandler(WebSocketConnection webSocketConnection, string message)
 		{
-			if (IsConnected)
+			_logger.Information(nameof(MessageReceivedHandler));
+
+			if (MessageReceived != null)
 			{
-				await _wss!.SendInstant(message).ConfigureAwait(false);
+				await MessageReceived.Invoke(webSocketConnection, message);
 			}
 		}
 
-		private void ReconnectHappenedHandler(ReconnectionInfo info)
+		private static TcpClient CreateTcpClient(Uri destination)
 		{
-			_logger.Debug("(Re)connect happened - Url: {Url} - Type: {Type}", _wss!.Url.ToString(), info.Type);
+			var lingerOptions = new LingerOption(false, 0);
+#if !RELEASE
+			if (SharedProxyProvider.PROXY != null)
+			{
+				var proxiedSocket = CreateProxiedSocket(SharedProxyProvider.PROXY.Address, destination);
+				return new TcpClient { LingerState = lingerOptions, Client = proxiedSocket };
+			}
+#endif
 
-			ConnectHappened?.Invoke();
+			return new TcpClient { LingerState = lingerOptions };
 		}
 
-		private void DisconnectHappenedHandler(DisconnectionInfo info)
+#if !RELEASE
+		private static Socket CreateProxiedSocket(Uri proxy, Uri destination)
 		{
-			DisconnectHappened?.Invoke();
+			var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-			_logger.Warning("Closed connection to the server - Url: {Url} - Type: {Type}", _wss?.Url.ToString(), info.Type);
-		}
+			socket.Connect(proxy.Host, proxy.Port);
 
-		private void MessageReceivedHandler(ResponseMessage responseMessage)
-		{
-			MessageReceived?.Invoke(responseMessage.Text);
+			var connectMessage = System.Text.Encoding.UTF8.GetBytes($"CONNECT {destination.Host}:{destination.Port} HTTP/1.1{Environment.NewLine}{Environment.NewLine}");
+			socket.Send(connectMessage);
+
+			var receiveBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(128);
+			var received = socket.Receive(receiveBuffer);
+
+			var response = System.Text.Encoding.ASCII.GetString(receiveBuffer, 0, received);
+			System.Buffers.ArrayPool<byte>.Shared.Return(receiveBuffer);
+
+			if (!response.Contains("200"))
+			{
+				throw new Exception($"Error connecting to proxy server {destination.Host}:{destination.Port}. Response: {response}");
+			}
+
+			return socket;
 		}
+#endif
 	}
-}*/
+}
