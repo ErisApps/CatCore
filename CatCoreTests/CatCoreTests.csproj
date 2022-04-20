@@ -33,8 +33,8 @@
 
 	<ItemGroup>
 		<Folder Include="Resources" />
-		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="EmojiTesting">
-			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
+		<AdditionalFiles Include="..\Useful files\Unicode\Unicode14_0EmojiTest.txt" ClassName="EmojiTesting">
+			<Link>Resources\Unicode14_0EmojiTest.txt</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</AdditionalFiles>
 	</ItemGroup>
