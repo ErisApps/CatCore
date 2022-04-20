@@ -56,8 +56,8 @@
 
     <ItemGroup>
 		<EmbeddedResource Include="Resources\index.html" />
-		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="Emojis">
-			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
+		<AdditionalFiles Include="..\Useful files\Unicode\Unicode14_0EmojiTest.txt" ClassName="Emojis">
+			<Link>Resources\Unicode14_0EmojiTest.txt</Link>
 		</AdditionalFiles>
     </ItemGroup>
 
