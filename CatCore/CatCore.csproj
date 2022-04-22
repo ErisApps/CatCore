@@ -37,7 +37,7 @@
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
 		<PackageReference Include="System.Net.Http.Json" Version="7.0.0-preview.2.22152.2" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
-		<PackageReference Include="System.Text.Json" Version="7.0.0-preview.2.22152.2" />
+		<PackageReference Include="System.Text.Json" Version="7.0.0-preview.3.22175.4" />
 		<PackageReference Include="WebsocketClientLite.PCL" Version="7.0.6" />
     </ItemGroup>
 
