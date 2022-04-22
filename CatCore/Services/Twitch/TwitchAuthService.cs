@@ -38,7 +38,7 @@ namespace CatCore.Services.Twitch
 			"channel:manage:broadcast",
 			"channel:manage:polls",
 			"channel:manage:predictions",
-			"channel:read:redemptions",
+			"channel:manage:redemptions",
 			"channel:read:subscriptions"
 		};
 
