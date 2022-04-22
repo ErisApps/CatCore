@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CatCore.Helpers;
 
 namespace CatCore.Services.Interfaces
