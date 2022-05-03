@@ -1,5 +1,5 @@
 # CatCore
-CatCore is a .NET Standard 2.0 library which provides a shared connection to mods and other applications for Twitch (and other future streaming platforms).
+CatCore is a high-performance .NET Standard 2.0 library which provides a shared connection to mods and other applications for Twitch (and other future streaming platforms).
 
 
 ## Installation
