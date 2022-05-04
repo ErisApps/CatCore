@@ -44,4 +44,4 @@ There are a few reasons for it, some of them being sillier than others though.
 Compiling this library requires VS 2022 Preview or Rider 2021.3 EAP or newer and at least the .NET 6 RC2 SDK tooling.
 CatCore leverages source generators to improve performance and throughput in some areas, which is why it relies on the latest compiler version, despite being a .NET Standard 2.0 library.
 You also need to compile on Windows if you want to create a non-debug build, this because CatCore relies on ILRepack (to merge in all its dependencies) which currently, due to a bug in the underlying (older) version of Mono.Cecil, only works on Windows.
-However, [a new maintainer recently joined the ILRepack project and plans to address a few of those issues as well.](https://github.com/gluck/il-repack/issues/304)
+~~However, [a new maintainer recently joined the ILRepack project and plans to address a few of those issues as well.](https://github.com/gluck/il-repack/issues/304)~~
