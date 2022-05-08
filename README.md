@@ -20,6 +20,11 @@ The installation is fairly simple.
 5) We're done, you should have set it up correctly now ^^
 
 
+## Documentation
+
+CatCore is documented using XML docs, which are provided in the release zip as well. However, documentation and information covering several subjects will also be added to [the CatCore wiki](https://github.com/ErisApps/CatCore/wiki).
+It will cover several subjects, including but not limited to, performance benchmarks, configuration, et cetera.
+
 ## Origin and name
 
 **CatCore** is the spiritual successor to ChatCore, a library made that is/was used by several Beat Saber mods in order to interact with Twitch (it did support Mixer as well, but only starting roughly 1 month before it got shut down.)
