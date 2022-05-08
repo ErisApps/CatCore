@@ -23,7 +23,8 @@ The installation is fairly simple.
 ## Documentation
 
 CatCore is documented using XML docs, which are provided in the release zip as well. However, documentation and information covering several subjects will also be added to [the CatCore wiki](https://github.com/ErisApps/CatCore/wiki).
-It will cover several subjects, including but not limited to, performance benchmarks, configuration, et cetera.
+It will cover several subjects, including but not limited to, performance benchmarks, configuration, et cetera. However, please keep in mind that this is still a work in progress.
+
 
 ## Origin and name
 
