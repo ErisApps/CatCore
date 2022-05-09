@@ -39,7 +39,8 @@ namespace CatCoreBenchmarkSandbox
 				.AddLogger(ConsoleLogger.Default)
 				.AddExporter(BenchmarkReportExporter.Default, HtmlExporter.Default, MarkdownExporter.Console);
 
-			BenchmarkRunner.Run<Benchmarks.TwitchIRCMessageDeconstruction.TwitchIrcMultiMessageCompoundDeconstructionBenchmark>(benchmarkConfiguration);
+			// BenchmarkRunner.Run<Benchmarks.TwitchIRCMessageDeconstruction.TwitchIrcMultiMessageCompoundDeconstructionBenchmark>(benchmarkConfiguration);
+			BenchmarkRunner.Run(typeof(Program).Assembly, benchmarkConfiguration);
 		}
 	}
 }
