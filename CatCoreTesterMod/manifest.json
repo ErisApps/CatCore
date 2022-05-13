@@ -3,11 +3,11 @@
 	"id": "CatCoreTesterMod",
 	"name": "CatCore Tester Mod",
 	"author": "Eris",
-	"version": "0.0.1-alpha",
+	"version": "1.0.0",
 	"description": "A simple mod that has the sole purpose of testing CatCore in Beat Saber",
-	"gameVersion": "1.19.0",
+	"gameVersion": "1.22.0",
 	"dependsOn": {
 		"BSIPA": "^4.2.1",
-		"CatCore": "^0.0.1-alpha"
+		"CatCore": "^1.0.0"
 	}
 }
