@@ -55,7 +55,7 @@ namespace CatCore.Services
 			var wrapper = new WebSocketConnection(_websocketClient);
 
 			var websocketConnectionObservable = _websocketClient
-				.WebsocketConnectWithStatusObservable(targetUri, timeout: TimeSpan.FromSeconds(15))
+				.WebsocketConnectWithStatusObservable(targetUri, handshakeTimeout: TimeSpan.FromSeconds(15))
 				.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance)
 				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteTcpConnectException>(
 					_ => Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed)));
