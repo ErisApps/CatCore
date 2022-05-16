@@ -26,10 +26,10 @@ namespace CatCore.Services
 
 		private IDisposable? _disposableWebsocketSubscription;
 		private Subject<(IDataframe? dataframe, ConnectionStatus state)>? _websocketConnectionSubject;
+		private IDisposable? _connectionInitObservable;
 		private IDisposable? _connectObservable;
 		private IDisposable? _disconnectObservable;
 		private IDisposable? _messageReceivedObservable;
-		private IDisposable? _a;
 
 		public event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection>? ConnectHappened;
 		public event AsyncEventHandlerDefinitions.AsyncEventHandler? DisconnectHappened;
@@ -71,8 +71,7 @@ namespace CatCore.Services
 				.Select(_ => Observable.FromAsync(async () => await ConnectHandler(wrapper)))
 				.Concat()
 				.Subscribe();
-			_a = _websocketConnectionSubject
-				.Do(tuple => _logger.Debug("WSS Status: {Status}", tuple.state))
+			_connectionInitObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state is ConnectionStatus.WebsocketConnected
 					or ConnectionStatus.Disconnected
 					or ConnectionStatus.ForcefullyDisconnected
@@ -82,7 +81,11 @@ namespace CatCore.Services
 				.Do(_ => tcs.SetResult(null!))
 				.Subscribe();
 			_disconnectObservable = _websocketConnectionSubject
-				.Where(tuple => tuple.state is ConnectionStatus.Disconnected or ConnectionStatus.Aborted or ConnectionStatus.ConnectionFailed or ConnectionStatus.Close)
+				.Where(tuple => tuple.state is ConnectionStatus.Disconnected
+					or ConnectionStatus.ForcefullyDisconnected
+					or ConnectionStatus.Aborted
+					or ConnectionStatus.ConnectionFailed
+					or ConnectionStatus.Close)
 				.Do(tuple => _logger.Debug("A disconnect occured ({State}) for url: {Url}", tuple.state, url))
 				.Select(_ => Observable.FromAsync(() => Connect(url)))
 				.Concat()
@@ -113,6 +116,9 @@ namespace CatCore.Services
 
 			_websocketConnectionSubject?.Dispose();
 			_websocketConnectionSubject = null;
+
+			_connectionInitObservable?.Dispose();
+			_connectionInitObservable = null;
 
 			_connectObservable?.Dispose();
 			_connectObservable = null;
