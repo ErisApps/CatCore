@@ -25,9 +25,11 @@ namespace CatCore.Services
 		private MessageWebsocketRx? _websocketClient;
 
 		private IDisposable? _disposableWebsocketSubscription;
+		private Subject<(IDataframe? dataframe, ConnectionStatus state)>? _websocketConnectionSubject;
 		private IDisposable? _connectObservable;
 		private IDisposable? _disconnectObservable;
 		private IDisposable? _messageReceivedObservable;
+		private IDisposable? _a;
 
 		public event AsyncEventHandlerDefinitions.AsyncEventHandler<WebSocketConnection>? ConnectHappened;
 		public event AsyncEventHandlerDefinitions.AsyncEventHandler? DisconnectHappened;
@@ -52,6 +54,8 @@ namespace CatCore.Services
 				Headers = new Dictionary<string, string> { { "Pragma", "no-cache" }, { "Cache-Control", "no-cache" } }, TlsProtocolType = SslProtocols.Tls12
 			};
 
+			var tcs = new TaskCompletionSource<object>();
+
 			var wrapper = new WebSocketConnection(_websocketClient);
 
 			var websocketConnectionObservable = _websocketClient
@@ -59,32 +63,46 @@ namespace CatCore.Services
 				.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance)
 				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteTcpConnectException>(
 					_ => Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed)));
-			var websocketConnectionSubject = new Subject<(IDataframe? dataframe, ConnectionStatus state)>();
+			_websocketConnectionSubject = new Subject<(IDataframe? dataframe, ConnectionStatus state)>();
 
-			_connectObservable = websocketConnectionSubject
+			_connectObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state == ConnectionStatus.WebsocketConnected)
 				.Do(_ => _logger.Debug("Connected to url: {Url}", url))
 				.Select(_ => Observable.FromAsync(async () => await ConnectHandler(wrapper)))
 				.Concat()
 				.Subscribe();
-			_disconnectObservable = websocketConnectionSubject
+			_a = _websocketConnectionSubject
+				.Do(tuple => _logger.Debug("WSS Status: {Status}", tuple.state))
+				.Where(tuple => tuple.state is ConnectionStatus.WebsocketConnected
+					or ConnectionStatus.Disconnected
+					or ConnectionStatus.ForcefullyDisconnected
+					or ConnectionStatus.Aborted
+					or ConnectionStatus.ConnectionFailed
+					or ConnectionStatus.Close)
+				.Do(_ => tcs.SetResult(null!))
+				.Subscribe();
+			_disconnectObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state is ConnectionStatus.Disconnected or ConnectionStatus.Aborted or ConnectionStatus.ConnectionFailed or ConnectionStatus.Close)
 				.Do(tuple => _logger.Debug("A disconnect occured ({State}) for url: {Url}", tuple.state, url))
 				.Select(_ => Observable.FromAsync(() => Connect(url)))
 				.Concat()
 				.Subscribe();
-			_messageReceivedObservable = websocketConnectionSubject
+			_messageReceivedObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state == ConnectionStatus.DataframeReceived && tuple.dataframe != null)
 				.Select(tuple => Observable.FromAsync(() => MessageReceivedHandler(wrapper, tuple.dataframe!.Message)))
 				.Concat()
 				.Subscribe();
 
-			websocketConnectionObservable.Subscribe(websocketConnectionSubject);
+			websocketConnectionObservable.Subscribe(_websocketConnectionSubject);
+
+			await tcs.Task;
 		}
 
 		public async Task Disconnect(string? reason = null)
 		{
+			_logger.Warning("Disconnect requested. Optional reason: {Reason}", reason);
 			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
+			_logger.Warning("Executing disconnect logic. Optional reason: {Reason}", reason);
 			if (_websocketClient == null)
 			{
 				return;
@@ -92,6 +110,9 @@ namespace CatCore.Services
 
 			_disposableWebsocketSubscription?.Dispose();
 			_disposableWebsocketSubscription = null;
+
+			_websocketConnectionSubject?.Dispose();
+			_websocketConnectionSubject = null;
 
 			_connectObservable?.Dispose();
 			_connectObservable = null;
@@ -135,7 +156,7 @@ namespace CatCore.Services
 		}
 
 		// ReSharper disable once UnusedParameter.Local
-		private static TcpClient CreateTcpClient(Uri destination)
+		private TcpClient CreateTcpClient(Uri destination)
 		{
 			var lingerOptions = new LingerOption(false, 0);
 #if !RELEASE
@@ -150,7 +171,7 @@ namespace CatCore.Services
 		}
 
 #if !RELEASE
-		private static Socket CreateProxiedSocket(Uri proxy, Uri destination)
+		private Socket CreateProxiedSocket(Uri proxy, Uri destination)
 		{
 			var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -159,7 +180,7 @@ namespace CatCore.Services
 			var connectMessage = System.Text.Encoding.UTF8.GetBytes($"CONNECT {destination.Host}:{destination.Port} HTTP/1.1{Environment.NewLine}{Environment.NewLine}");
 			socket.Send(connectMessage);
 
-			var receiveBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(128);
+			var receiveBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(512);
 			var received = socket.Receive(receiveBuffer);
 
 			var response = System.Text.Encoding.ASCII.GetString(receiveBuffer, 0, received);
