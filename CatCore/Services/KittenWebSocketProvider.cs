@@ -114,7 +114,6 @@ namespace CatCore.Services
 			_disposableWebsocketSubscription?.Dispose();
 			_disposableWebsocketSubscription = null;
 
-			_websocketConnectionSubject?.Dispose();
 			_websocketConnectionSubject = null;
 
 			_connectionInitObservable?.Dispose();
