@@ -128,7 +128,6 @@ namespace CatCore.Services
 			_messageReceivedObservable?.Dispose();
 			_messageReceivedObservable = null;
 
-			_underlyingTcpClient?.Close();
 			_underlyingTcpClient = null;
 
 			_websocketClient = null;
