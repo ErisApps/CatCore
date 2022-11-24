@@ -56,7 +56,7 @@ namespace CatCore.Services
 
 			var tcs = new TaskCompletionSource<object>();
 
-			var wrapper = new WebSocketConnection(_websocketClient);
+			var wrapper = new WebSocketConnection(_websocketClient, _logger);
 
 			var websocketConnectionObservable = _websocketClient
 				.WebsocketConnectWithStatusObservable(targetUri, handshakeTimeout: TimeSpan.FromSeconds(15))
@@ -103,13 +103,13 @@ namespace CatCore.Services
 
 		public async Task Disconnect(string? reason = null)
 		{
-			_logger.Warning("Disconnect requested. Optional reason: {Reason}", reason);
 			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
-			_logger.Warning("Executing disconnect logic. Optional reason: {Reason}", reason);
 			if (_websocketClient == null)
 			{
 				return;
 			}
+
+			_logger.Warning("Executing disconnect logic. Optional reason: {Reason}", reason);
 
 			_disposableWebsocketSubscription?.Dispose();
 			_disposableWebsocketSubscription = null;
@@ -202,11 +202,13 @@ namespace CatCore.Services
 
 	internal class WebSocketConnection
 	{
+		private readonly ILogger _logger;
 		private readonly MessageWebsocketRx _wss;
 
-		public WebSocketConnection(MessageWebsocketRx websocketClient)
+		public WebSocketConnection(MessageWebsocketRx websocketClient, ILogger logger)
 		{
 			_wss = websocketClient;
+			_logger = logger;
 		}
 
 		private bool IsConnected => _wss.IsConnected;
@@ -221,7 +223,12 @@ namespace CatCore.Services
 		{
 			if (IsConnected)
 			{
+				_logger.Verbose("Sending message");
 				await _wss.GetSender().SendText(message).ConfigureAwait(false);
+			}
+			else
+			{
+				_logger.Warning("WS is closed, couldn't send message");
 			}
 		}
 	}
