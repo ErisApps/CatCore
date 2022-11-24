@@ -49,7 +49,7 @@ namespace CatCore.Services
 			using var _ = await Synchronization.LockAsync(_connectionLocker).ConfigureAwait(false);
 			var targetUri = new Uri(url);
 			_underlyingTcpClient = CreateTcpClient(targetUri);
-			_websocketClient = new MessageWebsocketRx(_underlyingTcpClient)
+			_websocketClient = new MessageWebsocketRx(_underlyingTcpClient, hasTransferTcpSocketLifeCycleOwnership: true)
 			{
 				Headers = new Dictionary<string, string> { { "Pragma", "no-cache" }, { "Cache-Control", "no-cache" } }, TlsProtocolType = SslProtocols.Tls12
 			};
