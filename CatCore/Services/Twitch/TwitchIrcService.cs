@@ -430,10 +430,10 @@ namespace CatCore.Services.Twitch
 			// Determine channelId
 			var channelId = messageMeta != null && messageMeta.TryGetValue(IrcMessageTags.ROOM_ID, out var roomId)
 				? roomId
-				: _channelNameToChannelIdDictionary[channelName!];
+				: _channelNameToChannelIdDictionary[channelName];
 
 			// Create Channel object
-			var channel = new TwitchChannel(this, channelId, channelName!);
+			var channel = new TwitchChannel(this, channelId, channelName);
 
 			var globalUserState = _userStateTrackerService.GlobalUserState;
 			var userState = _userStateTrackerService.GetUserState(channelId);

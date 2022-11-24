@@ -92,7 +92,7 @@ namespace CatCore.Services
 				.Subscribe();
 			_messageReceivedObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state == ConnectionStatus.DataframeReceived && tuple.dataframe != null)
-				.Select(tuple => Observable.FromAsync(() => MessageReceivedHandler(wrapper, tuple.dataframe!.Message)))
+				.Select(tuple => Observable.FromAsync(() => MessageReceivedHandler(wrapper, tuple.dataframe!.Message!)))
 				.Concat()
 				.Subscribe();
 
