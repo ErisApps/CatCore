@@ -170,6 +170,8 @@ namespace CatCore.Services.Twitch
 		{
 			if (_activeStateManager.GetState(PlatformType.Twitch))
 			{
+				SendChannelConnectionOperation(_webSocketConnection, IrcCommands.PART, e.DisabledChannels.Values!);
+
 				foreach (var disabledChannel in e.DisabledChannels)
 				{
 					_webSocketConnection?.SendMessageFireAndForget($"PART #{disabledChannel.Value}");
@@ -178,8 +180,9 @@ namespace CatCore.Services.Twitch
 				foreach (var enabledChannel in e.EnabledChannels)
 				{
 					_channelNameToChannelIdDictionary[enabledChannel.Value] = enabledChannel.Key;
-					_webSocketConnection?.SendMessageFireAndForget($"JOIN #{enabledChannel.Value}");
 				}
+
+				SendChannelConnectionOperation(_webSocketConnection, IrcCommands.JOIN, e.EnabledChannels.Values!);
 			}
 		}
 
@@ -282,11 +285,14 @@ namespace CatCore.Services.Twitch
 					break;
 				case IrcCommands.RPL_ENDOFMOTD:
 					OnChatConnected?.Invoke();
-					foreach (var channel in _twitchChannelManagementService.GetAllActiveChannelsAsDictionary())
+
+					var activeChannelsAsDictionary = _twitchChannelManagementService.GetAllActiveChannelsAsDictionary();
+					foreach (var channel in activeChannelsAsDictionary)
 					{
 						_channelNameToChannelIdDictionary[channel.Value] = channel.Key;
-						webSocketConnection.SendMessageFireAndForget($"JOIN #{channel.Value}");
 					}
+
+					SendChannelConnectionOperation(webSocketConnection, IrcCommands.JOIN, activeChannelsAsDictionary.Values!);
 
 					_messageQueueProcessorCancellationTokenSource?.Cancel();
 					_messageQueueProcessorCancellationTokenSource = new CancellationTokenSource();
@@ -380,6 +386,26 @@ namespace CatCore.Services.Twitch
 					// Also doesn't cover when the user is the one getting hosted by another channel
 					break;
 			}
+		}
+
+		private static void SendChannelConnectionOperation(WebSocketConnection? webSocketConnection, string command, ICollection<string> channels)
+		{
+			if (webSocketConnection == null || channels.Count == 0)
+			{
+				return;
+			}
+
+			var channelOperationMessageBuilder = new StringBuilder(command).Append(' ');
+			for (var i = 0; i < channels.Count; i++)
+			{
+				channelOperationMessageBuilder.Append('#').Append(channels.ElementAt(i));
+				if (i < channels.Count - 1)
+				{
+					channelOperationMessageBuilder.Append(',');
+				}
+			}
+
+			webSocketConnection.SendMessageFireAndForget(channelOperationMessageBuilder.ToString());
 		}
 
 		// ReSharper disable once CognitiveComplexity
