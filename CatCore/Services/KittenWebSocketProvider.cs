@@ -61,8 +61,16 @@ namespace CatCore.Services
 			var websocketConnectionObservable = _websocketClient
 				.WebsocketConnectWithStatusObservable(targetUri, handshakeTimeout: TimeSpan.FromSeconds(15))
 				.ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance)
-				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteTcpConnectException>(
-					_ => Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed)));
+				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteTcpConnectException>(ex =>
+				{
+					_logger.Error(ex, "A tcp connect exception occurred. Marking connection as failed");
+					return Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed));
+				})
+				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteException>(ex =>
+				{
+					_logger.Error(ex, "A websocket error occurred. Returning Continuation status as reference marker");
+					return Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.Continuation));
+				});
 			_websocketConnectionSubject = new Subject<(IDataframe? dataframe, ConnectionStatus state)>();
 
 			_connectObservable = _websocketConnectionSubject
