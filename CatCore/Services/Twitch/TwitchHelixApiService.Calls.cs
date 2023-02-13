@@ -169,9 +169,15 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		// ReSharper disable once CognitiveComplexity
-		public async Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
+		[Obsolete("This method is deprecated, please use the CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null, bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default) method instead.", true)]
+		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default)
+		=> CreatePoll(title, choices, duration, channelPointsVotingEnabled, channelPointsPerVote, cancellationToken);
+
+		/// <inheritdoc />
+		// ReSharper disable once CognitiveComplexity
+		public async Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null,
+			CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
 
@@ -233,10 +239,9 @@ namespace CatCore.Services.Twitch
 				}
 			}
 
-			OptionalParametersValidation(ref bitsVotingEnabled, ref bitsPerVote, 10000);
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
-			var body = new CreatePollRequestDto(loggedInUser.UserId, title, pollChoices, duration, bitsVotingEnabled, bitsPerVote, channelPointsVotingEnabled, channelPointsPerVote);
+			var body = new CreatePollRequestDto(loggedInUser.UserId, title, pollChoices, duration, channelPointsVotingEnabled, channelPointsPerVote);
 			return await PostAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken).ConfigureAwait(false);
 		}
 

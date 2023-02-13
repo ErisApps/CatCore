@@ -87,8 +87,25 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
+		[Obsolete("This method is deprecated, please use the CreatePoll(string title, List<string> choices, uint duration, bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default) method instead.", true)]
 		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Create a poll for a specific Twitch channel.
+		/// </summary>
+		/// <param name="title">Question displayed for the poll. Maximum: 60 characters.</param>
+		/// <param name="choices">Array of possible poll choices. Minimum: 2 choices. Maximum: 5 choices.</param>
+		/// <param name="duration">Total duration for the poll (in seconds). Minimum: 15. Maximum: 1800.</param>
+		/// <param name="channelPointsVotingEnabled">Indicates if Channel Points can be used for voting.</param>
+		/// <param name="channelPointsPerVote">Number of Channel Points required to vote once with Channel Points. Minimum: 1. Maximum: 1000000.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing data of the newly created poll</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference#create-poll">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null,
+			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// End a poll that is currently active.
