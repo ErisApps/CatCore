@@ -21,7 +21,6 @@
 			<RepackInputAssemblies Include="$(TargetPath)"/>
 
 			<RepackInputAssemblies Include="CatCore.Shared.dll"/>
-			<RepackInputAssemblies Include="CatCore.Twemoji.dll"/>
 			<RepackInputAssemblies Include="DryIoc.dll"/>
 			<RepackInputAssemblies Include="HttpMachine.dll"/>
 			<RepackInputAssemblies Include="IHttpMachine.dll"/>

@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net472</TargetFramework>
-        <LangVersion>9</LangVersion>
-        <Configurations>Debug;Release;Develop</Configurations>
-        <Platforms>AnyCPU</Platforms>
-    </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>9</LangVersion>
+		<Configurations>Debug;Release;Develop</Configurations>
+		<Platforms>AnyCPU</Platforms>
+	</PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\CatCore\CatCore.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\CatCore\CatCore.csproj" />
+	</ItemGroup>
 
 </Project>

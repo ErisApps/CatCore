@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using CatCore.Twemoji.Models;
+using CatCore.Emoji.Models;
 using FluentAssertions;
 using Xunit;
 
@@ -72,7 +72,7 @@ namespace CatCoreTests
 			IEmojiTreeLeaf? foundEmojiLeaf = null;
 			for (var i = 0; i < line.Length; i++)
 			{
-				foundEmojiLeaf = CatCore.Twemoji.EmojiTesting.EmojiReferenceData.LookupLeaf(line, i);
+				foundEmojiLeaf = CatCore.Emoji.Twemoji.EmojiTesting.EmojiReferenceData.LookupLeaf(line, i);
 				if (foundEmojiLeaf != null)
 				{
 					break;
