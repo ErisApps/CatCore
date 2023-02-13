@@ -1,32 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <LangVersion>9</LangVersion>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="System.Reactive" Version="5.0.0" />
-      <PackageReference Include="System.Text.Json" Version="7.0.1" />
-      <PackageReference Include="Websocket.Client" Version="4.4.43" />
-    </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>9</LangVersion>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CatCore.Twemoji\CatCore.Twemoji.csproj" />
-		<ProjectReference Include="..\CatCore.Twemoji.SourceGeneration\CatCore.Twemoji.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-	</ItemGroup>
-
-	<!-- Manually reference the generator props because we locally reference the generator. When added via NuGet this happens automatically -->
-	<Import Project="..\CatCore.Twemoji.SourceGeneration\CatCore.Twemoji.SourceGeneration.props" />
-
-	<ItemGroup>
-		<Folder Include="Resources" />
-		<AdditionalFiles Include="..\Useful files\Unicode\Unicode13_1EmojiTest.txt" ClassName="EmojiTesting">
-			<Link>Resources\Unicode13_1EmojiTest.txt</Link>
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</AdditionalFiles>
+		<PackageReference Include="System.Reactive" Version="5.0.0" />
+		<PackageReference Include="System.Text.Json" Version="7.0.1" />
+		<PackageReference Include="Websocket.Client" Version="4.4.43" />
 	</ItemGroup>
 
 </Project>

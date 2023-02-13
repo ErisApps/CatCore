@@ -17,6 +17,7 @@ using CatCore.Services.Interfaces;
 using CatCore.Services.Twitch.Interfaces;
 using CatCore.Services.Twitch.Media;
 using Serilog;
+using Twemoji = CatCore.Emoji.Twemoji;
 
 namespace CatCore.Services.Twitch
 {
@@ -667,7 +668,7 @@ namespace CatCore.Services.Twitch
 				var foundEmojiLeaf = Twemoji.Emojis.EmojiReferenceData.LookupLeaf(message, i);
 				if (foundEmojiLeaf != null)
 				{
-					emotes.Add(new Emoji(foundEmojiLeaf.Key, foundEmojiLeaf.Key, i, i += foundEmojiLeaf.Depth, foundEmojiLeaf.Url));
+					emotes.Add(new Models.Shared.Emoji(foundEmojiLeaf.Key, foundEmojiLeaf.Key, i, i += foundEmojiLeaf.Depth, foundEmojiLeaf.Url));
 				}
 			}
 		}
