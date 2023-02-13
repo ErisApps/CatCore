@@ -18,11 +18,11 @@ jobs:
         name: CatCore.Shared
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
             -   name: Setup dotnet
-                uses: actions/setup-dotnet@v1
+                uses: actions/setup-dotnet@v3
                 with:
-                    dotnet-version: 6.0.x
+                    dotnet-version: 7.0.x
             -   name: Build CatCore.Shared
                 id: Build
                 run: dotnet build CatCore.Shared --configuration Release
@@ -31,11 +31,13 @@ jobs:
         runs-on: ubuntu-latest
         needs: catcore-shared
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
             -   name: Setup dotnet
-                uses: actions/setup-dotnet@v1
+                uses: actions/setup-dotnet@v3
                 with:
-                    dotnet-version: 6.0.x
+                    dotnet-version: 7.0.x
+            -   name: Authenticate with GitHub Package Registry
+                run: dotnet nuget update source "ErisApps GH Packages" --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
             -   name: Removed .example suffix from Constants implementation
                 run: find ~ -type f -name Constants.user.cs.example -execdir mv Constants.user.cs.example Constants.user.cs \;
             -   name: Find and Replace - Insert CatCore Auth Server URI
@@ -60,11 +62,11 @@ jobs:
         runs-on: ubuntu-latest
         needs: catcore-shared
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
             -   name: Setup dotnet
-                uses: actions/setup-dotnet@v1
+                uses: actions/setup-dotnet@v3
                 with:
-                    dotnet-version: 6.0.x
+                    dotnet-version: 7.0.x
             -   name: Build CatCore.Azure
                 id: Build
                 run: dotnet build CatCore.Azure --configuration Release
