@@ -68,8 +68,8 @@ namespace CatCore.Services
 				})
 				.Catch<(IDataframe? dataframe, ConnectionStatus state), WebsocketClientLiteException>(ex =>
 				{
-					_logger.Error(ex, "A websocket error occurred. Returning Continuation status as reference marker");
-					return Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.Continuation));
+					_logger.Error(ex, "A websocket error occurred. Marking connection as failed");
+					return Observable.Return<(IDataframe? dataframe, ConnectionStatus state)>((null, ConnectionStatus.ConnectionFailed));
 				});
 			_websocketConnectionSubject = new Subject<(IDataframe? dataframe, ConnectionStatus state)>();
 
