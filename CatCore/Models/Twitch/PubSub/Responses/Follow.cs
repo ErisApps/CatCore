@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.PubSub.Responses
 {
+	[PublicAPI]
 	public readonly struct Follow
 	{
 		[JsonPropertyName("user_id")]

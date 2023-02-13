@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading;
+using JetBrains.Annotations;
 
 namespace CatCore.Models.Twitch.PubSub.Responses.VideoPlayback
 {
+	[PublicAPI]
 	public abstract class VideoPlaybackBase
 	{
 		private const long TICKS_PER_MICROSECOND = TimeSpan.TicksPerMillisecond / 1000L;
