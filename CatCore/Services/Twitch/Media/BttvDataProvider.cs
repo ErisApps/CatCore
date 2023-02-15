@@ -68,10 +68,13 @@ namespace CatCore.Services.Twitch.Media
 				var (success, bttvGlobalData) = await GetAsync(BTTV_API_BASEURL + "emotes/global", BttvSerializerContext.Default.IReadOnlyListBttvEmote).ConfigureAwait(false);
 				if (!success)
 				{
+					_logger.Warning("Something went wrong while trying to fetch the global BTTV emotes, the call was not successful");
 					return;
 				}
 
 				_globalBttvData = ParseBttvEmoteData(bttvGlobalData!, "BTTVGlobalEmote");
+
+				_logger.Debug("Finished caching {EmoteCount} global BTTV emotes", _globalBttvData.Count);
 			}
 			catch (Exception ex)
 			{
@@ -86,10 +89,13 @@ namespace CatCore.Services.Twitch.Media
 				var (success, bttvChannelData) = await GetAsync(BTTV_API_BASEURL + "users/twitch/" + userId, BttvSerializerContext.Default.BttvChannelData).ConfigureAwait(false);
 				if (!success)
 				{
+					_logger.Warning("Something went wrong while trying to fetch the BTTV channel emotes for channel {ChannelId}, the call was not successful", userId);
 					return;
 				}
 
 				_channelBttvData[userId] = ParseBttvEmoteData(bttvChannelData.ChannelEmotes.Concat<BttvEmoteBase>(bttvChannelData.SharedEmotes), "BTTVChannelEmote");
+
+				_logger.Debug("Finished caching {EmoteCount} BTTV channel emotes for channel {ChannelId}", _channelBttvData[userId].Count, userId);
 			}
 			catch (Exception ex)
 			{
@@ -105,6 +111,7 @@ namespace CatCore.Services.Twitch.Media
 					await GetAsync(BTTV_API_BASEURL + "frankerfacez/emotes/global", BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
 				if (!success)
 				{
+					_logger.Warning("Something went wrong while trying to fetch the global FFZ emotes, the call was not successful");
 					return;
 				}
 
@@ -112,6 +119,8 @@ namespace CatCore.Services.Twitch.Media
 				{
 					_globalFfzData = ParseFfzEmoteData(ffzGlobalData!, "FFZGlobalEmote");
 				}
+
+				_logger.Debug("Finished caching {EmoteCount} global FFZ emotes", _globalFfzData.Count);
 			}
 			catch (Exception ex)
 			{
@@ -127,12 +136,19 @@ namespace CatCore.Services.Twitch.Media
 					await GetAsync(BTTV_API_BASEURL + "frankerfacez/users/twitch/" + userId, BttvSerializerContext.Default.IReadOnlyListFfzEmote).ConfigureAwait(false);
 				if (!success)
 				{
+					_logger.Warning("Something went wrong while trying to fetch the FFZ channel emotes for channel {ChannelId}, the call was not successful", userId);
 					return;
 				}
 
 				if (ffzChannelData!.Any())
 				{
 					_channelFfzData[userId] = ParseFfzEmoteData(ffzChannelData!, "FFZChannelEmote");
+
+					_logger.Debug("Finished caching {EmoteCount} FFZ channel emotes for channel {ChannelId}", _channelFfzData[userId].Count, userId);
+				}
+				else
+				{
+					_logger.Debug("No FFZ channel emotes found for channel {ChannelId}", userId);
 				}
 			}
 			catch (Exception ex)
