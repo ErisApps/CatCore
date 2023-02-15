@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using CatCore.Models.Credentials;
 using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
@@ -107,7 +108,7 @@ namespace CatCore.Services.Twitch
 		{
 			DeregisterInternalEventHandlers();
 
-			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnAuthenticatedStatusChanged;
+			_twitchAuthService.OnAuthenticationStatusChanged += TwitchAuthServiceOnAuthenticatedStatusChanged;
 
 			_twitchIrcService.OnChatConnected += TwitchIrcServiceOnChatConnected;
 			_twitchIrcService.OnJoinChannel += TwitchIrcServiceOnJoinChannel;
