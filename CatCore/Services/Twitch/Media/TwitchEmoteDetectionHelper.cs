@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CatCore.Models.Shared;
@@ -26,15 +25,15 @@ namespace CatCore.Services.Twitch.Media
 		{
 			var emotes = new List<IChatEmote>();
 
-			if (_settingsService.Config.GlobalConfig.HandleEmojis)
-			{
-				ExtractEmojis(emotes, message);
-			}
-
 			var twitchConfig = _settingsService.Config.TwitchConfig;
 			if (twitchConfig.ParseTwitchEmotes && messageMeta != null)
 			{
 				ExtractTwitchEmotes(emotes, message, messageMeta);
+			}
+
+			if (_settingsService.Config.GlobalConfig.HandleEmojis)
+			{
+				ExtractEmojis(emotes, message);
 			}
 
 			ExtractOtherEmotes(emotes, message, channelId, twitchConfig.ParseCheermotes && bits > 0, twitchConfig.ParseBttvEmotes || twitchConfig.ParseFfzEmotes);
