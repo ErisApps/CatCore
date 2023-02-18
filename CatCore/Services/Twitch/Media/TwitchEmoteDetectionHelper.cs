@@ -14,8 +14,6 @@ namespace CatCore.Services.Twitch.Media
 		private readonly IKittenSettingsService _settingsService;
 		private readonly TwitchMediaDataProvider _twitchMediaDataProvider;
 
-		private static readonly Comparison<IChatEmote> EmojiComparison = (emote1, emote2) => emote1.StartIndex - emote2.StartIndex;
-
 		public TwitchEmoteDetectionHelper(
 			IKittenSettingsService settingsService,
 			TwitchMediaDataProvider twitchMediaDataProvider)
