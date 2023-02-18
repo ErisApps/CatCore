@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CatCore.Models.Config;
+using CatCore.Models.Credentials;
 using CatCore.Models.EventArgs;
 using CatCore.Models.Shared;
 using CatCore.Models.Twitch.Media;
@@ -10,7 +11,7 @@ using CatCore.Services.Twitch.Interfaces;
 
 namespace CatCore.Services.Twitch.Media
 {
-	internal class TwitchMediaDataProvider : INeedInitialization
+	internal class TwitchMediaDataProvider
 	{
 		private readonly IKittenSettingsService _kittenSettingsService;
 		private readonly ITwitchAuthService _twitchAuthService;
@@ -36,20 +37,13 @@ namespace CatCore.Services.Twitch.Media
 			_bttvDataProvider = bttvDataProvider;
 
 			_kittenSettingsService.OnConfigChanged += KittenSettingsServiceOnConfigChanged;
-			_twitchAuthService.OnCredentialsChanged += TwitchAuthServiceOnCredentialsChanged;
+			_twitchAuthService.OnAuthenticationStatusChanged += TwitchAuthServiceOnAuthenticationStatusChanged;
 			_twitchChannelManagementService.ChannelsUpdated += TwitchChannelManagementServiceOnChannelsUpdated;
 
 			var twitchConfig = kittenSettingsService.Config.TwitchConfig;
 			_cheermotesEnabled = twitchConfig.ParseCheermotes;
 			_bttvEnabled = twitchConfig.ParseBttvEmotes;
 			_ffzEnabled = twitchConfig.ParseFfzEmotes;
-		}
-
-		public void Initialize()
-		{
-			var initTasks = new List<Task> { TryRequestGlobalResources() };
-			initTasks.AddRange(_twitchChannelManagementService.GetAllActiveChannelIds().Select(userId => TryRequestChannelResources(userId)));
-			_ = Task.WhenAll(initTasks).ConfigureAwait(false);
 		}
 
 		// ReSharper disable once CognitiveComplexity
@@ -110,26 +104,18 @@ namespace CatCore.Services.Twitch.Media
 			});
 		}
 
-		private void TwitchAuthServiceOnCredentialsChanged()
+		private void TwitchAuthServiceOnAuthenticationStatusChanged(AuthenticationStatus status)
 		{
+			if (status != AuthenticationStatus.Authenticated)
+			{
+				return;
+			}
+
 			_ = Task.Run(async () =>
 			{
-				if (!_twitchAuthService.HasTokens && !_twitchAuthService.TokenIsValid)
-				{
-					return;
-				}
-
-				var twitchConfig = _kittenSettingsService.Config.TwitchConfig;
-				var userIds = _twitchChannelManagementService.GetAllActiveChannelIds();
-				var initTasks = new List<Task> { _twitchBadgeDataProvider.TryRequestGlobalResources() };
-				initTasks.AddRange(userIds.Select(userId => _twitchBadgeDataProvider.TryRequestChannelResources(userId)));
-
-				if (twitchConfig.ParseCheermotes)
-				{
-					initTasks.Add(_twitchCheermoteDataProvider.TryRequestGlobalResources());
-					initTasks.AddRange(userIds.Select(userId => _twitchCheermoteDataProvider.TryRequestChannelResources(userId)));
-				}
-
+				var initTasks = new List<Task> { TryRequestGlobalResources() };
+				var allActiveChannelIds = _twitchChannelManagementService.GetAllActiveChannelIds();
+				initTasks.AddRange(allActiveChannelIds.Select(userId => TryRequestChannelResources(userId)));
 				await Task.WhenAll(initTasks).ConfigureAwait(false);
 			});
 		}

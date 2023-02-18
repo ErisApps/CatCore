@@ -132,7 +132,7 @@ namespace CatCore.Services.Twitch
 			_twitchIrcService.OnChatCleared -= TwitchIrcServiceOnChatCleared;
 		}
 
-		private void TwitchAuthServiceOnAuthenticatedStatusChanged()
+		private void TwitchAuthServiceOnAuthenticatedStatusChanged(AuthenticationStatus _)
 		{
 			OnAuthenticatedStateChanged?.Invoke(this);
 		}
