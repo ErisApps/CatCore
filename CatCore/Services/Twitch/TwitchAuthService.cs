@@ -72,11 +72,11 @@ namespace CatCore.Services.Twitch
 				}
 
 				_status = value;
-				OnAuthenticationStatusChanged?.Invoke();
+				OnAuthenticationStatusChanged?.Invoke(_status);
 			}
 		}
 
-		public event Action? OnAuthenticationStatusChanged;
+		public event Action<AuthenticationStatus>? OnAuthenticationStatusChanged;
 
 		public TwitchAuthService(ILogger logger, IKittenPathProvider kittenPathProvider, ConstantsBase constants, Version libraryVersion) : base(logger, kittenPathProvider)
 		{
