@@ -231,11 +231,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			var validationResponse = await responseMessage.Content.ReadFromJsonAsync(TwitchAuthSerializerContext.Default.ValidationResponse).ConfigureAwait(false);
+			_loggedInUser = validationResponse;
+
 			UpdateCredentials(credentials.ValidUntil!.Value > validationResponse.ExpiresIn
 				? new TwitchCredentials(credentials.AccessToken, credentials.RefreshToken, validationResponse.ExpiresIn)
 				: credentials);
-
-			_loggedInUser = validationResponse;
 
 			Status = AuthenticationStatus.Authenticated;
 
