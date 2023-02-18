@@ -140,6 +140,7 @@ namespace CatCore
 			container.Register<TwitchBadgeDataProvider>(Reuse.Singleton);
 			container.Register<TwitchCheermoteDataProvider>(Reuse.Singleton);
 			container.Register<TwitchMediaDataProvider>(Reuse.Singleton);
+			container.Register<TwitchEmoteDetectionHelper>(Reuse.Singleton);
 			container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
 			container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,
