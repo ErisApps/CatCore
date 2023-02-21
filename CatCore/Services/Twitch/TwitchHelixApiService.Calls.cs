@@ -238,6 +238,31 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		public async Task<ResponseBase<BanUser>?> BanUser(string broadcasterId, string userId, uint? durationSeconds, string? reason = null, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = TWITCH_HELIX_BASEURL + "moderation/bans?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId;
+
+			if (durationSeconds != null)
+			{
+				if (durationSeconds < 1)
+				{
+					throw new ArgumentException("The durationSeconds parameter should be greater than or equal to 1. If you want to ban the user, use null instead.", nameof(durationSeconds));
+				}
+
+				if (durationSeconds > 1209600)
+				{
+					throw new ArgumentException("The durationSeconds parameter should be less than or equal to 1209600 (2 weeks).", nameof(durationSeconds));
+				}
+			}
+
+			var body = new BanUserRequestDto(userId, durationSeconds, reason);
+			var bodyWrapper = new LegacyRequestDataWrapper<BanUserRequestDto>(body);
+			return await PostAsync(urlBuilder, bodyWrapper, TwitchHelixSerializerContext.Default.ResponseBaseBanUser, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
