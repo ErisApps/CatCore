@@ -157,8 +157,7 @@ namespace CatCore.Services.Twitch
 
 				if (followerModeDurationMinutes.Value > 129600)
 				{
-					_logger.Warning("The followerModeDurationMinutes parameter should be less than or equal to 129600 (3 months). Setting it to 129600.");
-					followerModeDurationMinutes = 129600;
+					throw new ArgumentException("The followerModeDurationMinutes parameter should be less than or equal to 129600 (3 months).", nameof(followerModeDurationMinutes));
 				}
 			}
 
