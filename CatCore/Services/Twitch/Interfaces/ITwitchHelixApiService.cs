@@ -132,6 +132,17 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<ResponseBase<BanUser>?> BanUser(string broadcasterId, string userId, uint? durationSeconds, string? reason = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Removes the ban or timeout that was placed on the specified user.
+		/// </summary>
+		/// <param name="broadcasterId">The ID of the broadcaster whose chat room the user is banned/timed-out from chatting in.</param>
+		/// <param name="userId">The ID of the user to remove the ban or timeout from.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Boolean indicating whether the request was successful or not</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#unban-user">Check out the Twitch API Reference docs.</a></remarks>
+		Task<bool> UnbanUser(string broadcasterId, string userId, CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>

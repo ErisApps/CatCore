@@ -263,6 +263,16 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		public async Task<bool> UnbanUser(string broadcasterId, string userId, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = TWITCH_HELIX_BASEURL + "moderation/bans?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId + "&user_id=" + userId;
+
+			return await DeleteAsync(urlBuilder, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
