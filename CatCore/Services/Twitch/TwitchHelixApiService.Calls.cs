@@ -334,7 +334,7 @@ namespace CatCore.Services.Twitch
 		[Obsolete("This method is deprecated, please use the CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null, bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default) method instead.", true)]
 		public Task<ResponseBase<PollData>?> CreatePoll(string title, List<string> choices, uint duration, bool? bitsVotingEnabled = null, uint? bitsPerVote = null,
 			bool? channelPointsVotingEnabled = null, uint? channelPointsPerVote = null, CancellationToken cancellationToken = default)
-		=> CreatePoll(title, choices, duration, channelPointsVotingEnabled, channelPointsPerVote, cancellationToken);
+			=> CreatePoll(title, choices, duration, channelPointsVotingEnabled, channelPointsPerVote, cancellationToken);
 
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
