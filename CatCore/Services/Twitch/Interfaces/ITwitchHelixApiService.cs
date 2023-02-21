@@ -147,8 +147,8 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// </summary>
 		/// <param name="broadcasterId">The ID of the broadcaster that owns the chat room to send the announcement to.</param>
 		/// <param name="message">The announcement to make in the broadcaster’s chat room. Announcements are limited to a maximum of 500 characters; announcements longer than 500 characters are truncated.</param>
-		/// <param name="color">
-		/// <list type="bullet">The color used to highlight the announcement. Possible case-sensitive values are:
+		/// <param name="color">The color used to highlight the announcement. Possible case-sensitive values are:
+		/// <list type="bullet">
 		/// <item><description>blue</description></item>
 		/// <item><description>green</description></item>
 		/// <item><description>orange</description></item>
@@ -162,6 +162,24 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#send-chat-announcement">Check out the Twitch API Reference docs.</a></remarks>
 		Task<bool> SendChatAnnouncement(string broadcasterId, string message, string color = "primary", CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Removes a single chat message or all chat messages from the broadcaster’s chat room.
+		/// </summary>
+		/// <param name="broadcasterId"></param>
+		/// <param name="messageId">The ID of the message to remove. The id tag in the PRIVMSG tag contains the message’s ID.
+		/// <list type="bullet">
+		/// <item><description>The message must have been created within the last 6 hours.</description></item>
+		/// <item><description>The message must not belong to the broadcaster.</description></item>
+		/// <item><description>The message must not belong to another moderator.</description></item>
+		/// </list>
+		/// If not specified, the request removes all messages in the broadcaster’s chat room.
+		/// </param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Boolean indicating whether the request was successful or not</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#delete-chat-messages">Check out the Twitch API Reference docs.</a></remarks>
+		Task<bool> DeleteChatMessages(string broadcasterId, string? messageId = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
