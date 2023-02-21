@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Exceptions;
+using CatCore.Models.Twitch.Helix.Requests;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
 using CatCore.Models.Twitch.Helix.Responses.Bans;
@@ -180,6 +181,17 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#delete-chat-messages">Check out the Twitch API Reference docs.</a></remarks>
 		Task<bool> DeleteChatMessages(string broadcasterId, string? messageId = null, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Gets the color used for the user’s name in chat.
+		/// </summary>
+		/// <param name="userIds">The Ids of the users whose username color you want to get.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing information about the chat color of the requested users.</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#get-user-chat-color">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<UserChatColorData>?> GetUserChatColor(string[] userIds, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
