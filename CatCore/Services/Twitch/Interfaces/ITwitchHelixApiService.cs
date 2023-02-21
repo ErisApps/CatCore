@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CatCore.Exceptions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
+using CatCore.Models.Twitch.Helix.Responses.Bans;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
@@ -99,6 +100,22 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<ResponseBase<ChatSettings>?> UpdateChatSettings(string broadcasterId, bool? emoteMode = null, bool? followerMode = null, uint? followerModeDurationMinutes = null,
 			bool? nonModeratorChatDelay = null, uint? nonModeratorChatDelayDurationSeconds = null, bool? slowMode = null, uint? slowModeWaitTimeSeconds = null, bool? subscriberMode = null,
 			bool? uniqueChatMode = null, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Gets all users that the broadcaster banned or put in a timeout.
+		/// </summary>
+		/// <param name="userIds">A list of user IDs used to filter the results. Maximum: 100</param>
+		/// <param name="limit">The maximum number of items to return per page in the response. Maximum: 100. Default: 20.</param>
+		/// <param name="continuationCursorBefore">The cursor used to get the previous page of results.</param>
+		/// <param name="continuationCursorAfter">The cursor used to get the next page of results.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing paginated info about users who are timed-out or banned</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#get-banned-users">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBaseWithPagination<BannedUserInfo>?> GetBannedUsers(string[]? userIds = null, uint? limit = null, string? continuationCursorBefore = null,
+			string? continuationCursorAfter = null, CancellationToken cancellationToken = default);
+
 		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
@@ -272,7 +289,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// A language value must be either the <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1</a> two-letter code for a
 		/// <a href="https://help.twitch.tv/s/article/languages-on-twitch#streamlang">supported stream language</a> or “other”.
 		/// </param>
-		/// <param name="limit">Maximum number of results to return. Maximum: 100 Default: 20</param>
+		/// <param name="limit">Maximum number of results to return. Maximum: 100. Default: 20.</param>
 		/// <param name="continuationCursorBefore">Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="continuationCursorAfter">Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response</param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>

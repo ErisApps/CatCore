@@ -6,10 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CatCore.Helpers.JSON;
 using CatCore.Models.Twitch.Helix.Requests;
+using CatCore.Models.Twitch.Helix.Requests.Bans;
 using CatCore.Models.Twitch.Helix.Requests.Polls;
 using CatCore.Models.Twitch.Helix.Requests.Predictions;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
+using CatCore.Models.Twitch.Helix.Responses.Bans;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
@@ -187,6 +189,52 @@ namespace CatCore.Services.Twitch
 				slowModeWaitTimeSeconds, subscriberMode, uniqueChatMode);
 
 			return await PatchAsync(urlBuilder, body, TwitchHelixSerializerContext.Default.ResponseBaseChatSettings, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
+		public async Task<ResponseBaseWithPagination<BannedUserInfo>?> GetBannedUsers(string[]? userIds = null, uint? limit = null, string? continuationCursorBefore = null,
+			string? continuationCursorAfter = null, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "moderation/banned?broadcaster_id=" + loggedInUser.UserId);
+
+			if (limit != null)
+			{
+				if (limit.Value > 100)
+				{
+					throw new ArgumentException("The limit parameter has an upper-limit of 100.", nameof(limit));
+				}
+
+				urlBuilder.Append($"first={limit}");
+			}
+
+			if (userIds != null)
+			{
+				if (userIds.Length > 100)
+				{
+					throw new ArgumentException("The userIds parameter has an upper-limit of 100.", nameof(userIds));
+				}
+
+				urlBuilder.Append("user_id=").Append(string.Join("&user_id=", userIds));
+			}
+
+			if (continuationCursorBefore != null && continuationCursorAfter != null)
+			{
+				throw new ArgumentException("The continuationCursorBefore and continuationCursorAfter cannot be specified both simultaneously",
+					$"{nameof(continuationCursorBefore)} | {nameof(continuationCursorAfter)}");
+			}
+
+			if (!string.IsNullOrWhiteSpace(continuationCursorBefore))
+			{
+				urlBuilder.Append(string.Join("before=", continuationCursorBefore));
+			}
+			else if (!string.IsNullOrWhiteSpace(continuationCursorAfter))
+			{
+				urlBuilder.Append(string.Join("after=", continuationCursorAfter));
+			}
+
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseWithPaginationBannedUserInfo, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
