@@ -136,6 +136,40 @@ namespace CatCore.Services.Twitch
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private async Task<bool> DeleteAsync(string url, CancellationToken cancellationToken = default)
+		{
+#if DEBUG
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				throw new ArgumentNullException(nameof(url));
+			}
+
+			_logger.Verbose("Invoking Helix endpoint DELETE {Url}", url);
+#endif
+			if (!_twitchAuthService.HasTokens)
+			{
+				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
+				return false;
+			}
+
+			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
+			{
+				return false;
+			}
+
+			try
+			{
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(ct => _helixClient.DeleteAsync(url, ct), cancellationToken).ConfigureAwait(false);
+				return httpResponseMessage?.IsSuccessStatusCode ?? false;
+			}
+			catch (Exception ex)
+			{
+				_logger.Warning(ex, "Something went wrong while trying to execute the DELETE call to {Uri}", url);
+				return false;
+			}
+		}
+
 		private async Task<TResponse?> CallEndpointWithBodyExpectBody<TResponse, TBody>(HttpMethod httpMethod, string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo,
 			CancellationToken cancellationToken = default) where TResponse : struct
 		{
