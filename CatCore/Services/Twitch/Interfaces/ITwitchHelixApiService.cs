@@ -117,6 +117,21 @@ namespace CatCore.Services.Twitch.Interfaces
 			string? continuationCursorAfter = null, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Bans a user from participating in the specified broadcaster’s chat room or puts them in a timeout.
+		/// If the user is currently in a timeout, you can call this endpoint to change the durationSeconds of the timeout or ban them altogether. If the user is currently banned, you cannot call this method to put them in a timeout instead.
+		/// </summary>
+		/// <param name="broadcasterId">The ID of the broadcaster whose chat room the user is being banned/timed-out from.</param>
+		/// <param name="userId">The ID of the user to ban or put in a timeout.</param>
+		/// <param name="durationSeconds">To put a user in a timeout, include this field and specify the timeout period, in seconds. Minimum: 1 second. Maximum: 1209600 seconds (2 weeks). To ban a user indefinitely, use <see langword="null" /> instead.</param>
+		/// <param name="reason">he reason the you’re banning the user or putting them in a timeout. Limited to 500 characters, if the text is longer, it will be truncated.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing information about the user that just received a ban or time-out.</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#ban-user">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<BanUser>?> BanUser(string broadcasterId, string userId, uint? durationSeconds, string? reason = null, CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
