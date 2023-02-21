@@ -287,6 +287,24 @@ namespace CatCore.Services.Twitch
 			return await PostAsync(urlBuilder, body, cancellationToken).ConfigureAwait(false);
 		}
 
+		public async Task<bool> DeleteChatMessages(string broadcasterId, string? messageId = null, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "moderation/chat?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId);
+			if (messageId != null)
+			{
+				if (string.IsNullOrWhiteSpace(messageId))
+				{
+					throw new ArgumentException("The messageId parameter should not be empty.", nameof(messageId));
+				}
+
+				urlBuilder.Append("&message_id=").Append(messageId);
+			}
+
+			return await DeleteAsync(urlBuilder.ToString(), cancellationToken).ConfigureAwait(false);
+		}
+
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)

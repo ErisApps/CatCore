@@ -30,17 +30,18 @@ namespace CatCore.Services.Twitch
 
 		private readonly string[] _twitchAuthorizationScope =
 		{
-			"channel:moderate",
+			"bits:read",
 			"chat:edit",
 			"chat:read",
-			"bits:read",
 			"channel:manage:broadcast",
 			"channel:manage:polls",
 			"channel:manage:predictions",
 			"channel:manage:redemptions",
+			"channel:moderate",
 			"channel:read:subscriptions",
 			"moderator:manage:announcements",
 			"moderator:manage:banned_users",
+			"moderator:manage:chat_messages",
 			"moderator:manage:chat_settings",
 			"user:read:follows"
 		};
