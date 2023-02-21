@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using CatCore.Models.Twitch.Helix.Responses;
 using CatCore.Models.Twitch.Helix.Responses.Badges;
+using CatCore.Models.Twitch.Helix.Responses.Bans;
 using CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes;
 using CatCore.Models.Twitch.Helix.Responses.Emotes;
 using CatCore.Models.Twitch.Helix.Responses.Polls;
@@ -21,6 +22,7 @@ namespace CatCore.Helpers.JSON
 	[JsonSerializable(typeof(ResponseBaseWithTemplate<GlobalEmote>))]
 	[JsonSerializable(typeof(ResponseBaseWithTemplate<ChannelEmote>))]
 	[JsonSerializable(typeof(ResponseBase<ChatSettings>))]
+	[JsonSerializable(typeof(ResponseBaseWithPagination<BannedUserInfo>))]
 	internal partial class TwitchHelixSerializerContext : JsonSerializerContext
 	{
 	}
