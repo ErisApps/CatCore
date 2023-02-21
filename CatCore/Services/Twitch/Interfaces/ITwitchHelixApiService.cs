@@ -194,6 +194,35 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<ResponseBase<UserChatColorData>?> GetUserChatColor(string[] userIds, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Updates the color used for the user’s name in chat.
+		/// </summary>
+		/// <param name="color">The color to use for the user’s name in chat. All users may specify one of the following named color values:
+		/// <list type="bullet">
+		/// <item><description><see cref="UserChatColor.Blue"/></description></item>
+		/// <item><description><see cref="UserChatColor.BlueViolet"/></description></item>
+		/// <item><description><see cref="UserChatColor.CadetBlue"/></description></item>
+		/// <item><description><see cref="UserChatColor.Chocolate"/></description></item>
+		/// <item><description><see cref="UserChatColor.Coral"/></description></item>
+		/// <item><description><see cref="UserChatColor.DodgerBlue"/></description></item>
+		/// <item><description><see cref="UserChatColor.Firebrick"/></description></item>
+		/// <item><description><see cref="UserChatColor.GoldenRod"/></description></item>
+		/// <item><description><see cref="UserChatColor.Green"/></description></item>
+		/// <item><description><see cref="UserChatColor.HotPink"/></description></item>
+		/// <item><description><see cref="UserChatColor.OrangeRed"/></description></item>
+		/// <item><description><see cref="UserChatColor.Red"/></description></item>
+		/// <item><description><see cref="UserChatColor.SeaGreen"/></description></item>
+		/// <item><description><see cref="UserChatColor.SpringGreen"/></description></item>
+		/// <item><description><see cref="UserChatColor.YellowGreen"/></description></item>
+		/// </list>
+		/// </param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Boolean indicating whether the request was successful or not</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Gets thrown when an invalid color enum is passed in.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#update-user-chat-color">Check out the Twitch API Reference docs.</a></remarks>
+		Task<bool> UpdateUserChatColor(UserChatColor color, CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>

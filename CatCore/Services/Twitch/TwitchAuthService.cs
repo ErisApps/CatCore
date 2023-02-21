@@ -43,6 +43,7 @@ namespace CatCore.Services.Twitch
 			"moderator:manage:banned_users",
 			"moderator:manage:chat_messages",
 			"moderator:manage:chat_settings",
+			"user:manage:chat_color",
 			"user:read:follows"
 		};
 
