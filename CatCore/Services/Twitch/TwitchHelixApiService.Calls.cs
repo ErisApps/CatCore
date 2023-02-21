@@ -126,6 +126,70 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		public async Task<ResponseBase<ChatSettings>?> GetChatSettings(string broadcasterId, bool withModeratorPermissions = false, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "chat/settings?broadcaster_id=" + broadcasterId);
+			if (withModeratorPermissions)
+			{
+				urlBuilder.Append("&moderator_id=").Append(loggedInUser.UserId);
+			}
+
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseChatSettings, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
+		// ReSharper disable once CognitiveComplexity
+		public async Task<ResponseBase<ChatSettings>?> UpdateChatSettings(string broadcasterId, bool? emoteMode = null, bool? followerMode = null, uint? followerModeDurationMinutes = null,
+			bool? nonModeratorChatDelay = null, uint? nonModeratorChatDelayDurationSeconds = null, bool? slowMode = null, uint? slowModeWaitTimeSeconds = null, bool? subscriberMode = null,
+			bool? uniqueChatMode = null, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = TWITCH_HELIX_BASEURL + "chat/settings?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId;
+
+			if (followerModeDurationMinutes != null)
+			{
+				followerMode = true;
+
+				if (followerModeDurationMinutes.Value > 129600)
+				{
+					_logger.Warning("The followerModeDurationMinutes parameter should be less than or equal to 129600 (3 months). Setting it to 129600.");
+					followerModeDurationMinutes = 129600;
+				}
+			}
+
+			if (nonModeratorChatDelayDurationSeconds != null)
+			{
+				nonModeratorChatDelay = true;
+
+				if (nonModeratorChatDelayDurationSeconds is not 2 and not 4 and not 6)
+				{
+					throw new ArgumentException("The nonModeratorChatDelayDurationSeconds parameter should be 2, 4 or 6.", nameof(nonModeratorChatDelayDurationSeconds));
+				}
+			}
+
+			if (slowModeWaitTimeSeconds != null)
+			{
+				slowMode = true;
+
+				switch (slowModeWaitTimeSeconds.Value)
+				{
+					case < 3:
+						throw new ArgumentException("The slowModeWaitTimeSeconds parameter should be greater than or equal to 3.", nameof(slowModeWaitTimeSeconds));
+					case > 120:
+						throw new ArgumentException("The slowModeWaitTimeSeconds parameter should be less than or equal to 120.", nameof(slowModeWaitTimeSeconds));
+				}
+			}
+
+			var body = new ChatSettingsRequestDto(emoteMode, followerMode, followerModeDurationMinutes, nonModeratorChatDelay, nonModeratorChatDelayDurationSeconds, slowMode,
+				slowModeWaitTimeSeconds, subscriberMode, uniqueChatMode);
+
+			return await PatchAsync(urlBuilder, body, TwitchHelixSerializerContext.Default.ResponseBaseChatSettings, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{

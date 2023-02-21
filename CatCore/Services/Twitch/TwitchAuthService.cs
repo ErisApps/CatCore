@@ -34,12 +34,13 @@ namespace CatCore.Services.Twitch
 			"chat:edit",
 			"chat:read",
 			"bits:read",
-			"user:read:follows",
 			"channel:manage:broadcast",
 			"channel:manage:polls",
 			"channel:manage:predictions",
 			"channel:manage:redemptions",
-			"channel:read:subscriptions"
+			"channel:read:subscriptions",
+			"moderator:manage:chat_settings",
+			"user:read:follows"
 		};
 
 		private readonly ILogger _logger;
