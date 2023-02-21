@@ -287,6 +287,7 @@ namespace CatCore.Services.Twitch
 			return await PostAsync(urlBuilder, body, cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <inheritdoc />
 		public async Task<bool> DeleteChatMessages(string broadcasterId, string? messageId = null, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
@@ -303,6 +304,26 @@ namespace CatCore.Services.Twitch
 			}
 
 			return await DeleteAsync(urlBuilder.ToString(), cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
+		public async Task<ResponseBase<UserChatColorData>?> GetUserChatColor(string[] userIds, CancellationToken cancellationToken = default)
+		{
+			_ = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			if (userIds.Length > 100)
+			{
+				throw new ArgumentException("The userIds parameter has an upper-limit of 100.", nameof(userIds));
+			}
+
+			if (userIds.Length == 0)
+			{
+				throw new ArgumentException("The userIds parameter should not be empty.", nameof(userIds));
+			}
+
+			var urlBuilder = new StringBuilder(TWITCH_HELIX_BASEURL + "chat/color?user_id=").Append(string.Join("&user_id=", userIds));
+
+			return await GetAsync(urlBuilder.ToString(), TwitchHelixSerializerContext.Default.ResponseBaseUserChatColorData, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
