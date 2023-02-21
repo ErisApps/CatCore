@@ -35,7 +35,7 @@ namespace CatCore.Services.Twitch
 			_logger = logger;
 			_twitchAuthService = twitchAuthService;
 
-			_helixClient = new HttpClient(new TwitchHelixClientHandler(twitchAuthService)) {BaseAddress = new Uri(TWITCH_HELIX_BASEURL, UriKind.Absolute)};
+			_helixClient = new HttpClient(new TwitchHelixClientHandler(twitchAuthService)) { BaseAddress = new Uri(TWITCH_HELIX_BASEURL, UriKind.Absolute) };
 			_helixClient.DefaultRequestHeaders.UserAgent.TryParseAdd($"{nameof(CatCore)}/{libraryVersion.ToString(3)}");
 			_helixClient.DefaultRequestHeaders.TryAddWithoutValidation("Client-ID", constants.TwitchClientId);
 
@@ -108,8 +108,20 @@ namespace CatCore.Services.Twitch
 			{
 				using var httpResponseMessage = await _combinedHelixPolicy
 					.ExecuteAsync(ct => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct), cancellationToken).ConfigureAwait(false);
-				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				if (httpResponseMessage == null)
 				{
+					return null;
+				}
+
+				if (!httpResponseMessage.IsSuccessStatusCode)
+				{
+#if DEBUG
+					var errorContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					_logger.Warning("Something went wrong while trying to execute the GET call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+						url,
+						httpResponseMessage.StatusCode,
+						errorContent);
+#endif
 					return null;
 				}
 
@@ -161,7 +173,23 @@ namespace CatCore.Services.Twitch
 			try
 			{
 				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(ct => _helixClient.DeleteAsync(url, ct), cancellationToken).ConfigureAwait(false);
-				return httpResponseMessage?.IsSuccessStatusCode ?? false;
+				if (httpResponseMessage == null)
+				{
+					return false;
+				}
+
+#if DEBUG
+				if (!httpResponseMessage.IsSuccessStatusCode)
+				{
+					var errorContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					_logger.Warning("Something went wrong while trying to execute the DELETE call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+						url,
+						httpResponseMessage.StatusCode,
+						errorContent);
+				}
+#endif
+
+				return httpResponseMessage.IsSuccessStatusCode;
 			}
 			catch (Exception ex)
 			{
@@ -202,11 +230,24 @@ namespace CatCore.Services.Twitch
 				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async ct =>
 				{
 					using var jsonContent = JsonContent.Create(body);
-					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) {Content = jsonContent};
+					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
 					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
 				}, cancellationToken).ConfigureAwait(false);
-				if (!(httpResponseMessage?.IsSuccessStatusCode ?? false))
+				if (httpResponseMessage == null)
 				{
+					return null;
+				}
+
+				if (!httpResponseMessage.IsSuccessStatusCode)
+				{
+#if DEBUG
+					var errorContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					_logger.Warning("Something went wrong while trying to execute the {HttpVerb} call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+						httpMethod,
+						url,
+						httpResponseMessage.StatusCode,
+						errorContent);
+#endif
 					return null;
 				}
 
@@ -253,7 +294,24 @@ namespace CatCore.Services.Twitch
 					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url) { Content = jsonContent };
 					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
 				}, cancellationToken).ConfigureAwait(false);
-				return httpResponseMessage?.IsSuccessStatusCode ?? false;
+				if (httpResponseMessage == null)
+				{
+					return false;
+				}
+
+#if DEBUG
+				if (!httpResponseMessage.IsSuccessStatusCode)
+				{
+					var errorContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					_logger.Warning("Something went wrong while trying to execute the {HttpVerb} call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+						httpMethod,
+						url,
+						httpResponseMessage.StatusCode,
+						errorContent);
+				}
+#endif
+
+				return httpResponseMessage.IsSuccessStatusCode;
 			}
 			catch (Exception ex)
 			{
