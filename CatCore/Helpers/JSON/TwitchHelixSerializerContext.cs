@@ -20,6 +20,7 @@ namespace CatCore.Helpers.JSON
 	[JsonSerializable(typeof(ResponseBaseWithPagination<Stream>))]
 	[JsonSerializable(typeof(ResponseBaseWithTemplate<GlobalEmote>))]
 	[JsonSerializable(typeof(ResponseBaseWithTemplate<ChannelEmote>))]
+	[JsonSerializable(typeof(ResponseBase<ChatSettings>))]
 	internal partial class TwitchHelixSerializerContext : JsonSerializerContext
 	{
 	}

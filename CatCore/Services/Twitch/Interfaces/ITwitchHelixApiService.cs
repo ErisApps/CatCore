@@ -60,6 +60,46 @@ namespace CatCore.Services.Twitch.Interfaces
 			CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Gets the broadcaster’s chat settings.
+		/// </summary>
+		/// <param name="broadcasterId">The ID of the broadcaster whose chat settings you want to get</param>
+		/// <param name="withModeratorPermissions">Check the broadcaster's chat settings as a moderator, will include NonModeratorChatDelay related properties</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing the channel settings of the requested broadcaster</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#get-chat-settings">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<ChatSettings>?> GetChatSettings(string broadcasterId, bool withModeratorPermissions = false, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Updates the broadcaster’s chat settings.
+		/// </summary>
+		/// <param name="broadcasterId">The ID of the broadcaster whose chat settings you want to update</param>
+		/// <param name="emoteMode">Indicates whether messages may only contain emotes or not</param>
+		/// <param name="followerMode">Indicates whether the broadcaster' chat is restricted to followers only</param>
+		/// <param name="followerModeDurationMinutes">The length of time, in minutes, that users must follow the broadcaster before being able to participate in the chat room. Minimum: 0 (No restrictions). Maximum: 129600 (3 months). Overrides <paramref name="followerMode" /> if set.</param>
+		/// <param name="nonModeratorChatDelay">Indicates whether the broadcaster adds a short delay before chat messages appear in the chat. This gives chat moderators and bots a chance to remove them before viewers can see the message.</param>
+		/// <param name="nonModeratorChatDelayDurationSeconds">The amount of time, in seconds, that messages are delayed before appearing in chat. Valid values:
+		/// <list type="bullet">
+		/// <item><description>2: 2 second delay (recommended)</description></item>
+		/// <item><description>4: 4 second delay</description></item>
+		/// <item><description>6: 6 second delay</description></item>
+		/// </list>
+		/// Overrides <paramref name="nonModeratorChatDelay" /> if set.
+		/// </param>
+		/// <param name="slowMode">Indicates that the broadcaster limits how often users are allowed to send messages in chat.</param>
+		/// <param name="slowModeWaitTimeSeconds">The amount of time, in seconds, that users must wait between sending messages. Minimum: 3 (No restrictions). Maximum: 120 (2 minutes). Overrides <paramref name="slowMode" /> if set.</param>
+		/// <param name="subscriberMode">Indicates whether only users who subscribe to the broadcaster's channel may send messages.</param>
+		/// <param name="uniqueChatMode">Indicates whether the broadcaster requires users to post only unique messages in chat.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing the channel settings of the requested broadcaster</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#update-chat-settings">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<ChatSettings>?> UpdateChatSettings(string broadcasterId, bool? emoteMode = null, bool? followerMode = null, uint? followerModeDurationMinutes = null,
+			bool? nonModeratorChatDelay = null, uint? nonModeratorChatDelayDurationSeconds = null, bool? slowMode = null, uint? slowModeWaitTimeSeconds = null, bool? subscriberMode = null,
+			bool? uniqueChatMode = null, CancellationToken cancellationToken = default);
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
