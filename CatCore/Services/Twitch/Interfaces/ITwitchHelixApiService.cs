@@ -143,6 +143,27 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<bool> UnbanUser(string broadcasterId, string userId, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Sends an announcement to the broadcaster’s chat room.
+		/// </summary>
+		/// <param name="broadcasterId">The ID of the broadcaster that owns the chat room to send the announcement to.</param>
+		/// <param name="message">The announcement to make in the broadcaster’s chat room. Announcements are limited to a maximum of 500 characters; announcements longer than 500 characters are truncated.</param>
+		/// <param name="color">
+		/// <list type="bullet">The color used to highlight the announcement. Possible case-sensitive values are:
+		/// <item><description>blue</description></item>
+		/// <item><description>green</description></item>
+		/// <item><description>orange</description></item>
+		/// <item><description>purple</description></item>
+		/// <item><description>primary (default)</description></item>
+		/// </list>
+		/// If color is set to primary or is not set, then the channel’s accent color is used to highlight the announcement.
+		/// </param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Boolean indicating whether the request was successful or not</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#send-chat-announcement">Check out the Twitch API Reference docs.</a></remarks>
+		Task<bool> SendChatAnnouncement(string broadcasterId, string message, string color = "primary", CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>

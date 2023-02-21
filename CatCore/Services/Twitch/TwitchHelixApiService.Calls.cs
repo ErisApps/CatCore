@@ -273,6 +273,22 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		public async Task<bool> SendChatAnnouncement(string broadcasterId, string message, string color = "primary", CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var urlBuilder = TWITCH_HELIX_BASEURL + "chat/announcements?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId;
+
+			if (color is not ("primary" or "blue" or "green" or "orange" or "purple"))
+			{
+				throw new ArgumentException("The color parameter should be one of the following: primary, blue, green, orange, purple.", nameof(color));
+			}
+
+			var body = new SendChatAnnouncementRequestDto(message, color);
+			return await PostAsync(urlBuilder, body, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
