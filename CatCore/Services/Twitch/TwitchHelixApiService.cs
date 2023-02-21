@@ -142,6 +142,9 @@ namespace CatCore.Services.Twitch
 		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<bool> PutAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Put, url, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
 			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethodPatch, url, body, jsonResponseTypeInfo, cancellationToken);
 
@@ -149,7 +152,9 @@ namespace CatCore.Services.Twitch
 		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private async Task<bool> DeleteAsync(string url, CancellationToken cancellationToken = default)
+		private Task<bool> DeleteAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Delete, url, cancellationToken);
+
+		private async Task<bool> CallEndpointNoBodyNoBody(HttpMethod httpMethod, string url, CancellationToken cancellationToken = default)
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -157,7 +162,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentNullException(nameof(url));
 			}
 
-			_logger.Verbose("Invoking Helix endpoint DELETE {Url}", url);
+			_logger.Verbose("Invoking Helix endpoint {HttpVerb} {Url}", httpMethod, url);
 #endif
 			if (!_twitchAuthService.HasTokens)
 			{
@@ -172,7 +177,11 @@ namespace CatCore.Services.Twitch
 
 			try
 			{
-				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(ct => _helixClient.DeleteAsync(url, ct), cancellationToken).ConfigureAwait(false);
+				using var httpResponseMessage = await _combinedHelixPolicy.ExecuteAsync(async ct =>
+				{
+					using var httpRequestMessage = new HttpRequestMessage(httpMethod, url);
+					return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct);
+				}, cancellationToken).ConfigureAwait(false);
 				if (httpResponseMessage == null)
 				{
 					return false;
@@ -182,7 +191,8 @@ namespace CatCore.Services.Twitch
 				if (!httpResponseMessage.IsSuccessStatusCode)
 				{
 					var errorContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-					_logger.Warning("Something went wrong while trying to execute the DELETE call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+					_logger.Warning("Something went wrong while trying to execute the {HttpVerb} call to {Uri}. StatusCode: {StatusCode}. Response: {Response}",
+						httpMethod,
 						url,
 						httpResponseMessage.StatusCode,
 						errorContent);
@@ -193,7 +203,7 @@ namespace CatCore.Services.Twitch
 			}
 			catch (Exception ex)
 			{
-				_logger.Warning(ex, "Something went wrong while trying to execute the DELETE call to {Uri}", url);
+				_logger.Warning(ex, "Something went wrong while trying to execute the {HttpVerb} call to {Uri}", httpMethod, url);
 				return false;
 			}
 		}
@@ -212,7 +222,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentNullException(nameof(body));
 			}
 
-			_logger.Verbose("Invoking Helix endpoint POST {Url}", url);
+			_logger.Verbose("Invoking Helix endpoint {HttpVerb} {Url}", httpMethod, url);
 #endif
 			if (!_twitchAuthService.HasTokens)
 			{
@@ -273,7 +283,7 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentNullException(nameof(body));
 			}
 
-			_logger.Verbose("Invoking Helix endpoint POST {Url}", url);
+			_logger.Verbose("Invoking Helix endpoint {HttpVerb} {Url}", httpMethod, url);
 #endif
 			if (!_twitchAuthService.HasTokens)
 			{

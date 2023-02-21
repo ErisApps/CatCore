@@ -327,6 +327,35 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		public async Task<bool> UpdateUserChatColor(UserChatColor color, CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			var colorString = color switch
+			{
+				UserChatColor.Blue => "blue",
+				UserChatColor.BlueViolet => "blue_violet",
+				UserChatColor.CadetBlue => "cadet_blue",
+				UserChatColor.Chocolate => "chocolate",
+				UserChatColor.Coral => "coral",
+				UserChatColor.DodgerBlue => "dodger_blue",
+				UserChatColor.Firebrick => "firebrick",
+				UserChatColor.GoldenRod => "golden_rod",
+				UserChatColor.Green => "green",
+				UserChatColor.HotPink => "hot_pink",
+				UserChatColor.OrangeRed => "orange_red",
+				UserChatColor.Red => "red",
+				UserChatColor.SeaGreen => "sea_green",
+				UserChatColor.SpringGreen => "spring_green",
+				UserChatColor.YellowGreen => "yellow_green",
+				_ => throw new ArgumentOutOfRangeException(nameof(color), color, "An invalid color was provided.")
+			};
+
+			var url = TWITCH_HELIX_BASEURL + "chat/color?user_id=" + loggedInUser.UserId + "&color=" + colorString;
+			return await PutAsync(url, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
 		{
