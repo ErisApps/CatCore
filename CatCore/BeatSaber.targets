@@ -74,5 +74,15 @@
 		</ItemGroup>
 	</Target>
 
+	<Target Name="BSMT_Override_RemoveEmbeddedManifest" BeforeTargets="BeforeBuild" DependsOnTargets="BSMT_GenerateManifest">
+		<Message Text="Target: BSMT_Override_RemoveEmbeddedManifest" Importance="high" />
+
+		<ItemGroup>
+			<EmbeddedResource Remove="$(IntermediateOutputPath)manifest.json" />
+		</ItemGroup>
+
+		<Message Text="   Removed embedded manifest '$(OutputAssemblyName).manifest'" Importance="high" />
+	</Target>
+
 	<Import Project="ILRepack.targets" Condition="'$(Configuration)' != 'Debug'" />
 </Project>
