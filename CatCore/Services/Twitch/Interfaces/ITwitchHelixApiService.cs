@@ -236,6 +236,16 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<ResponseBase<StartRaidData>?> StartRaid(string targetBroadcasterId, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Cancel a pending raid.
+		/// You can cancel a raid at any point up until the broadcaster clicks Raid Now in the Twitch UX or the 90-second countdown expires.
+		/// </summary>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Boolean indicating whether the request was successful or not</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#cancel-a-raid">Check out the Twitch API Reference docs.</a></remarks>
+		Task<bool> CancelRaid(CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
