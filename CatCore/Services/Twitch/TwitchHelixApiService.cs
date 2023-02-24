@@ -83,7 +83,36 @@ namespace CatCore.Services.Twitch
 			return loggedInUser ?? throw new TwitchNotAuthenticatedException();
 		}
 
-		private async Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default) where TResponse : struct
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<TResponse?> GetAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default) where TResponse : struct
+			=> CallEndpointNoBodyExpectBody(HttpMethod.Get, url, jsonResponseTypeInfo, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
+			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethod.Post, url, body, jsonResponseTypeInfo, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<TResponse?> PostAsync<TResponse>(string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
+			where TResponse : struct => CallEndpointNoBodyExpectBody(HttpMethod.Post, url, jsonResponseTypeInfo, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<bool> PutAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Put, url, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
+			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethodPatch, url, body, jsonResponseTypeInfo, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private Task<bool> DeleteAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Delete, url, cancellationToken);
+
+		private async Task<TResponse?> CallEndpointNoBodyExpectBody<TResponse>(HttpMethod httpMethod, string url, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
+			where TResponse : struct
 		{
 #if DEBUG
 			if (string.IsNullOrWhiteSpace(url))
@@ -91,23 +120,27 @@ namespace CatCore.Services.Twitch
 				throw new ArgumentNullException(nameof(url));
 			}
 
-			_logger.Verbose("Invoking Helix endpoint GET {Url}", url);
+			_logger.Verbose("Invoking Helix endpoint {HttpVerb} {Url}", httpMethod, url);
 #endif
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
-				return null;
+				return default;
 			}
 
 			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
 			{
-				return null;
+				return default;
 			}
 
 			try
 			{
 				using var httpResponseMessage = await _combinedHelixPolicy
-					.ExecuteAsync(ct => _helixClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct), cancellationToken).ConfigureAwait(false);
+					.ExecuteAsync(async ct =>
+					{
+						using var httpRequestMessage = new HttpRequestMessage(httpMethod, url);
+						return await _helixClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, ct);
+					}, cancellationToken).ConfigureAwait(false);
 				if (httpResponseMessage == null)
 				{
 					return null;
@@ -134,26 +167,6 @@ namespace CatCore.Services.Twitch
 			}
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PostAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
-			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethod.Post, url, body, jsonResponseTypeInfo, cancellationToken);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> PostAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethod.Post, url, body, cancellationToken);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> PutAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Put, url, cancellationToken);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<TResponse?> PatchAsync<TResponse, TBody>(string url, TBody body, JsonTypeInfo<TResponse> jsonResponseTypeInfo, CancellationToken cancellationToken = default)
-			where TResponse : struct => CallEndpointWithBodyExpectBody(HttpMethodPatch, url, body, jsonResponseTypeInfo, cancellationToken);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> PatchAsync<TBody>(string url, TBody body, CancellationToken cancellationToken = default) => CallEndpointWithBodyNoBody(HttpMethodPatch, url, body, cancellationToken);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Task<bool> DeleteAsync(string url, CancellationToken cancellationToken = default) => CallEndpointNoBodyNoBody(HttpMethod.Delete, url, cancellationToken);
-
 		private async Task<bool> CallEndpointNoBodyNoBody(HttpMethod httpMethod, string url, CancellationToken cancellationToken = default)
 		{
 #if DEBUG
@@ -167,12 +180,12 @@ namespace CatCore.Services.Twitch
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
-				return false;
+				return default;
 			}
 
 			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
 			{
-				return false;
+				return default;
 			}
 
 			try
@@ -227,12 +240,12 @@ namespace CatCore.Services.Twitch
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
-				return null;
+				return default;
 			}
 
 			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
 			{
-				return null;
+				return default;
 			}
 
 			try
@@ -288,12 +301,12 @@ namespace CatCore.Services.Twitch
 			if (!_twitchAuthService.HasTokens)
 			{
 				_logger.Warning("Token not valid. Either the user is not logged in or the token has been revoked");
-				return false;
+				return default;
 			}
 
 			if (!_twitchAuthService.TokenIsValid && !await _twitchAuthService.RefreshTokens().ConfigureAwait(false))
 			{
-				return false;
+				return default;
 			}
 
 			try
