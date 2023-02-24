@@ -363,6 +363,13 @@ namespace CatCore.Services.Twitch
 			return await PostAsync(url, TwitchHelixSerializerContext.Default.ResponseBaseStartRaidData, cancellationToken).ConfigureAwait(false);
 		}
 
+		public async Task<bool> CancelRaid(CancellationToken cancellationToken = default)
+		{
+			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
+
+			return await DeleteAsync(TWITCH_HELIX_BASEURL + "raids?broadcaster_id=" + loggedInUser.UserId, cancellationToken).ConfigureAwait(false);
+		}
+
 		/// <inheritdoc />
 		// ReSharper disable once CognitiveComplexity
 		public async Task<ResponseBaseWithPagination<PollData>?> GetPolls(List<string>? pollIds = null, uint? limit = null, string? continuationCursor = null, CancellationToken cancellationToken = default)
