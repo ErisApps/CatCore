@@ -223,6 +223,19 @@ namespace CatCore.Services.Twitch.Interfaces
 		Task<bool> UpdateUserChatColor(UserChatColor color, CancellationToken cancellationToken = default);
 
 		/// <summary>
+		/// Raid another channel by sending the broadcaster’s viewers to the targeted channel.
+		/// The Twitch UX will pop up a window at the top of the chat room that identifies the number of viewers in the raid.
+		/// The raid occurs when the broadcaster clicks Raid Now or after the 90-second countdown expires.
+		/// </summary>
+		/// <param name="targetBroadcasterId">The ID of the broadcaster to raid.</param>
+		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
+		/// <returns>Response containing information about the raid that got initiated.</returns>
+		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentException">Gets thrown when validation regarding one of the arguments fails.</exception>
+		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#start-a-raid">Check out the Twitch API Reference docs.</a></remarks>
+		Task<ResponseBase<StartRaidData>?> StartRaid(string targetBroadcasterId, CancellationToken cancellationToken = default);
+
+		/// <summary>
 		/// Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
 		/// </summary>
 		/// <param name="pollIds">Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel. Maximum: 100</param>
