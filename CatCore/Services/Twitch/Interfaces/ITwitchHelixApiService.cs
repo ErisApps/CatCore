@@ -150,19 +150,20 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// <param name="message">The announcement to make in the broadcaster’s chat room. Announcements are limited to a maximum of 500 characters; announcements longer than 500 characters are truncated.</param>
 		/// <param name="color">The color used to highlight the announcement. Possible case-sensitive values are:
 		/// <list type="bullet">
-		/// <item><description>blue</description></item>
-		/// <item><description>green</description></item>
-		/// <item><description>orange</description></item>
-		/// <item><description>purple</description></item>
-		/// <item><description>primary (default)</description></item>
+		/// <item><description><see cref="SendChatAnnouncementColor.Primary"/></description></item>
+		/// <item><description><see cref="SendChatAnnouncementColor.Blue"/></description></item>
+		/// <item><description><see cref="SendChatAnnouncementColor.Green"/></description></item>
+		/// <item><description><see cref="SendChatAnnouncementColor.Orange"/></description></item>
+		/// <item><description><see cref="SendChatAnnouncementColor.Purple"/></description></item>
 		/// </list>
 		/// If color is set to primary or is not set, then the channel’s accent color is used to highlight the announcement.
 		/// </param>
 		/// <param name="cancellationToken">CancellationToken that can be used to cancel the call</param>
 		/// <returns>Boolean indicating whether the request was successful or not</returns>
 		/// <exception cref="TwitchNotAuthenticatedException">Gets thrown when the user isn't authenticated, either make sure the user is logged in or try again later.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Gets thrown when an invalid color enum is passed in.</exception>
 		/// <remarks><a href="https://dev.twitch.tv/docs/api/reference/#send-chat-announcement">Check out the Twitch API Reference docs.</a></remarks>
-		Task<bool> SendChatAnnouncement(string broadcasterId, string message, string color = "primary", CancellationToken cancellationToken = default);
+		Task<bool> SendChatAnnouncement(string broadcasterId, string message, SendChatAnnouncementColor color = SendChatAnnouncementColor.Primary, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a single chat message or all chat messages from the broadcaster’s chat room.

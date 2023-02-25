@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace CatCore.Models.Twitch.Helix.Requests
 {
@@ -11,10 +12,18 @@ namespace CatCore.Models.Twitch.Helix.Requests
 		public string Color { get; }
 
 		[JsonConstructor]
-		public SendChatAnnouncementRequestDto(string message, string color)
+		public SendChatAnnouncementRequestDto(string message, SendChatAnnouncementColor color)
 		{
 			Message = message;
-			Color = color;
+			Color = color switch
+			{
+				SendChatAnnouncementColor.Primary => "primary",
+				SendChatAnnouncementColor.Blue => "blue",
+				SendChatAnnouncementColor.Green => "green",
+				SendChatAnnouncementColor.Orange => "orange",
+				SendChatAnnouncementColor.Purple => "purple",
+				_ => throw new ArgumentOutOfRangeException(nameof(color), color, "An invalid color was provided.")
+			};
 		}
 	}
 }
