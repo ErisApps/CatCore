@@ -15,7 +15,6 @@ namespace CatCore.Models.Twitch.Helix.Requests.Bans
 		[JsonPropertyName("reason")]
 		public string? Reason { get; }
 
-		[JsonConstructor]
 		public BanUserRequestDto(string userId, uint? duration, string? reason)
 		{
 			UserId = userId;
