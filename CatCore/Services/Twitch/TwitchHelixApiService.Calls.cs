@@ -350,6 +350,7 @@ namespace CatCore.Services.Twitch
 			return await PutAsync(url, cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <inheritdoc />
 		public async Task<ResponseBase<StartRaidData>?> StartRaid(string targetBroadcasterId, CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
@@ -358,6 +359,7 @@ namespace CatCore.Services.Twitch
 			return await PostAsync(url, TwitchHelixSerializerContext.Default.ResponseBaseStartRaidData, cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <inheritdoc />
 		public async Task<bool> CancelRaid(CancellationToken cancellationToken = default)
 		{
 			var loggedInUser = await CheckUserLoggedIn().ConfigureAwait(false);
