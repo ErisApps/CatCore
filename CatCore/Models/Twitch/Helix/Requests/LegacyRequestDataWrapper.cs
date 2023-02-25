@@ -7,7 +7,6 @@ namespace CatCore.Models.Twitch.Helix.Requests
 		[JsonPropertyName("data")]
 		public T Data { get; }
 
-		[JsonConstructor]
 		public LegacyRequestDataWrapper(T data)
 		{
 			Data = data;

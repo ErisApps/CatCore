@@ -11,7 +11,6 @@ namespace CatCore.Models.Twitch.Helix.Requests
 		[JsonPropertyName("color")]
 		public string Color { get; }
 
-		[JsonConstructor]
 		public SendChatAnnouncementRequestDto(string message, SendChatAnnouncementColor color)
 		{
 			Message = message;
