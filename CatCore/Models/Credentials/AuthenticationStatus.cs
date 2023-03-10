@@ -2,6 +2,7 @@
 {
 	public enum AuthenticationStatus
 	{
+		Unknown,
 		Initializing,
 		Unauthorized,
 		Authenticated
