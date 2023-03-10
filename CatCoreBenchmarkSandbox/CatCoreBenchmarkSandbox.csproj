@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.13.4" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
 		<PackageReference Include="CatCore.Emoji.SourceGeneration.Twemoji" Version="1.0.3" />
 	</ItemGroup>
 
