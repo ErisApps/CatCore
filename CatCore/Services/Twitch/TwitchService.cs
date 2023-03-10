@@ -70,7 +70,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
-		public bool LoggedIn => _twitchAuthService.HasTokens && _twitchAuthService.TokenIsValid;
+		public bool LoggedIn => _twitchAuthService is { HasTokens: true, TokenIsValid: true, Status: AuthenticationStatus.Authenticated };
 
 		/// <inheritdoc />
 		public TwitchChannel? DefaultChannel => _twitchChannelManagementService.GetOwnChannel();
