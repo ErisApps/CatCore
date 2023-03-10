@@ -236,7 +236,7 @@ namespace CatCore.Services.Twitch
 					out var message);
 
 #if DEBUG
-				_logger.Verbose("{MessageTemplate}", rawMessageAsSpan.Slice(startPosition, endPosition - startPosition).ToString());
+				_logger.Verbose("{MessageTemplate}", singleMessageAsSpan.ToString());
 
 				_logger.Verbose("Tags count: {Tags}", tags?.Count.ToString() ?? "N/A");
 				_logger.Verbose("Prefix: {Prefix}", prefix ?? "N/A");
