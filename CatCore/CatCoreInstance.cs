@@ -88,7 +88,11 @@ namespace CatCore
 					{
 						using var messageWriter = new StringWriter();
 						_logReceivedTextFormatter.Format(evt, messageWriter);
-						OnLogReceived?.Invoke((CustomLogLevel) evt.Level, evt.Properties.TryGetValue("SourceContext", out var context) ? ((ScalarValue) context).Value.ToString() : "_",
+						OnLogReceived?.Invoke(
+							(CustomLogLevel) evt.Level,
+							evt.Properties.TryGetValue("SourceContext", out var contextRaw) && contextRaw is ScalarValue { Value: {} } context
+								? context.Value.ToString()
+								: "_",
 							messageWriter.ToString());
 					})))
 				.CreateLogger();
