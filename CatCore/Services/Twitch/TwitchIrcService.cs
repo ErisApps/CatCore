@@ -224,23 +224,16 @@ namespace CatCore.Services.Twitch
 			uint messageCount = 0;
 #endif
 
-			var rawMessageAsSpan = rawMessage.AsSpan();
-			var endPosition = 0;
-			do
+			void HandleSingleMessage(ReadOnlySpan<char> singleMessageAsSpan)
 			{
-				var startPosition = endPosition;
-				while (endPosition + 1 < rawMessageAsSpan.Length)
-				{
-					if (rawMessageAsSpan[endPosition] == '\r' && rawMessageAsSpan[endPosition + 1] == '\n')
-					{
-						break;
-					}
-
-					endPosition++;
-				}
-
 				// Handle IRC messages here
-				IrcExtensions.ParseIrcMessage(rawMessageAsSpan.Slice(startPosition, endPosition - startPosition), out var tags, out var prefix, out var commandType, out var channelName, out var message);
+				IrcExtensions.ParseIrcMessage(
+					singleMessageAsSpan,
+					out var tags,
+					out var prefix,
+					out var commandType,
+					out var channelName,
+					out var message);
 
 #if DEBUG
 				_logger.Verbose("{MessageTemplate}", rawMessageAsSpan.Slice(startPosition, endPosition - startPosition).ToString());
@@ -258,9 +251,28 @@ namespace CatCore.Services.Twitch
 #if !RELEASE
 				messageCount++;
 #endif
+			}
 
-				endPosition += 2;
-			} while (endPosition < rawMessageAsSpan.Length);
+			var rawMessageAsSpan = rawMessage.AsSpan();
+			while (true)
+			{
+
+				var messageSeparatorPosition = rawMessageAsSpan.IndexOf("\r\n".AsSpan());
+				if (messageSeparatorPosition == -1)
+				{
+					if (rawMessageAsSpan.Length > 0)
+					{
+						HandleSingleMessage(rawMessageAsSpan);
+					}
+
+					break;
+				}
+
+				// Handle IRC messages here
+				HandleSingleMessage(rawMessageAsSpan.Slice(0, messageSeparatorPosition));
+
+				rawMessageAsSpan = rawMessageAsSpan.Slice(messageSeparatorPosition + 2);
+			}
 
 #if !RELEASE
 			stopwatch.Stop();

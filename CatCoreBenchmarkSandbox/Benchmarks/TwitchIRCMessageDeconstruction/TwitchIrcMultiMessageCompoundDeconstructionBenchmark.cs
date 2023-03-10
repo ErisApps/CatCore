@@ -51,6 +51,40 @@ namespace CatCoreBenchmarkSandbox.Benchmarks.TwitchIRCMessageDeconstruction
 			} while (endPosition < rawMessagesAsSpan.Length);
 		}
 
+
+		/// <summary>
+		/// V1 had an issue where the last letter of non /r/n terminated messages would be dropped
+		/// </summary>
+		[Benchmark]
+		public void InlineSpanBasedSplitBenchmarkV2()
+		{
+			void handleSingleMessage(ReadOnlySpan<char> singleMessageAsSpan)
+			{
+				IrcExtensions.New.ParseIrcMessage(singleMessageAsSpan, out var tags, out var prefix, out var commandType, out var channelName, out var message);
+			}
+
+			var rawMessagesAsSpan = RawIrcMultiMessage.AsSpan();
+			while (true)
+			{
+
+				var messageSeparatorPosition = rawMessagesAsSpan.IndexOf("\r\n".AsSpan());
+				if (messageSeparatorPosition == -1)
+				{
+					if (rawMessagesAsSpan.Length > 0)
+					{
+						handleSingleMessage(rawMessagesAsSpan);
+					}
+
+					break;
+				}
+
+				// Handle IRC messages here
+				handleSingleMessage(rawMessagesAsSpan.Slice(0, messageSeparatorPosition));
+
+				rawMessagesAsSpan = rawMessagesAsSpan.Slice(messageSeparatorPosition + 2);
+			}
+		}
+
 		internal static class IrcExtensions
 		{
 			internal static class Old
