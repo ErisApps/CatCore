@@ -84,7 +84,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreateStreamMarkerRequestDto(userId, description);
-			return await PostAsync(TWITCH_HELIX_BASEURL + "streams/markers", body, TwitchHelixSerializerContext.Default.ResponseBaseCreateStreamMarkerData, cancellationToken).ConfigureAwait(false);
+			return await PostAsync(TWITCH_HELIX_BASEURL + "streams/markers", body,
+					TwitchHelixSerializerContext.Default.CreateStreamMarkerRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBaseCreateStreamMarkerData,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -187,7 +191,11 @@ namespace CatCore.Services.Twitch
 			var body = new ChatSettingsRequestDto(emoteMode, followerMode, followerModeDurationMinutes, nonModeratorChatDelay, nonModeratorChatDelayDurationSeconds, slowMode,
 				slowModeWaitTimeSeconds, subscriberMode, uniqueChatMode);
 
-			return await PatchAsync(urlBuilder, body, TwitchHelixSerializerContext.Default.ResponseBaseChatSettings, cancellationToken).ConfigureAwait(false);
+			return await PatchAsync(urlBuilder, body,
+					TwitchHelixSerializerContext.Default.ChatSettingsRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBaseChatSettings,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -258,7 +266,11 @@ namespace CatCore.Services.Twitch
 
 			var body = new BanUserRequestDto(userId, durationSeconds, reason);
 			var bodyWrapper = new LegacyRequestDataWrapper<BanUserRequestDto>(body);
-			return await PostAsync(urlBuilder, bodyWrapper, TwitchHelixSerializerContext.Default.ResponseBaseBanUser, cancellationToken).ConfigureAwait(false);
+			return await PostAsync(urlBuilder, bodyWrapper,
+					TwitchHelixSerializerContext.Default.LegacyRequestDataWrapperBanUserRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBaseBanUser,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -279,7 +291,7 @@ namespace CatCore.Services.Twitch
 			var urlBuilder = TWITCH_HELIX_BASEURL + "chat/announcements?broadcaster_id=" + broadcasterId + "&moderator_id=" + loggedInUser.UserId;
 
 			var body = new SendChatAnnouncementRequestDto(message, color);
-			return await PostAsync(urlBuilder, body, cancellationToken).ConfigureAwait(false);
+			return await PostAsync(urlBuilder, body, TwitchHelixSerializerContext.Default.SendChatAnnouncementRequestDto, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -484,7 +496,11 @@ namespace CatCore.Services.Twitch
 			OptionalParametersValidation(ref channelPointsVotingEnabled, ref channelPointsPerVote, 1000000);
 
 			var body = new CreatePollRequestDto(loggedInUser.UserId, title, pollChoices, duration, channelPointsVotingEnabled, channelPointsPerVote);
-			return await PostAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken).ConfigureAwait(false);
+			return await PostAsync(TWITCH_HELIX_BASEURL + "polls", body,
+					TwitchHelixSerializerContext.Default.CreatePollRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBasePollData,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -503,7 +519,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPollRequestDto(loggedInUser.UserId, pollId, pollStatus);
-			return await PatchAsync(TWITCH_HELIX_BASEURL + "polls", body, TwitchHelixSerializerContext.Default.ResponseBasePollData, cancellationToken).ConfigureAwait(false);
+			return await PatchAsync(TWITCH_HELIX_BASEURL + "polls", body,
+					TwitchHelixSerializerContext.Default.EndPollRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBasePollData,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -586,7 +606,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new CreatePredictionsRequestDto(loggedInUser.UserId, title, predictionOutcomes, duration);
-			return await PostAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken).ConfigureAwait(false);
+			return await PostAsync(TWITCH_HELIX_BASEURL + "predictions", body,
+					TwitchHelixSerializerContext.Default.CreatePredictionsRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBasePredictionData,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
@@ -610,7 +634,11 @@ namespace CatCore.Services.Twitch
 			}
 
 			var body = new EndPredictionRequestDto(loggedInUser.UserId, predictionId, predictionStatus, winningOutcomeId);
-			return await PatchAsync(TWITCH_HELIX_BASEURL + "predictions", body, TwitchHelixSerializerContext.Default.ResponseBasePredictionData, cancellationToken).ConfigureAwait(false);
+			return await PatchAsync(TWITCH_HELIX_BASEURL + "predictions", body,
+					TwitchHelixSerializerContext.Default.EndPredictionRequestDto,
+					TwitchHelixSerializerContext.Default.ResponseBasePredictionData,
+					cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		/// <inheritdoc />
