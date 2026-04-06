@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
 using CatCore.Models.Twitch.Shared;
 
@@ -13,7 +13,7 @@ namespace CatCore.Models.Twitch.Helix.Requests.Polls
 		public string PollId { get; }
 
 		[JsonPropertyName("status")]
-		[JsonConverter(typeof(JsonStringEnumConverter<PollStatus>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<PollStatus>))]
 		public PollStatus Status { get; }
 
 		public EndPollRequestDto(string broadcasterId, string pollId, PollStatus status)

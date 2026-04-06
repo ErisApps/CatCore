@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
@@ -14,7 +14,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Bits.Cheermotes
 		public IReadOnlyList<CheermoteTier> Tiers { get; }
 
 		[JsonPropertyName("type")]
-		[JsonConverter(typeof(JsonStringEnumConverter<CheermoteType>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<CheermoteType>))]
 		public CheermoteType Type { get; }
 
 		[JsonPropertyName("order")]

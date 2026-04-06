@@ -33,6 +33,11 @@ namespace CatCore.Helpers.JSON
 	[JsonSerializable(typeof(HelixRequests.SendChatAnnouncementRequestDto))]
 	[JsonSerializable(typeof(HelixResponses.ResponseBase<HelixResponses.UserChatColorData>))]
 	[JsonSerializable(typeof(HelixResponses.ResponseBase<HelixResponses.StartRaidData>))]
+	[JsonSerializable(typeof(HelixRequests.SendChatMessageRequestDto))]
+	[JsonSerializable(typeof(HelixRequests.EventSubSubscriptionRequestDto))]
+	[JsonSerializable(typeof(HelixRequests.EventSubTransportDto))]
+	[JsonSerializable(typeof(HelixResponses.EventSubSubscriptionResponseDto))]
+	[JsonSerializable(typeof(HelixResponses.EventSubSubscriptionInfoDto))]
 	internal partial class TwitchHelixSerializerContext : JsonSerializerContext
 	{
 	}

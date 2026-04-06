@@ -70,7 +70,7 @@ namespace CatCore.Services.Twitch
 			var exceptionRetryPolicy = Policy<HttpResponseMessage>
 				.Handle<HttpRequestException>()
 				.OrResult(resp => resp.StatusCode == HttpStatusCode.Conflict)
-				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(2 ^ (retryAttempt - 1) * 500));
+				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds((1 << (retryAttempt - 1)) * 500));
 
 			var bulkheadPolicy = Policy.BulkheadAsync<HttpResponseMessage>(4, 1000);
 

@@ -1,3 +1,4 @@
+using System;
 using CatCore.Models.Twitch;
 using CatCore.Models.Twitch.IRC;
 using CatCore.Services.Interfaces;
@@ -12,6 +13,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// </summary>
 		/// <returns>Returns the PubSub service manager</returns>
 		[PublicAPI]
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		ITwitchPubSubServiceManager GetPubSubService();
 
 		/// <summary>

@@ -18,6 +18,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the view count update.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, ViewCountUpdate> OnViewCountUpdated;
 
 		/// <summary>
@@ -25,6 +26,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the StreamUp event.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, StreamUp> OnStreamUp;
 
 		/// <summary>
@@ -32,6 +34,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the StreamDown event.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, StreamDown> OnStreamDown;
 
 		/// <summary>
@@ -39,6 +42,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the OnCommercial event.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, Commercial> OnCommercial;
 
 		/// <summary>
@@ -46,6 +50,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the new follower.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, Follow> OnFollow;
 
 		/// <summary>
@@ -53,6 +58,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the poll.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, PollData> OnPoll;
 
 		/// <summary>
@@ -60,6 +66,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the prediction.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, PredictionData> OnPrediction;
 
 		/// <summary>
@@ -67,6 +74,7 @@ namespace CatCore.Services.Twitch.Interfaces
 		/// First argument of the callback is the channelId on which the event was triggered.
 		/// Second argument of the callback is additional data regarding the redeemed reward and redeemer.
 		/// </summary>
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		event Action<string, RewardRedeemedData> OnRewardRedeemed;
 	}
 }

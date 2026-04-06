@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
@@ -39,7 +39,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Polls
 		public uint ChannelPointsPerVote { get; }
 
 		[JsonPropertyName("status")]
-		[JsonConverter(typeof(JsonStringEnumConverter<PollStatus>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<PollStatus>))]
 		public PollStatus Status { get; }
 
 		[JsonPropertyName("duration")]

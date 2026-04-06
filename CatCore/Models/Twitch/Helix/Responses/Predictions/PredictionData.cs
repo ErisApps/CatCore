@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
@@ -33,7 +33,7 @@ namespace CatCore.Models.Twitch.Helix.Responses.Predictions
 		public uint Duration { get; }
 
 		[JsonPropertyName("status")]
-		[JsonConverter(typeof(JsonStringEnumConverter<PredictionStatus>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<PredictionStatus>))]
 		public PredictionStatus Status { get; }
 
 		[JsonPropertyName("created_at")]

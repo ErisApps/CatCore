@@ -54,6 +54,7 @@
 		public const string MSG_PARAM_SUB_PLAN = "msg-param-sub-plan";
 		public const string MSG_PARAM_SUB_PLAN_NAME = "msg-param-sub-plan-name";
 		public const string MSG_PARAM_VIEWER_COUNT = "msg-param-viewerCount";
+		public const string MSG_PARAM_PROFILE_IMAGE_URL = "msg-param-profileImageURL";
 		public const string MSG_PARAM_RITUAL_NAME = "msg-param-ritual-name";
 		public const string MSG_PARAM_THRESHOLD = "msg-param-threshold";
 		public const string MSG_PARAM_GIFT_MONTHS = "msg-param-gift-months";

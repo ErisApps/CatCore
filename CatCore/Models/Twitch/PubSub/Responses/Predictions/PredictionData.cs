@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
@@ -42,7 +42,7 @@ namespace CatCore.Models.Twitch.PubSub.Responses.Predictions
 		public uint PredictionWindowSeconds { get; }
 
 		[JsonPropertyName("status")]
-		[JsonConverter(typeof(JsonStringEnumConverter<PredictionStatus>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<PredictionStatus>))]
 		public PredictionStatus Status { get; }
 
 		[JsonPropertyName("winning_outcome_id")]

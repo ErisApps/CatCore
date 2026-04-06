@@ -136,16 +136,16 @@ namespace CatCore
 
 			// Register Twitch-specific services
 			container.Register<ITwitchAuthService, TwitchAuthService>(Reuse.Singleton);
+			container.RegisterInitializer<ITwitchAuthService>((service, _) => service.Initialize());
 			container.Register<ITwitchChannelManagementService, TwitchChannelManagementService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			container.Register<ITwitchHelixApiService, TwitchHelixApiService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
-			container.Register<ITwitchPubSubServiceManager, TwitchPubSubServiceManager>(Reuse.Singleton);
+			container.RegisterMany(new[] { typeof(ITwitchHelixApiService), typeof(TwitchHelixApiService) }, typeof(TwitchHelixApiService), Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
+			container.RegisterMany(new[] { typeof(ITwitchIrcService), typeof(ITwitchPubSubServiceManager) }, typeof(TwitchEventSubChatService), Reuse.Singleton);
 			container.Register<ITwitchRoomStateTrackerService, TwitchRoomStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			container.Register<ITwitchUserStateTrackerService, TwitchUserStateTrackerService>(Reuse.Singleton, Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));
 			container.Register<TwitchBadgeDataProvider>(Reuse.Singleton);
 			container.Register<TwitchCheermoteDataProvider>(Reuse.Singleton);
 			container.Register<TwitchMediaDataProvider>(Reuse.Singleton);
 			container.Register<TwitchEmoteDetectionHelper>(Reuse.Singleton);
-			container.Register<ITwitchIrcService, TwitchIrcService>(Reuse.Singleton);
 
 			container.RegisterMany(new[] { typeof(IPlatformService<ITwitchService, TwitchChannel, TwitchMessage>), typeof(ITwitchService) }, typeof(TwitchService), Reuse.Singleton,
 				Made.Of(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic));

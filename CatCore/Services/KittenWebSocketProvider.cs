@@ -86,7 +86,7 @@ namespace CatCore.Services
 					or ConnectionStatus.Aborted
 					or ConnectionStatus.ConnectionFailed
 					or ConnectionStatus.Close)
-				.Do(_ => tcs.SetResult(null!))
+				.Do(_ => tcs.TrySetResult(null!))
 				.Subscribe();
 			_disconnectObservable = _websocketConnectionSubject
 				.Where(tuple => tuple.state is ConnectionStatus.Disconnected

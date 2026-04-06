@@ -35,6 +35,7 @@ namespace CatCore.Services.Twitch
 		}
 
 		/// <inheritdoc />
+		[Obsolete("Twitch Legacy PubSub was decommissioned. Migrate to EventSub-based APIs.")]
 		public ITwitchPubSubServiceManager GetPubSubService() => _twitchPubSubServiceManager;
 
 		/// <inheritdoc />

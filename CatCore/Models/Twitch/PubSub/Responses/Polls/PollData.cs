@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using CatCore.Helpers.Converters;
 using CatCore.Models.Twitch.Shared;
@@ -35,7 +35,7 @@ namespace CatCore.Models.Twitch.PubSub.Responses.Polls
 		public PollSettings Settings { get; }
 
 		[JsonPropertyName("status")]
-		[JsonConverter(typeof(JsonStringEnumConverter<PollStatus>))]
+		[JsonConverter(typeof(Helpers.Converters.JsonStringEnumConverter<PollStatus>))]
 		public PollStatus Status { get; }
 
 		[JsonPropertyName("choices")]
