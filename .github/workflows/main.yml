@@ -28,7 +28,7 @@ jobs:
                 run: dotnet build CatCore.Shared --configuration Release
     catcore:
         name: CatCore
-        runs-on: ubuntu-latest
+        runs-on: windows-latest
         needs: catcore-shared
         steps:
             -   uses: actions/checkout@v3
@@ -39,21 +39,35 @@ jobs:
             -   name: Authenticate with GitHub Package Registry
                 run: dotnet nuget update source "ErisApps GH Packages" --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
             -   name: Removed .example suffix from Constants implementation
-                run: find ~ -type f -name Constants.user.cs.example -execdir mv Constants.user.cs.example Constants.user.cs \;
+                shell: pwsh
+                run: |
+                  Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter 'Constants.user.cs.example' | ForEach-Object {
+                    Rename-Item $_.FullName ($_.FullName -replace '\.example$', '')
+                  }
             -   name: Find and Replace - Insert CatCore Auth Server URI
-                run: find ~ -type f -name Constants.user.cs -exec sed -i 's| {{ CATCORE_AUTH_SERVER_URI }} |${{ secrets.CATCORE_AUTH_SERVER_URI }}|' {} \;
+                shell: pwsh
+                run: |
+                  Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter 'Constants.user.cs' | ForEach-Object {
+                    (Get-Content $_.FullName) -replace ' \{\{ CATCORE_AUTH_SERVER_URI \}\} ', '${{ secrets.CATCORE_AUTH_SERVER_URI }}' | Set-Content $_.FullName
+                  }
             -   name: Find and Replace - Insert Twitch Client Id
-                run: find ~ -type f -name Constants.user.cs -exec sed -i 's| {{ TWITCH_CLIENT_ID }} |${{ secrets.TWITCH_CLIENT_ID }}|' {} \;
+                shell: pwsh
+                run: |
+                  Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter 'Constants.user.cs' | ForEach-Object {
+                    (Get-Content $_.FullName) -replace ' \{\{ TWITCH_CLIENT_ID \}\} ', '${{ secrets.TWITCH_CLIENT_ID }}' | Set-Content $_.FullName
+                  }
             -   name: Build
                 id: Build
                 run: dotnet build CatCore --configuration Release
             -   name: Echo Filename
-                run: echo $BUILDTEXT \($ASSEMBLYNAME\)
+                shell: pwsh
+                run: |
+                  Write-Host "$env:BUILDTEXT ($env:ASSEMBLYNAME)"
                 env:
                     BUILDTEXT: Filename=${{ steps.Build.outputs.filename }}
                     ASSEMBLYNAME: AssemblyName=${{ steps.Build.outputs.assemblyname }}
             -   name: Upload Artifact
-                uses: actions/upload-artifact@v1
+                uses: actions/upload-artifact@v4
                 with:
                     name: ${{ steps.Build.outputs.filename }}
                     path: ${{ steps.Build.outputs.artifactpath }}
